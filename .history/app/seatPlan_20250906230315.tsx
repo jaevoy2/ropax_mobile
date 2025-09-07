@@ -1,0 +1,51 @@
+import { useTrip } from "@/context/trip";
+import { Ionicons } from "@expo/vector-icons";
+import { LinearGradient } from "expo-linear-gradient";
+import { Dimensions, Image, ScrollView, Text, TouchableOpacity, View } from "react-native";
+
+const { width, height } = Dimensions.get('window');
+const deck = require('@/assets/images/deck.png');
+const icon = require('@/assets/images/logo_icon.png');
+const text_logo = require('@/assets/images/logo.png');
+
+export default function SeatPlan() {
+    const { trip, refNumber } = useTrip();
+
+
+    return (
+        <View style={{ height: '100%', position: 'relative' }}>
+            <LinearGradient
+                colors={[
+                    'rgba(214, 48, 65, 1)',
+                    'rgba(228, 80, 80, 0.8)',
+                    'rgba(228, 80, 80, 0.52)', 
+                    'rgba(253, 0, 0, 0.15)',
+            ]} style={{ zIndex: -1, height: '100%', width: width }} />
+            
+            <TouchableOpacity style={{ position: 'absolute', left: 20, top: 50 }}>
+                <Ionicons name={'chevron-back'} size={30} color={'#fff'} />
+            </TouchableOpacity>
+
+            <View style={{  position: 'absolute', zIndex: 3, paddingTop: 50, width: width, flex: 1 }}>
+                <Text style={{ textAlign: 'center', color: '#fff', fontSize: 20, fontWeight: 'bold' }}>{trip.match(/\[(.*?)\]/)?.[1]}</Text>
+                <Text style={{ textAlign: 'center', color: '#fff', fontSize: 10 }}>Vessel Seat Plan</Text>
+
+                <View style={{ height: '50%', paddingVertical: 20 }}>
+                    <ScrollView>
+                        <Image source={deck} style={{ opacity: 0.5 }} />
+                        <View style={{ height: 300, width: '90%', zIndex: 5, position: 'absolute', left: '50%', transform: [{ translateX: '-50%' }], justifyContent: 'center', alignItems: 'center', paddingTop: 120 }}>
+                            <Image source={icon} style={{ width: 40, height: 40, marginBottom: 20 }} />
+                            <Image source={text_logo} style={{ width: 120, height: 25 }} />
+                            <View style={{ width: '100%', height: 300, backgroundColor: '#fff' }}>
+
+                            </View>
+                        </View>
+                    </ScrollView>
+                </View>
+
+            </View>
+
+        </View>
+
+    )
+}
