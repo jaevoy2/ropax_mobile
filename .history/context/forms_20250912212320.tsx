@@ -2,7 +2,7 @@ import { useTrip } from '@/context/trip';
 import React, { useEffect, useState } from 'react';
 import { ScrollView, Text, TextInput, TouchableOpacity, View } from 'react-native';
 import { Checkbox } from 'react-native-paper';
-import { InfantProps, usePassengers } from './passenger';
+import { usePassengers } from './passenger';
 
 const passengerType = ['Adult', 'Senior', 'Student', 'PWD', 'Child', 'Passes'];
 const passGender = ['Male', 'Female'];
@@ -19,29 +19,7 @@ export default function Forms({ errorForm }: FormProps) {
     useEffect(() => {
         const date = new Date();
         setYear(date.getFullYear().toString().slice(-2));
-    });
-
-    const hasInfantChecker = (seat: number | string, hasInfantValue: boolean) => {
-        const currentValue = !hasInfantValue;
-        updatePassenger(seat, 'hasInfant', currentValue);
-
-        if(!currentValue) {
-            updatePassenger(seat, 'infant', []);
-        }else {
-            addInfant(seat, {name: '', gender: '', age: 0})
-        }
-    }
-
-    const addInfant = (seatNumber: string | number, newInfant: InfantProps) => {
-        setPassengers((prev) => 
-            prev.map((p) => {
-                if(p.seatNumber !== seatNumber) return p;
-                return {
-                    ...p, infant: [...(p.infant || []), newInfant]
-                }
-            })
-        )
-    }
+    })
 
     return (
         <View>
@@ -124,14 +102,14 @@ export default function Forms({ errorForm }: FormProps) {
                                         <TextInput placeholder='+63' onChangeText={(text) => updatePassenger(p.seatNumber!, 'contact', text)} style={{ fontSize: 13 }} />
                                     </View>
                                 </View>
-                                <TouchableOpacity onPress={() => hasInfantChecker(p.seatNumber!, p.hasInfant!)}
+                                <TouchableOpacity onPress={() => updatePassenger(p.seatNumber!, 'hasInfant', !p.hasInfant )}
                                     style={{ flexDirection: 'row', alignItems: 'center', marginTop: 15 }}>
                                     <Text>With Infant</Text>
                                     <Checkbox status={p.hasInfant ? 'checked' : 'unchecked'} color='#cf2a3a' uncheckedColor="#999" />
                                 </TouchableOpacity>
                             </View>
                             {p.hasInfant && (
-                                <View>
+                                <>
                                     <View style={{ marginTop: 10 }}>
                                         <Text style={{ fontSize: 9, fontWeight: 'bold', color: '#545454' }}>Full Name:</Text>
                                         <View style={{ borderColor: '#B3B3B3', borderWidth: 1, borderRadius: 5 }}>
@@ -156,7 +134,7 @@ export default function Forms({ errorForm }: FormProps) {
                                             </View>
                                         </View>
                                     </View>
-                                </View>
+                                </>
                             )}
                         </View>
                     ))}

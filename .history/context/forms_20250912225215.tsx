@@ -131,7 +131,7 @@ export default function Forms({ errorForm }: FormProps) {
                                 </TouchableOpacity>
                             </View>
                             {p.hasInfant && (
-                                <View>
+                                <>
                                     <View style={{ marginTop: 10 }}>
                                         <Text style={{ fontSize: 9, fontWeight: 'bold', color: '#545454' }}>Full Name:</Text>
                                         <View style={{ borderColor: '#B3B3B3', borderWidth: 1, borderRadius: 5 }}>
@@ -156,7 +156,7 @@ export default function Forms({ errorForm }: FormProps) {
                                             </View>
                                         </View>
                                     </View>
-                                </View>
+                                </>
                             )}
                         </View>
                     ))}

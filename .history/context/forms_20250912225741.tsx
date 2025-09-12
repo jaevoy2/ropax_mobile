@@ -156,6 +156,9 @@ export default function Forms({ errorForm }: FormProps) {
                                             </View>
                                         </View>
                                     </View>
+                                    <TouchableOpacity style={{ backgroundColor: '#cf2a3a', width: '95%', alignSelf: 'center', borderRadius: 5, paddingVertical: 10, zIndex: 5, marginTop: 10 }}>
+                                        <Text style={{ fontSize: 16, fontWeight: 'bold', textAlign: 'center', color: '#fff' }}>Add Infant</Text>
+                                    </TouchableOpacity>
                                 </View>
                             )}
                         </View>

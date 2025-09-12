@@ -2,7 +2,7 @@ import { useTrip } from '@/context/trip';
 import React, { useEffect, useState } from 'react';
 import { ScrollView, Text, TextInput, TouchableOpacity, View } from 'react-native';
 import { Checkbox } from 'react-native-paper';
-import { InfantProps, usePassengers } from './passenger';
+import { usePassengers } from './passenger';
 
 const passengerType = ['Adult', 'Senior', 'Student', 'PWD', 'Child', 'Passes'];
 const passGender = ['Male', 'Female'];
@@ -19,29 +19,7 @@ export default function Forms({ errorForm }: FormProps) {
     useEffect(() => {
         const date = new Date();
         setYear(date.getFullYear().toString().slice(-2));
-    });
-
-    const hasInfantChecker = (seat: number | string, hasInfantValue: boolean) => {
-        const currentValue = !hasInfantValue;
-        updatePassenger(seat, 'hasInfant', currentValue);
-
-        if(!currentValue) {
-            updatePassenger(seat, 'infant', []);
-        }else {
-            addInfant(seat, {name: '', gender: '', age: 0})
-        }
-    }
-
-    const addInfant = (seatNumber: string | number, newInfant: InfantProps) => {
-        setPassengers((prev) => 
-            prev.map((p) => {
-                if(p.seatNumber !== seatNumber) return p;
-                return {
-                    ...p, infant: [...(p.infant || []), newInfant]
-                }
-            })
-        )
-    }
+    })
 
     return (
         <View>
@@ -124,14 +102,13 @@ export default function Forms({ errorForm }: FormProps) {
                                         <TextInput placeholder='+63' onChangeText={(text) => updatePassenger(p.seatNumber!, 'contact', text)} style={{ fontSize: 13 }} />
                                     </View>
                                 </View>
-                                <TouchableOpacity onPress={() => hasInfantChecker(p.seatNumber!, p.hasInfant!)}
-                                    style={{ flexDirection: 'row', alignItems: 'center', marginTop: 15 }}>
+                                <TouchableOpacity onPress={() => updatePassenger(p.seatNumber!, 'infant', p.infant)} style={{ flexDirection: 'row', alignItems: 'center', marginTop: 15 }}>
                                     <Text>With Infant</Text>
-                                    <Checkbox status={p.hasInfant ? 'checked' : 'unchecked'} color='#cf2a3a' uncheckedColor="#999" />
+                                    <Checkbox status={p.infant && p.infant.length > 0 ? 'checked' : 'unchecked'} color='#cf2a3a' uncheckedColor="#999" />
                                 </TouchableOpacity>
                             </View>
-                            {p.hasInfant && (
-                                <View>
+                            {/* {p.infant.length > 0 && (
+                                <>
                                     <View style={{ marginTop: 10 }}>
                                         <Text style={{ fontSize: 9, fontWeight: 'bold', color: '#545454' }}>Full Name:</Text>
                                         <View style={{ borderColor: '#B3B3B3', borderWidth: 1, borderRadius: 5 }}>
@@ -149,15 +126,15 @@ export default function Forms({ errorForm }: FormProps) {
                                             <Text style={{ fontSize: 9, fontWeight: 'bold', color: '#545454' }}>Gender:</Text>
                                             <View style={{ flexDirection:'row', gap: 5 }}>
                                                 {passGender.map((infntgender) => (
-                                                    <TouchableOpacity key={infntgender} style={{ borderColor: '#cf2a3a', borderWidth: 1, width: '50%', borderRadius: 5, justifyContent :'center', paddingVertical: 8 }}>
-                                                        <Text style={{ textAlign: 'center', fontSize: 14 }}>{infntgender}</Text>
+                                                    <TouchableOpacity key={infntgender} style={{ backgroundColor: p.infantGender == infntgender ? '#cf2a3a' : 'transparent', borderColor: '#cf2a3a', borderWidth: 1, width: '50%', borderRadius: 5, justifyContent :'center', paddingVertical: 8 }}>
+                                                        <Text style={{ textAlign: 'center', fontSize: 14, color: p.infantGender == infntgender ? '#fff' : '#cf2a3a' }}>{infntgender}</Text>
                                                     </TouchableOpacity>
                                                 ))}
                                             </View>
                                         </View>
                                     </View>
-                                </View>
-                            )}
+                                </>
+                            )} */}
                         </View>
                     ))}
                 </ScrollView>

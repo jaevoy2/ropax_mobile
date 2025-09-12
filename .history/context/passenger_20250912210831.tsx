@@ -19,8 +19,7 @@ export type PassengerProps = {
     seatNumber?: number | string;
     trip?: string;
     refNumber?: number;
-    infant?: InfantProps[];
-    hasInfant?: boolean;
+    infant: InfantProps[];
 }
 
 
@@ -33,19 +32,13 @@ type PassengerContextType = {
         key: K,
         value: PassengerProps[K]
     ) => void;
-
-    updateInfant: <K extends keyof InfantProps>(
-        seatNumber: number | string,
-        index: number,
-        key: K,
-        value: InfantProps[K]
-    ) => void;
 }
 
 const PassengerContext = createContext<PassengerContextType | undefined>(undefined);
 
 export const PassengerProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
     const [passengers, setPassengers] = useState<PassengerProps[]>([]);
+
     const clearPassengers = () => setPassengers([]);
 
     const updatePassenger = <K extends keyof PassengerProps>(
@@ -56,25 +49,8 @@ export const PassengerProvider: React.FC<{ children: React.ReactNode }> = ({ chi
         prev.map(p => p.seatNumber == seatNum ? { ...p, [key]: value }: p )
     );
 
-    const updateInfant = <K extends keyof InfantProps> (
-        seatNumber: number | string,
-        index: number,
-        key: K,
-        value: InfantProps[K]
-    ) => setPassengers((prev) =>
-      prev.map((p) => { 
-        if (p.seatNumber !== seatNumber || !p.infant) return p;
-        return {
-            ...p,
-            infant: p.infant?.map((inf, i) =>
-                i === index ? { ...inf, [key]: value }: inf
-            )
-        }
-      })
-    );
-
     return (
-        <PassengerContext.Provider value={{ passengers, setPassengers, clearPassengers, updatePassenger, updateInfant }}>
+        <PassengerContext.Provider value={{ passengers, setPassengers, clearPassengers, updatePassenger }}>
             { children }
         </PassengerContext.Provider>
     )
