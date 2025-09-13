@@ -175,9 +175,8 @@ export default function Forms({ errorForm }: FormProps) {
                                                     <Text style={{ fontSize: 9, fontWeight: 'bold', color: '#545454' }}>Gender:</Text>
                                                     <View style={{ flexDirection:'row', gap: 5 }}>
                                                         {passGender.map((infntgender) => (
-                                                            <TouchableOpacity onPress={() => updateInfant(p.seatNumber!, index, 'gender', infntgender)} key={infntgender} style={{ backgroundColor: p.infant?.[index]?.gender == infntgender ? '#cf2a3a' : 'transparent',
-                                                                borderColor: '#cf2a3a', borderWidth: 1, width: '50%', borderRadius: 5, justifyContent :'center', paddingVertical: 8 }}>
-                                                                <Text style={{ textAlign: 'center', fontSize: 14, color: p.infant?.[index]?.gender == infntgender ? '#fff' : '#cf2a3a' }}>{infntgender}</Text>
+                                                            <TouchableOpacity onPress={() => updateInfant(p.seatNumber!, index, 'gender', infntgender)} key={infntgender} style={{ borderColor: '#cf2a3a', borderWidth: 1, width: '50%', borderRadius: 5, justifyContent :'center', paddingVertical: 8 }}>
+                                                                <Text style={{ textAlign: 'center', fontSize: 14 }}>{infntgender}</Text>
                                                             </TouchableOpacity>
                                                         ))}
                                                     </View>

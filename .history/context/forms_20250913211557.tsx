@@ -14,7 +14,7 @@ type FormProps = {
 
 export default function Forms({ errorForm }: FormProps) {
     const { refNumber, trip } = useTrip();
-    const { passengers, setPassengers, updatePassenger, updateInfant } = usePassengers();
+    const { passengers, setPassengers, updatePassenger } = usePassengers();
     const [year, setYear] = useState('');
 
     useEffect(() => {
@@ -161,23 +161,22 @@ export default function Forms({ errorForm }: FormProps) {
                                                     )}
                                                 </View>
                                                 <View style={{ borderColor: '#B3B3B3', borderWidth: 1, borderRadius: 5 }}>
-                                                    <TextInput onChangeText={(text) => updateInfant(p.seatNumber!, index, 'name', text)} placeholder='Last Name, First Name' style={{ fontSize: 13 }} />
+                                                    <TextInput placeholder='Last Name, First Name' style={{ fontSize: 13 }} />
                                                 </View>
                                             </View>
                                             <View style={{ marginTop: 5, flexDirection: 'row', gap: 8, alignItems: 'flex-end' }}>
                                                 <View style={{ width: '40%' }}>
                                                     <Text style={{ fontSize: 9, fontWeight: 'bold', color: '#545454' }}>Age:</Text>
                                                     <View style={{ borderColor: '#B3B3B3', borderWidth: 1, borderRadius: 5 }}>
-                                                        <TextInput onChangeText={(text) => updateInfant(p.seatNumber!, index, 'age', Number(text))} keyboardType='numeric' placeholder='Age' style={{ fontSize: 13 }} />
+                                                        <TextInput keyboardType='numeric' placeholder='Age' style={{ fontSize: 13 }} />
                                                     </View>
                                                 </View>
                                                 <View style={{ width: '56%', }}>
                                                     <Text style={{ fontSize: 9, fontWeight: 'bold', color: '#545454' }}>Gender:</Text>
                                                     <View style={{ flexDirection:'row', gap: 5 }}>
                                                         {passGender.map((infntgender) => (
-                                                            <TouchableOpacity onPress={() => updateInfant(p.seatNumber!, index, 'gender', infntgender)} key={infntgender} style={{ backgroundColor: p.infant?.[index]?.gender == infntgender ? '#cf2a3a' : 'transparent',
-                                                                borderColor: '#cf2a3a', borderWidth: 1, width: '50%', borderRadius: 5, justifyContent :'center', paddingVertical: 8 }}>
-                                                                <Text style={{ textAlign: 'center', fontSize: 14, color: p.infant?.[index]?.gender == infntgender ? '#fff' : '#cf2a3a' }}>{infntgender}</Text>
+                                                            <TouchableOpacity key={infntgender} style={{ borderColor: '#cf2a3a', borderWidth: 1, width: '50%', borderRadius: 5, justifyContent :'center', paddingVertical: 8 }}>
+                                                                <Text style={{ textAlign: 'center', fontSize: 14 }}>{infntgender}</Text>
                                                             </TouchableOpacity>
                                                         ))}
                                                     </View>

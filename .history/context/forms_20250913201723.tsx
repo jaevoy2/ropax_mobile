@@ -14,7 +14,7 @@ type FormProps = {
 
 export default function Forms({ errorForm }: FormProps) {
     const { refNumber, trip } = useTrip();
-    const { passengers, setPassengers, updatePassenger, updateInfant } = usePassengers();
+    const { passengers, setPassengers, updatePassenger } = usePassengers();
     const [year, setYear] = useState('');
 
     useEffect(() => {
@@ -33,23 +33,12 @@ export default function Forms({ errorForm }: FormProps) {
         }
     }
 
-    const addInfant = (seat: string | number, newInfant: InfantProps) => {
+    const addInfant = (seatNumber: string | number, newInfant: InfantProps) => {
         setPassengers((prev) => 
             prev.map((p) => {
-                if(p.seatNumber !== seat) return p;
+                if(p.seatNumber !== seatNumber) return p;
                 return {
                     ...p, infant: [...(p.infant || []), newInfant]
-                }
-            })
-        )
-    }
-
-    const removeInfant = (seat: string | number, infantIndex: number) => {
-        setPassengers((prev) => 
-            prev.map((p) => {
-                if(p.seatNumber !== seat) return p;
-                return {
-                    ...p, infant: p.infant?.filter((_, i) => i !== infantIndex)
                 }
             })
         )
@@ -138,46 +127,38 @@ export default function Forms({ errorForm }: FormProps) {
                                 </View>
                                 <TouchableOpacity onPress={() => hasInfantChecker(p.seatNumber!, p.hasInfant!)}
                                     style={{ flexDirection: 'row', alignItems: 'center', marginTop: 15 }}>
+                                    {p.hasInfant == true && (
+                                        <TouchableOpacity style={{ marginRight: 5 }}>
+                                            <Ionicons name={'add-circle'} size={20} color={'#cf2a3a'} />
+                                        </TouchableOpacity>
+                                    )}
                                     <Text>With Infant</Text>
                                     <Checkbox status={p.hasInfant ? 'checked' : 'unchecked'} color='#cf2a3a' uncheckedColor="#999" />
                                 </TouchableOpacity>
                             </View>
                             {p.hasInfant && (
                                 <>
-                                    <TouchableOpacity onPress={() => addInfant(p.seatNumber!, {name: '', gender: '', age: 0})} style={{ backgroundColor: '#cf2a3a', borderColor: '#cf2a3a', borderWidth: 1, padding: 5, borderRadius: 5, alignSelf: 'flex-end', marginTop: 10, marginBottom: -15, flexDirection: 'row', gap: 5, alignItems: 'center' }}>
-                                        <Text style={{ color: '#fff', fontWeight: 600 }}>Add Infant</Text>
-                                        <Ionicons name={'add-circle'} size={20} color={'#fff'} />
-                                    </TouchableOpacity>
                                     {p.infant?.map((i, index) => (
                                         <View key={index}>
-                                            <View style={{ marginTop: 30 }}>
-                                                <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' }}>
-                                                    <Text style={{ fontSize: 9, fontWeight: 'bold', color: '#545454' }}>Full Name:</Text>
-                                                    {index != 0 && (
-                                                        <TouchableOpacity onPress={() => removeInfant(p.seatNumber!, index)} style={{ flexDirection: 'row', alignItems: 'center' }}>
-                                                            <Ionicons name={'close'} size={20} color={'#cf2a3a'} />
-                                                            <Text style={{ color: '#cf2a3a', fontWeight: '600', fontSize: 13 }}>Remove</Text>
-                                                        </TouchableOpacity>
-                                                    )}
-                                                </View>
+                                            <View style={{ marginTop: 10 }}>
+                                                <Text style={{ fontSize: 9, fontWeight: 'bold', color: '#545454' }}>Full Name:</Text>
                                                 <View style={{ borderColor: '#B3B3B3', borderWidth: 1, borderRadius: 5 }}>
-                                                    <TextInput onChangeText={(text) => updateInfant(p.seatNumber!, index, 'name', text)} placeholder='Last Name, First Name' style={{ fontSize: 13 }} />
+                                                    <TextInput placeholder='Last Name, First Name' style={{ fontSize: 13 }} />
                                                 </View>
                                             </View>
                                             <View style={{ marginTop: 5, flexDirection: 'row', gap: 8, alignItems: 'flex-end' }}>
                                                 <View style={{ width: '40%' }}>
                                                     <Text style={{ fontSize: 9, fontWeight: 'bold', color: '#545454' }}>Age:</Text>
                                                     <View style={{ borderColor: '#B3B3B3', borderWidth: 1, borderRadius: 5 }}>
-                                                        <TextInput onChangeText={(text) => updateInfant(p.seatNumber!, index, 'age', Number(text))} keyboardType='numeric' placeholder='Age' style={{ fontSize: 13 }} />
+                                                        <TextInput keyboardType='numeric' placeholder='Age' style={{ fontSize: 13 }} />
                                                     </View>
                                                 </View>
                                                 <View style={{ width: '56%', }}>
                                                     <Text style={{ fontSize: 9, fontWeight: 'bold', color: '#545454' }}>Gender:</Text>
                                                     <View style={{ flexDirection:'row', gap: 5 }}>
                                                         {passGender.map((infntgender) => (
-                                                            <TouchableOpacity onPress={() => updateInfant(p.seatNumber!, index, 'gender', infntgender)} key={infntgender} style={{ backgroundColor: p.infant?.[index]?.gender == infntgender ? '#cf2a3a' : 'transparent',
-                                                                borderColor: '#cf2a3a', borderWidth: 1, width: '50%', borderRadius: 5, justifyContent :'center', paddingVertical: 8 }}>
-                                                                <Text style={{ textAlign: 'center', fontSize: 14, color: p.infant?.[index]?.gender == infntgender ? '#fff' : '#cf2a3a' }}>{infntgender}</Text>
+                                                            <TouchableOpacity key={infntgender} style={{ borderColor: '#cf2a3a', borderWidth: 1, width: '50%', borderRadius: 5, justifyContent :'center', paddingVertical: 8 }}>
+                                                                <Text style={{ textAlign: 'center', fontSize: 14 }}>{infntgender}</Text>
                                                             </TouchableOpacity>
                                                         ))}
                                                     </View>
