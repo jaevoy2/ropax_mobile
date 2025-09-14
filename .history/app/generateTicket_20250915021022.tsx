@@ -114,7 +114,7 @@ export default function TicketGenerator() {
                                 <Text style={{ fontSize: 14, fontWeight: '900', color: '#cf2a3a' }}>₱350.00</Text>
                             </View>
                             <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' }}>
-                                <Text style={{ fontSize: 12 }}>Cash Tendered:</Text>
+                                <Text style={{ fontSize: 12 }}>Cash:</Text>
                                 <Text style={{ fontSize: 12 }}>₱500.00</Text>
                             </View>
                             <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' }}>

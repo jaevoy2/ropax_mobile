@@ -114,7 +114,7 @@ export default function TicketGenerator() {
                                 <Text style={{ fontSize: 14, fontWeight: '900', color: '#cf2a3a' }}>₱350.00</Text>
                             </View>
                             <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' }}>
-                                <Text style={{ fontSize: 12 }}>Cash Tendered:</Text>
+                                <Text style={{ fontSize: 12 }}>Cash:</Text>
                                 <Text style={{ fontSize: 12 }}>₱500.00</Text>
                             </View>
                             <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' }}>
@@ -139,21 +139,23 @@ export default function TicketGenerator() {
                                     <Text style={{ fontSize: 12, width: '40%' }}>{`${p.name?.split(',')[1]?.trim().charAt(0)}, ${p.name?.split(',')[0]}`}</Text>
                                     <Text style={{ fontSize: 12, width: 50 }}>{p.passType?.charAt(0)}</Text>
                                     <Text style={{ fontSize: 12, width: 50 }}>{`#${p.seatNumber}`}</Text>
-                                    <Text style={{ fontSize: 12, width: 50, textAlign: 'right' }}>₱350.00</Text>
+                                    <Text style={{ fontSize: 12 }}>₱350.00</Text>
                                 </View>
                             ))}
-                            {passengers.map((p) => 
-                                p.hasInfant && p.infant?.map((i, index) => (
-                                    <View key={`${p.seatNumber}-${index}`} style={{ marginBottom: 3 }}>
-                                        <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' }}>
-                                            <Text style={{ fontSize: 12, width: '40%' }}>{`${i.name?.split(',')[1]?.trim().charAt(0)}, ${i.name?.split(',')[0]}`}</Text>
-                                            <Text style={{ fontSize: 12, width: 50 }}>I</Text>
-                                            <Text style={{ fontSize: 12, width: 50 }}>N/A</Text>
-                                            <Text style={{ fontSize: 12, width: 50, textAlign: 'right' }}>₱00.00</Text>
+                            {passengers.map((p) => p.hasInfant == true && (
+                                <>
+                                    {p.infant?.flatMap((i, index) => (
+                                        <View key={`${p.seatNumber}-${index}`} style={{ marginBottom: 3 }}>
+                                            <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' }}>
+                                                <Text style={{ fontSize: 12, width: '35%' }}>{`${i.name?.split(',')[1]?.trim().charAt(0)}, ${i.name?.split(',')[0]}`}</Text>
+                                                <Text style={{ fontSize: 12, width: 50 }}>I</Text>
+                                                <Text style={{ fontSize: 12 }}>#{p.seatNumber}</Text>
+                                                <Text style={{ fontSize: 12, width: '20%', textAlign: 'right' }}>₱00.00</Text>
+                                            </View>
                                         </View>
-                                    </View>
-                                ))
-                            )}
+                                    ))}
+                                </>
+                            ))}
                         </View>
                     </View>
                 </ScrollView>

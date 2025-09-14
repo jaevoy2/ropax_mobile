@@ -51,7 +51,7 @@ export default function SeatPlan() {
     }, [passengers]);
     
     const toggleSheetPartial = () => {
-        const toValue = height - 160;
+        const toValue = height - 200;
         Animated.spring(translateY, {
             toValue,
             useNativeDriver: true,
@@ -86,7 +86,7 @@ export default function SeatPlan() {
         setIsFormVisible(true);
         setTimeout(() => {
             Animated.spring(translateY, {
-                toValue: height - 760,
+                toValue: height - 750,
                 useNativeDriver: true,
             }).start();
             setFormLoading(false);
@@ -109,18 +109,18 @@ export default function SeatPlan() {
                 return;
             }
 
-            const infantFieldError = passengers.find((p) =>
-                p.infant?.find((i) => !i.name.trim() || !i.gender.trim() || !i.age)
-            )
+            // const infantFieldError = passengers.find((p) =>
+            //     p.hasInfant && (!p.infantName?.trim() || !p.infantGender?.trim() || !p.infantAge )
+            // )
 
-            if (infantFieldError) {
-                setErrorForm(`${infantFieldError.seatNumber}`);
-                Alert.alert('Invalid', `Seat number ${infantFieldError.seatNumber} has missing infant details.`);
-                setSaveLoading(false);
-                return;
-            }
+            // if (infantFieldError) {
+            //     setErrorForm(`${infantFieldError.seatNumber}`);
+            //     Alert.alert('Invalid', `Seat number ${infantFieldError.seatNumber} has missing infant details.`);
+            //     setSaveLoading(false);
+            //     return;
+            // }
             
-            router.push('/summary');
+            router.push('/generateTicket');
             setSaveLoading(false);
         }, 300);
     }
@@ -143,7 +143,7 @@ export default function SeatPlan() {
                 <View style={{  position: 'absolute', zIndex: 3, paddingTop: 50, width: width, flex: 1 }}>
                     <Text style={{ textAlign: 'center', color: '#fff', fontSize: 20, fontWeight: 'bold' }}>{trip.match(/\[(.*?)\]/)?.[1]}</Text>
                     <Text style={{ textAlign: 'center', color: '#fff', fontSize: 10 }}>Vessel Seat Plan</Text>
-                    <View style={{ height: contentHeight, paddingTop: 10, }}>
+                    <View style={{ height: contentHeight / 2, paddingTop: 10, }}>
                         <ScrollView>
                             <Image source={deck} style={{ opacity: 0.5, width: '100%', height: height + 620, marginLeft: -3 }} />
                             <View style={{ height: 300, width: '95%', zIndex: 5, position: 'absolute', left: '50%', transform: [{ translateX: '-50%' }], alignItems: 'center', }}>
@@ -213,16 +213,16 @@ export default function SeatPlan() {
                 )}
             </Animated.View>
             {isExpanded == true && isFormVisible == false && (
-                <TouchableOpacity onPress={() => onFormView()} style={{ position: 'absolute', bottom: 10, backgroundColor: '#cf2a3a', width: '95%', alignSelf: 'center', borderRadius: 30, paddingVertical: 15, zIndex: 5 }}>
+                <TouchableOpacity onPress={() => onFormView()} style={{ position: 'absolute', bottom: 10, backgroundColor: '#cf2a3a', width: '95%', alignSelf: 'center', borderRadius: 30, paddingVertical: 10, zIndex: 5 }}>
                     <Text style={{ fontSize: 16, fontWeight: 'bold', textAlign: 'center', color: '#fff' }}>Continue</Text>
                 </TouchableOpacity>
             )}
             {isFormVisible == true && (
-                <TouchableOpacity onPress={() => handleSave()} style={{ position: 'absolute', bottom: 10, backgroundColor: '#cf2a3a', width: '95%', alignSelf: 'center', borderRadius: 30, paddingVertical: 15, zIndex: 5 }}>
+                <TouchableOpacity onPress={() => handleSave()} style={{ position: 'absolute', bottom: 10, backgroundColor: '#cf2a3a', width: '95%', alignSelf: 'center', borderRadius: 30, paddingVertical: 10, zIndex: 5 }}>
                     {saveloading == true ? (
-                        <ActivityIndicator size='small' color={'#fff'} />
+                        <ActivityIndicator size={'large'} color={'#fff'} />
                     ) : (
-                        <Text style={{ fontSize: 16, fontWeight: 'bold', textAlign: 'center', color: '#fff' }}>Proceed Payment</Text>
+                        <Text style={{ fontSize: 16, fontWeight: 'bold', textAlign: 'center', color: '#fff' }}>Save</Text>
                     )}
                 </TouchableOpacity>
             )}

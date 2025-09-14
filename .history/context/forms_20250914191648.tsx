@@ -65,7 +65,7 @@ export default function Forms({ errorForm }: FormProps) {
                 </View>
             </View>
 
-            <View style={{ height: '82%', marginTop: 10 }}>
+            <View style={{ height: '80%', marginTop: 10 }}>
                 <ScrollView>
                     {passengers.map((p) => (
                         <View key={p.seatNumber} style={{ borderColor: errorForm == p.seatNumber ? '#cf2a3a' : '#B3B3B3', borderWidth: 1, borderRadius: 8, paddingHorizontal: 5, paddingVertical: 10, marginBottom: 20, backgroundColor: '#fff' }}>

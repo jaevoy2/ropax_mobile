@@ -109,16 +109,16 @@ export default function SeatPlan() {
                 return;
             }
 
-            const infantFieldError = passengers.find((p) =>
-                p.infant?.find((i) => !i.name.trim() || !i.gender.trim() || !i.age)
-            )
+            // const infantFieldError = passengers.find((p) =>
+            //     p.hasInfant && (!p.infantName?.trim() || !p.infantGender?.trim() || !p.infantAge )
+            // )
 
-            if (infantFieldError) {
-                setErrorForm(`${infantFieldError.seatNumber}`);
-                Alert.alert('Invalid', `Seat number ${infantFieldError.seatNumber} has missing infant details.`);
-                setSaveLoading(false);
-                return;
-            }
+            // if (infantFieldError) {
+            //     setErrorForm(`${infantFieldError.seatNumber}`);
+            //     Alert.alert('Invalid', `Seat number ${infantFieldError.seatNumber} has missing infant details.`);
+            //     setSaveLoading(false);
+            //     return;
+            // }
             
             router.push('/summary');
             setSaveLoading(false);
@@ -222,7 +222,7 @@ export default function SeatPlan() {
                     {saveloading == true ? (
                         <ActivityIndicator size='small' color={'#fff'} />
                     ) : (
-                        <Text style={{ fontSize: 16, fontWeight: 'bold', textAlign: 'center', color: '#fff' }}>Proceed Payment</Text>
+                        <Text style={{ fontSize: 16, fontWeight: 'bold', textAlign: 'center', color: '#fff' }}>Pay</Text>
                     )}
                 </TouchableOpacity>
             )}
