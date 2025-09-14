@@ -3,15 +3,15 @@ import { useTrip } from '@/context/trip';
 import { Ionicons, MaterialCommunityIcons } from '@expo/vector-icons';
 import * as FileSystem from 'expo-file-system';
 import * as MediaLibrary from 'expo-media-library';
-import * as Sharing from 'expo-sharing';
 import React, { useEffect, useRef, useState } from 'react';
-import { Alert, Dimensions, Image, ScrollView, Text, TouchableOpacity, View } from 'react-native';
+import { Alert, Dimensions, Image, NativeModules, Platform, ScrollView, Share, Text, TouchableOpacity, View } from "react-native";
 import QRCode from 'react-native-qrcode-svg';
 import { captureRef } from 'react-native-view-shot';
 
 const logo_text = require('@/assets/images/logo.png');
 const logo_icon = require('@/assets/images/logo_icon.png');
 const { height } = Dimensions.get('screen');
+const { FileProviderModule } = NativeModules;
 
 export default function TicketGenerator() {
     const { trip, refNumber } = useTrip();
@@ -47,12 +47,26 @@ export default function TicketGenerator() {
             const cacheUri: string = `${FileSystem.cacheDirectory}.ticket.png`;
             await FileSystem.copyAsync({ from: snapshotUri, to: cacheUri });
             
+            if (Platform.OS === "android") {
+            // ✅ Get a content:// URI via FileProvider
+            const uri = await FileProviderModule.getUri(
+                cacheUri.replace("file://", "")
+            );
 
-            // Share (first time shows chooser, then RawBT can be set as default)
-            await Sharing.shareAsync(cacheUri, {
-            dialogTitle: "Print with RawBT",
-            mimeType: "image/png",
+            // Share using system Share sheet
+            await Share.share({
+                url: uri,
+                title: "Print Ticket",
+                message: "Send to RawBT for printing",
             });
+            } else {
+            // iOS fallback — share file directly
+            await Share.share({
+                url: cacheUri,
+                title: "Print Ticket",
+                message: "Send to printer",
+            });
+            }
         } catch (error) {
             Alert.alert('Error', String(error))
         }

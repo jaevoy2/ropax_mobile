@@ -27,36 +27,40 @@ export default function TicketGenerator() {
     });
 
     const generateTicket = async () => {
-        if(!viewRef.current) {
-            Alert.alert('Error', 'View not available for snapshot');
-            return;
-        }
+  if (!viewRef.current) {
+    Alert.alert('Error', 'View not available for snapshot');
+    return;
+  }
 
-        try {
-            const { status } = await MediaLibrary.requestPermissionsAsync();
-            if(!status) {
-                Alert.alert('Permission denied', 'Cannot save image without permission');
-                return;
-            }
-
-            const snapshotUri: string = await captureRef(viewRef, {
-                format: 'png',
-                quality: 1
-            });
-
-            const cacheUri: string = `${FileSystem.cacheDirectory}.ticket.png`;
-            await FileSystem.copyAsync({ from: snapshotUri, to: cacheUri });
-            
-
-            // Share (first time shows chooser, then RawBT can be set as default)
-            await Sharing.shareAsync(cacheUri, {
-            dialogTitle: "Print with RawBT",
-            mimeType: "image/png",
-            });
-        } catch (error) {
-            Alert.alert('Error', String(error))
-        }
+  try {
+    const { status } = await MediaLibrary.requestPermissionsAsync();
+    if (status !== 'granted') {
+      Alert.alert('Permission denied', 'Cannot save image without permission');
+      return;
     }
+
+    // Take snapshot
+    const snapshotUri = await captureRef(viewRef, { format: 'png', quality: 1 });
+    const cacheUri = `${FileSystem.cacheDirectory}ticket.png`;
+
+    await FileSystem.copyAsync({ from: snapshotUri, to: cacheUri });
+
+    // Save to gallery
+    const asset = await MediaLibrary.createAssetAsync(cacheUri);
+    await MediaLibrary.createAlbumAsync('Tickets', asset, false);
+
+    // Share directly (will show RawBT in the share sheet)
+    await Sharing.shareAsync(cacheUri, {
+      mimeType: 'image/png',
+      dialogTitle: 'Print with RawBT',
+    });
+  } catch (error) {
+    Alert.alert('Error', String(error));
+  }
+};
+
+
+
 
 
     return (

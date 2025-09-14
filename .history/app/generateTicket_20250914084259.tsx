@@ -2,8 +2,8 @@ import { usePassengers } from '@/context/passenger';
 import { useTrip } from '@/context/trip';
 import { Ionicons, MaterialCommunityIcons } from '@expo/vector-icons';
 import * as FileSystem from 'expo-file-system';
+import * as IntentLauncher from 'expo-intent-launcher';
 import * as MediaLibrary from 'expo-media-library';
-import * as Sharing from 'expo-sharing';
 import React, { useEffect, useRef, useState } from 'react';
 import { Alert, Dimensions, Image, ScrollView, Text, TouchableOpacity, View } from 'react-native';
 import QRCode from 'react-native-qrcode-svg';
@@ -27,36 +27,39 @@ export default function TicketGenerator() {
     });
 
     const generateTicket = async () => {
-        if(!viewRef.current) {
-            Alert.alert('Error', 'View not available for snapshot');
-            return;
-        }
+  if (!viewRef.current) return;
 
-        try {
-            const { status } = await MediaLibrary.requestPermissionsAsync();
-            if(!status) {
-                Alert.alert('Permission denied', 'Cannot save image without permission');
-                return;
-            }
-
-            const snapshotUri: string = await captureRef(viewRef, {
-                format: 'png',
-                quality: 1
-            });
-
-            const cacheUri: string = `${FileSystem.cacheDirectory}.ticket.png`;
-            await FileSystem.copyAsync({ from: snapshotUri, to: cacheUri });
-            
-
-            // Share (first time shows chooser, then RawBT can be set as default)
-            await Sharing.shareAsync(cacheUri, {
-            dialogTitle: "Print with RawBT",
-            mimeType: "image/png",
-            });
-        } catch (error) {
-            Alert.alert('Error', String(error))
-        }
+  try {
+    const { status } = await MediaLibrary.requestPermissionsAsync();
+    if (status !== 'granted') {
+      Alert.alert('Permission denied', 'Cannot save image without permission');
+      return;
     }
+
+    // Capture the ticket view
+    const snapshotUri = await captureRef(viewRef, { format: 'png', quality: 1 });
+
+    // Copy to app storage
+    const localUri = `${FileSystem.documentDirectory}ticket.png`;
+    await FileSystem.copyAsync({ from: snapshotUri, to: localUri });
+
+    // Save into gallery (this gives us a content:// URI)
+    const asset = await MediaLibrary.createAssetAsync(localUri);
+
+    // Now launch RawBT with that gallery asset URI
+    IntentLauncher.startActivityAsync('android.intent.action.SEND', {
+      type: 'image/png',
+      flags: 1,
+      extra: {
+        'android.intent.extra.STREAM': asset.uri, // content:// URI that RawBT can read
+      },
+      packageName: 'ru.a402d.rawbtprinter',
+    });
+
+  } catch (error) {
+    Alert.alert('Error', String(error));
+  }
+};
 
 
     return (

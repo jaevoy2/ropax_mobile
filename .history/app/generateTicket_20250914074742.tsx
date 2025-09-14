@@ -47,12 +47,10 @@ export default function TicketGenerator() {
             const cacheUri: string = `${FileSystem.cacheDirectory}.ticket.png`;
             await FileSystem.copyAsync({ from: snapshotUri, to: cacheUri });
             
+            const asset = await MediaLibrary.createAssetAsync(cacheUri);
+            await MediaLibrary.createAlbumAsync('Tickets', asset, false);
 
-            // Share (first time shows chooser, then RawBT can be set as default)
-            await Sharing.shareAsync(cacheUri, {
-            dialogTitle: "Print with RawBT",
-            mimeType: "image/png",
-            });
+            await Sharing.shareAsync(cacheUri);
         } catch (error) {
             Alert.alert('Error', String(error))
         }
@@ -129,14 +127,14 @@ export default function TicketGenerator() {
                         <View style={{ paddingVertical: 5, marginTop: 10 }}>
                             <Text style={{ fontSize: 14, fontWeight: '900' }}>B-Class</Text>
                             <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', marginBottom: 3 }}>
-                                <Text style={{ fontSize: 12, width: '40%', fontWeight: '700' }}>Name:</Text>
+                                <Text style={{ fontSize: 12, width: '35%', fontWeight: '700' }}>Name:</Text>
                                 <Text style={{ fontSize: 12, width: 50, fontWeight: '700' }}>Type:</Text>
                                 <Text style={{ fontSize: 12, fontWeight: '700', width: 50, }}>Seat#:</Text>
                                 <Text style={{ fontSize: 12, fontWeight: '700', width: 60, textAlign: 'right' }}>Fare</Text>
                             </View>
                             {passengers.map((p) => (
                                 <View key={p.seatNumber} style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' }}>
-                                    <Text style={{ fontSize: 12, width: '40%' }}>{`${p.name?.split(',')[1]?.trim().charAt(0)}, ${p.name?.split(',')[0]}`}</Text>
+                                    <Text style={{ fontSize: 12, width: '35%' }}>{`${p.name?.split(',')[1]?.trim().charAt(0)}, ${p.name?.split(',')[0]}`}</Text>
                                     <Text style={{ fontSize: 12, width: 50 }}>{p.passType?.charAt(0)}</Text>
                                     <Text style={{ fontSize: 12, width: 50 }}>{`#${p.seatNumber}`}</Text>
                                     <Text style={{ fontSize: 12 }}>₱350.00</Text>
@@ -146,7 +144,7 @@ export default function TicketGenerator() {
                                 <>
                                 <Text style={{ fontSize: 14, fontWeight: '900', marginTop: 10 }}>Infant</Text>
                                 <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' }}>
-                                    <Text style={{ fontSize: 12, width: '35%', fontWeight: '700' }}>Name:</Text>
+                                    <Text style={{ fontSize: 12, width: 100, fontWeight: '700' }}>Name:</Text>
                                     <Text style={{ fontSize: 12, width: 50, fontWeight: '700' }}>Type:</Text>
                                     <Text style={{ fontSize: 12, fontWeight: '700' }}>Seat:</Text>
                                     <Text style={{ fontSize: 12, fontWeight: '700', width: 60, textAlign: 'right' }}>Fare</Text>
@@ -154,10 +152,10 @@ export default function TicketGenerator() {
                                     {p.infant?.flatMap((i, index) => (
                                         <View key={`${p.seatNumber}-${index}`} style={{ marginBottom: 3 }}>
                                             <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' }}>
-                                                <Text style={{ fontSize: 12, width: '35%' }}>{`${i.name?.split(',')[1]?.trim().charAt(0)}, ${i.name?.split(',')[0]}`}</Text>
+                                                <Text style={{ fontSize: 12, width: 100 }}>{`${i.name?.split(',')[1]?.trim().charAt(0)}, ${i.name?.split(',')[0]}`}</Text>
                                                 <Text style={{ fontSize: 12, width: 50 }}>I</Text>
                                                 <Text style={{ fontSize: 12 }}>#{p.seatNumber}</Text>
-                                                <Text style={{ fontSize: 12, width: '20%', textAlign: 'right' }}>₱00.00</Text>
+                                                <Text style={{ fontSize: 12, width: 60, textAlign: 'right' }}>₱00.00</Text>
                                             </View>
                                         </View>
                                     ))}

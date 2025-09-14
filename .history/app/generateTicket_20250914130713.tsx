@@ -2,16 +2,17 @@ import { usePassengers } from '@/context/passenger';
 import { useTrip } from '@/context/trip';
 import { Ionicons, MaterialCommunityIcons } from '@expo/vector-icons';
 import * as FileSystem from 'expo-file-system';
+import * as IntentLauncher from 'expo-intent-launcher';
 import * as MediaLibrary from 'expo-media-library';
-import * as Sharing from 'expo-sharing';
 import React, { useEffect, useRef, useState } from 'react';
-import { Alert, Dimensions, Image, ScrollView, Text, TouchableOpacity, View } from 'react-native';
+import { Alert, Dimensions, Image, NativeModules, ScrollView, Text, TouchableOpacity, View } from 'react-native';
 import QRCode from 'react-native-qrcode-svg';
 import { captureRef } from 'react-native-view-shot';
 
 const logo_text = require('@/assets/images/logo.png');
 const logo_icon = require('@/assets/images/logo_icon.png');
 const { height } = Dimensions.get('screen');
+const { FileProviderModule } = NativeModules;
 
 export default function TicketGenerator() {
     const { trip, refNumber } = useTrip();
@@ -27,36 +28,39 @@ export default function TicketGenerator() {
     });
 
     const generateTicket = async () => {
-        if(!viewRef.current) {
-            Alert.alert('Error', 'View not available for snapshot');
-            return;
-        }
+  if (!viewRef.current) {
+    Alert.alert("Error", "View not available for snapshot");
+    return;
+  }
 
-        try {
-            const { status } = await MediaLibrary.requestPermissionsAsync();
-            if(!status) {
-                Alert.alert('Permission denied', 'Cannot save image without permission');
-                return;
-            }
-
-            const snapshotUri: string = await captureRef(viewRef, {
-                format: 'png',
-                quality: 1
-            });
-
-            const cacheUri: string = `${FileSystem.cacheDirectory}.ticket.png`;
-            await FileSystem.copyAsync({ from: snapshotUri, to: cacheUri });
-            
-
-            // Share (first time shows chooser, then RawBT can be set as default)
-            await Sharing.shareAsync(cacheUri, {
-            dialogTitle: "Print with RawBT",
-            mimeType: "image/png",
-            });
-        } catch (error) {
-            Alert.alert('Error', String(error))
-        }
+  try {
+    const { status } = await MediaLibrary.requestPermissionsAsync();
+    if (status !== "granted") {
+      Alert.alert("Permission denied", "Cannot save image without permission");
+      return;
     }
+
+    // Capture view
+    const snapshotUri = await captureRef(viewRef, { format: "png", quality: 1 });
+    const cacheUri = `${FileSystem.cacheDirectory}ticket.png`;
+    await FileSystem.copyAsync({ from: snapshotUri, to: cacheUri });
+
+    // Get content:// URI from native module
+    const contentUri = await FileProviderModule.getUri(
+      cacheUri.replace("file://", "")
+    );
+
+    // Send to RawBT
+    await IntentLauncher.startActivityAsync("android.intent.action.SEND", {
+      type: "image/png",
+      flags: 1,
+      extra: { "android.intent.extra.STREAM": contentUri },
+      packageName: "ru.a402d.rawbtprinter",
+    });
+  } catch (err) {
+    Alert.alert("Error", String(err));
+  }
+};
 
 
     return (

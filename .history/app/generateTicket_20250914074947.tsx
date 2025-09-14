@@ -47,12 +47,10 @@ export default function TicketGenerator() {
             const cacheUri: string = `${FileSystem.cacheDirectory}.ticket.png`;
             await FileSystem.copyAsync({ from: snapshotUri, to: cacheUri });
             
+            const asset = await MediaLibrary.createAssetAsync(cacheUri);
+            await MediaLibrary.createAlbumAsync('Tickets', asset, false);
 
-            // Share (first time shows chooser, then RawBT can be set as default)
-            await Sharing.shareAsync(cacheUri, {
-            dialogTitle: "Print with RawBT",
-            mimeType: "image/png",
-            });
+            await Sharing.shareAsync(cacheUri);
         } catch (error) {
             Alert.alert('Error', String(error))
         }

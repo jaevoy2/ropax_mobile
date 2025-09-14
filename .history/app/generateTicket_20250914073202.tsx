@@ -47,12 +47,10 @@ export default function TicketGenerator() {
             const cacheUri: string = `${FileSystem.cacheDirectory}.ticket.png`;
             await FileSystem.copyAsync({ from: snapshotUri, to: cacheUri });
             
+            const asset = await MediaLibrary.createAssetAsync(cacheUri);
+            await MediaLibrary.createAlbumAsync('Tickets', asset, false);
 
-            // Share (first time shows chooser, then RawBT can be set as default)
-            await Sharing.shareAsync(cacheUri, {
-            dialogTitle: "Print with RawBT",
-            mimeType: "image/png",
-            });
+            await Sharing.shareAsync(cacheUri);
         } catch (error) {
             Alert.alert('Error', String(error))
         }
@@ -68,9 +66,9 @@ export default function TicketGenerator() {
                 <Ionicons name='checkmark-done' color={'#fff'} size={20} />
                 <Text style={{ color: '#fff', fontWeight: 'bold', fontSize: 15 }}>Done</Text>
             </TouchableOpacity>
-            <View style={{ position: 'relative', height: '80%', top: -70 }}>
+            <View style={{ position: 'relative', height: '70%' }}>
                 <ScrollView>
-                    <View ref={viewRef} style={{ backgroundColor: '#fff', left: '50%', transform: [{ translateX: '-50%' }], width: '85%', borderRadius: 10, padding: 10 }}>
+                    <View ref={viewRef} style={{ backgroundColor: '#fff', top: -70, left: '50%', transform: [{ translateX: '-50%' }], width: '85%', borderRadius: 10, padding: 10 }}>
                         <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', paddingVertical: 5, borderBottomWidth: 1, borderBlockColor: '#9B9B9B' }}>
                             <View style={{ flexDirection: 'row', alignItems: 'center', gap: 5 }}>
                                 <Image source={logo_icon} style={{ width: 36, height: 35 }} />
@@ -111,15 +109,15 @@ export default function TicketGenerator() {
                             </View>
                             <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' }}>
                                 <Text style={{ fontSize: 14, fontWeight: '900' }}>Total:</Text>
-                                <Text style={{ fontSize: 14, fontWeight: '900', color: '#cf2a3a' }}>₱350.00</Text>
+                                <Text style={{ fontSize: 14, fontWeight: '900', color: '#cf2a3a' }}>₱1,500.00</Text>
                             </View>
                             <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' }}>
-                                <Text style={{ fontSize: 12 }}>Cash:</Text>
-                                <Text style={{ fontSize: 12 }}>₱500.00</Text>
+                                <Text style={{ fontSize: 14, fontWeight: '900' }}>Cash:</Text>
+                                <Text style={{ fontSize: 14, fontWeight: '900', color: '#cf2a3a' }}>₱2,000.00</Text>
                             </View>
                             <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' }}>
-                                <Text style={{ fontSize: 12 }}>Change:</Text>
-                                <Text style={{ fontSize: 12 }}>₱150.00</Text>
+                                <Text style={{ fontSize: 14, fontWeight: '900' }}>Change:</Text>
+                                <Text style={{ fontSize: 14, fontWeight: '900', color: '#cf2a3a' }}>₱500.00</Text>
                             </View>
                         </View>
                         <View style={{ flexDirection: 'column', alignItems: 'center', justifyContent: 'center', paddingVertical: 10, borderBottomWidth: 1, borderBlockColor: '#9B9B9B' }}>
@@ -129,35 +127,31 @@ export default function TicketGenerator() {
                         <View style={{ paddingVertical: 5, marginTop: 10 }}>
                             <Text style={{ fontSize: 14, fontWeight: '900' }}>B-Class</Text>
                             <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', marginBottom: 3 }}>
-                                <Text style={{ fontSize: 12, width: '40%', fontWeight: '700' }}>Name:</Text>
+                                <Text style={{ fontSize: 12, width: 100, fontWeight: '700' }}>Name:</Text>
                                 <Text style={{ fontSize: 12, width: 50, fontWeight: '700' }}>Type:</Text>
-                                <Text style={{ fontSize: 12, fontWeight: '700', width: 50, }}>Seat#:</Text>
-                                <Text style={{ fontSize: 12, fontWeight: '700', width: 60, textAlign: 'right' }}>Fare</Text>
+                                <Text style={{ fontSize: 12, fontWeight: '700' }}>Seat#:</Text>
                             </View>
                             {passengers.map((p) => (
                                 <View key={p.seatNumber} style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' }}>
-                                    <Text style={{ fontSize: 12, width: '40%' }}>{`${p.name?.split(',')[1]?.trim().charAt(0)}, ${p.name?.split(',')[0]}`}</Text>
+                                    <Text style={{ fontSize: 12, width: 100 }}>{`${p.name?.split(',')[1]?.trim().charAt(0)}, ${p.name?.split(',')[0]}`}</Text>
                                     <Text style={{ fontSize: 12, width: 50 }}>{p.passType?.charAt(0)}</Text>
-                                    <Text style={{ fontSize: 12, width: 50 }}>{`#${p.seatNumber}`}</Text>
-                                    <Text style={{ fontSize: 12 }}>₱350.00</Text>
+                                    <Text style={{ fontSize: 12 }}>{`#${p.seatNumber}`}</Text>
                                 </View>
                             ))}
                             {passengers.map((p) => p.hasInfant == true && (
                                 <>
                                 <Text style={{ fontSize: 14, fontWeight: '900', marginTop: 10 }}>Infant</Text>
                                 <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' }}>
-                                    <Text style={{ fontSize: 12, width: '35%', fontWeight: '700' }}>Name:</Text>
+                                    <Text style={{ fontSize: 12, width: 100, fontWeight: '700' }}>Name:</Text>
                                     <Text style={{ fontSize: 12, width: 50, fontWeight: '700' }}>Type:</Text>
                                     <Text style={{ fontSize: 12, fontWeight: '700' }}>Seat:</Text>
-                                    <Text style={{ fontSize: 12, fontWeight: '700', width: 60, textAlign: 'right' }}>Fare</Text>
                                 </View>
                                     {p.infant?.flatMap((i, index) => (
                                         <View key={`${p.seatNumber}-${index}`} style={{ marginBottom: 3 }}>
                                             <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' }}>
-                                                <Text style={{ fontSize: 12, width: '35%' }}>{`${i.name?.split(',')[1]?.trim().charAt(0)}, ${i.name?.split(',')[0]}`}</Text>
+                                                <Text style={{ fontSize: 12, width: 100 }}>{`${i.name?.split(',')[1]?.trim().charAt(0)}, ${i.name?.split(',')[0]}`}</Text>
                                                 <Text style={{ fontSize: 12, width: 50 }}>I</Text>
                                                 <Text style={{ fontSize: 12 }}>#{p.seatNumber}</Text>
-                                                <Text style={{ fontSize: 12, width: '20%', textAlign: 'right' }}>₱00.00</Text>
                                             </View>
                                         </View>
                                     ))}

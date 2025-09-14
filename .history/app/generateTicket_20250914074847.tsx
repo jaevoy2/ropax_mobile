@@ -47,12 +47,10 @@ export default function TicketGenerator() {
             const cacheUri: string = `${FileSystem.cacheDirectory}.ticket.png`;
             await FileSystem.copyAsync({ from: snapshotUri, to: cacheUri });
             
+            const asset = await MediaLibrary.createAssetAsync(cacheUri);
+            await MediaLibrary.createAlbumAsync('Tickets', asset, false);
 
-            // Share (first time shows chooser, then RawBT can be set as default)
-            await Sharing.shareAsync(cacheUri, {
-            dialogTitle: "Print with RawBT",
-            mimeType: "image/png",
-            });
+            await Sharing.shareAsync(cacheUri);
         } catch (error) {
             Alert.alert('Error', String(error))
         }
@@ -157,7 +155,7 @@ export default function TicketGenerator() {
                                                 <Text style={{ fontSize: 12, width: '35%' }}>{`${i.name?.split(',')[1]?.trim().charAt(0)}, ${i.name?.split(',')[0]}`}</Text>
                                                 <Text style={{ fontSize: 12, width: 50 }}>I</Text>
                                                 <Text style={{ fontSize: 12 }}>#{p.seatNumber}</Text>
-                                                <Text style={{ fontSize: 12, width: '20%', textAlign: 'right' }}>₱00.00</Text>
+                                                <Text style={{ fontSize: 12, width: 60, textAlign: 'right' }}>₱00.00</Text>
                                             </View>
                                         </View>
                                     ))}

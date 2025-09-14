@@ -47,6 +47,8 @@ export default function TicketGenerator() {
             const cacheUri: string = `${FileSystem.cacheDirectory}.ticket.png`;
             await FileSystem.copyAsync({ from: snapshotUri, to: cacheUri });
             
+            const asset = await MediaLibrary.createAssetAsync(cacheUri);
+            await MediaLibrary.createAlbumAsync("Tickets", asset, false);
 
             // Share (first time shows chooser, then RawBT can be set as default)
             await Sharing.shareAsync(cacheUri, {
@@ -115,7 +117,7 @@ export default function TicketGenerator() {
                             </View>
                             <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' }}>
                                 <Text style={{ fontSize: 12 }}>Cash:</Text>
-                                <Text style={{ fontSize: 12 }}>₱500.00</Text>
+                                <Text style={{ fontSize: 12 }}>₱50000</Text>
                             </View>
                             <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' }}>
                                 <Text style={{ fontSize: 12 }}>Change:</Text>
