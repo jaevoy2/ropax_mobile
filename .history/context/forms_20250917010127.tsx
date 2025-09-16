@@ -60,7 +60,7 @@ export default function Forms({ errorForm }: FormProps) {
             <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'flex-end' }}>
                 <View style={{ borderColor: '#cf2a3a', borderWidth: 1, borderRadius: 5, flexDirection: 'row', alignItems: 'center', paddingHorizontal: 15 }}>
                     <Text style={{ fontSize: 16 }}>₱</Text>
-                    <TextInput placeholder='00.00' keyboardType={'numeric'} />
+                    <TextInput placeholder='00.00' />
                 </View>
                 <View style={{ flexDirection: 'column', alignItems: 'flex-end' }}>
                     <Text style={{ fontSize: 11 }}>Reference#:</Text>

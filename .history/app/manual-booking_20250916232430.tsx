@@ -13,12 +13,10 @@ type TripProps = {
     vessel: string;
     route_origin: string;
     route_destination: string;
-    vessel_id: number;
-    route_id: number;
 }
 
 export default function ManualBooking() {
-    const { trip, setTrip, setID, setOrigin, setDestination, setRouteID, setVesselID } = useTrip();
+    const { trip, setTrip, setID } = useTrip();
     const { clearPassengers } = usePassengers();
     const [trips, setTrips] = useState<TripProps[] | null>(null);
     const [contentLoading, setContentLoading] = useState(true);
@@ -35,8 +33,6 @@ export default function ManualBooking() {
                         vessel: t.trip.vessel.name,
                         route_origin: t.trip.route.origin,
                         route_destination: t.trip.route.destination,
-                        vessel_id: t.trip.vessel_id,
-                        route_id: t.trip.route_id
                     }))
 
                     setTrips(tripsData);
@@ -50,7 +46,7 @@ export default function ManualBooking() {
         fetchTrips()
     }, [])
 
-    const handleSaveTrip = (selectedTrip: string, trip_id: number, origin: string, destination: string) => {
+    const handleSaveTrip = (selectedTrip: string, trip_id: number) => {
         setLoading(true);            
         setTimeout(() => {
             if(trip != selectedTrip) {
@@ -60,9 +56,6 @@ export default function ManualBooking() {
     
             setTrip(selectedTrip);
             setID(trip_id);
-            setOrigin(origin);
-            setDestination(destination);
-            setVesselID(trip_id)
             setLoading(false);
             router.push('/seatPlan');
         }, 200);
@@ -101,7 +94,7 @@ export default function ManualBooking() {
                     ) : (
                         <>
                         {trips?.map((trip) => (
-                            <TouchableOpacity onPress={() => handleSaveTrip(trip.vessel, trip.trip_id, trip.route_origin, trip.route_destination)} key={trip.trip_id} style={{ paddingHorizontal: 15, paddingVertical: 25, backgroundColor: '#fff', borderRadius: 10, marginTop: 12, flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' }}>
+                            <TouchableOpacity onPress={() => handleSaveTrip(trip.vessel, trip.trip_id)} key={trip.trip_id} style={{ paddingHorizontal: 15, paddingVertical: 25, backgroundColor: '#fff', borderRadius: 10, marginTop: 12, flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' }}>
                                 <Text style={{ fontWeight: 'bold', fontSize: 13 }}>{`${trip.route_origin}  >  ${trip.route_destination} [${trip.vessel}]`}</Text>
                                 <Ionicons name="chevron-forward" size={18} />
                             </TouchableOpacity>

@@ -6,13 +6,11 @@ type TripContextProps = {
     origin: string;
     destination: string;
     vessel_id: number;
-    route_id: number;
     setTrip: React.Dispatch<React.SetStateAction<string>>;
     setOrigin: React.Dispatch<React.SetStateAction<string>>;
     setDestination: React.Dispatch<React.SetStateAction<string>>;
-    setID: React.Dispatch<React.SetStateAction<number>>;
-    setVesselID: React.Dispatch<React.SetStateAction<number>>;
-    setRouteID: React.Dispatch<React.SetStateAction<number>>;
+    setID: React.Dispatch<React.SetStateAction<number>>
+    setVesselID: React.Dispatch<React.SetStateAction<number>>
 }
 
 const TripContext = createContext<TripContextProps | undefined>(undefined);
@@ -28,10 +26,9 @@ export const TripProvider = ({ children }: TripProviderProps) => {
     const [destination, setDestination] = useState<string>('');
     let [id, setID] = useState<number>(0);
     let [vessel_id, setVesselID] = useState<number>(0);
-    let [route_id, setRouteID] = useState<number>(0);
 
     return (
-        <TripContext.Provider value={{ id, trip, origin, destination, vessel_id, route_id, setTrip, setID, setOrigin, setDestination, setVesselID, setRouteID }}>
+        <TripContext.Provider value={{ id, trip, origin, destination, vessel_id, setTrip, setID, setOrigin, setDestination, setVesselID }}>
             {children}
         </TripContext.Provider>
     );

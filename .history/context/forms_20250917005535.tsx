@@ -58,10 +58,7 @@ export default function Forms({ errorForm }: FormProps) {
     return (
         <View>
             <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'flex-end' }}>
-                <View style={{ borderColor: '#cf2a3a', borderWidth: 1, borderRadius: 5, flexDirection: 'row', alignItems: 'center', paddingHorizontal: 15 }}>
-                    <Text style={{ fontSize: 16 }}>₱</Text>
-                    <TextInput placeholder='00.00' keyboardType={'numeric'} />
-                </View>
+                <TextInput placeholder='₱00.00' style={{ borderColor: '#cf2a3a', borderWidth: 1, borderRadius: 5, paddingHorizontal: 15 }} />
                 <View style={{ flexDirection: 'column', alignItems: 'flex-end' }}>
                     <Text style={{ fontSize: 11 }}>Reference#:</Text>
                     <Text style={{ fontWeight: '900', fontSize: 14, color: '#cf2a3a' }}>LMBS-000000-{year}{origin.charAt(0)}{destination.charAt(0)}</Text>
@@ -74,17 +71,14 @@ export default function Forms({ errorForm }: FormProps) {
                         <View key={p.seatNumber} style={{ borderColor: errorForm == p.seatNumber ? '#cf2a3a' : '#B3B3B3', borderWidth: 1, borderRadius: 8, paddingHorizontal: 5, paddingVertical: 10, marginBottom: 20, backgroundColor: '#fff' }}>
                             <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' }}>
                                 <View style={{ flexDirection: 'column', alignItems: 'flex-start' }}>
-                                    <Text style={{ color: '#cf2a3a', fontSize: 10, fontWeight: 'bold' }}>{p.accommodation} Seat#</Text>
+                                    <Text style={{ color: '#cf2a3a', fontSize: 10, fontWeight: 'bold' }}>{p.accommodation}</Text>
                                     <Text style={{ textAlign: 'center', fontWeight: 'bold', fontSize: 18, color: '#cf2a3a', borderColor: '#cf2a3a', backgroundColor: '#cf2a3b1a', borderWidth: 1, paddingVertical: 5, paddingHorizontal: 25, borderRadius: 5 }}>
                                         {p.seatNumber}
                                     </Text>
                                 </View>
                                 <View style={{ flexDirection: 'column', alignItems: 'flex-start' }}>
                                     <Text style={{ fontSize: 9, fontWeight: 'bold', color: '#545454' }}>Fare:</Text>
-                                    <View style={{ borderColor: '#FFC107', borderWidth: 1, borderRadius: 5, flexDirection: 'row', alignItems: 'center', paddingHorizontal: 15 }}>
-                                        <Text style={{ fontSize: 16 }}>₱</Text>
-                                        <TextInput keyboardType={'numeric'} placeholder='00.00' />
-                                    </View>
+                                    <TextInput placeholder='₱00.00' style={{ borderColor: '#FFC107', borderWidth: 1, borderRadius: 5, paddingHorizontal: 15 }} />
                                 </View>
                             </View>
                             <View style={{ flexDirection: 'column', alignItems: 'flex-start', marginTop: 10, gap: 5 }}>

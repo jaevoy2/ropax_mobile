@@ -15,7 +15,7 @@ const icon = require('@/assets/images/logo_icon.png');
 const text_logo = require('@/assets/images/logo.png');
 
 export default function SeatPlan() {
-    const { trip, destination, origin } = useTrip();
+    const { trip } = useTrip();
     const translateY = useRef(new Animated.Value(height)).current;
     const { passengers, setPassengers } = usePassengers();
     const [isExpanded, setIsExpanded] = useState(false);
@@ -141,7 +141,7 @@ export default function SeatPlan() {
             </TouchableOpacity>
 
                 <View style={{  position: 'absolute', zIndex: 3, paddingTop: 50, width: width, flex: 1 }}>
-                    <Text style={{ textAlign: 'center', color: '#fff', fontSize: 20, fontWeight: 'bold' }}>{trip}</Text>
+                    <Text style={{ textAlign: 'center', color: '#fff', fontSize: 20, fontWeight: 'bold' }}>{trip.match(/\[(.*?)\]/)?.[1]}</Text>
                     <Text style={{ textAlign: 'center', color: '#fff', fontSize: 10 }}>Vessel Seat Plan</Text>
                     <View style={{ height: contentHeight, paddingTop: 10, }}>
                         <ScrollView>
@@ -153,16 +153,16 @@ export default function SeatPlan() {
                                 <View style={{ width: '80%', backgroundColor: '#FAFAFA', marginTop: 20, borderRadius: 10, paddingVertical: 30, paddingHorizontal: 10, flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' }}>
                                     <View style={{ flexDirection: 'row', gap: 3, alignItems: 'center' }}>
                                         <Ionicons name={'boat'} size={16} color={'#fff'} style={{ padding: 3, backgroundColor: '#cf2a3a', borderRadius: 5 }} />
-                                        <Text style={{ fontSize: 12, fontWeight: 'bold' }}>{origin}</Text>
+                                        <Text style={{ fontSize: 12, fontWeight: 'bold' }}>{trip.split(" ")[0]}</Text>
                                     </View>
                                     <Ionicons name={'arrow-forward-circle'} color={'#cf2a3a'} size={25} />
                                     <View style={{ flexDirection: 'row', gap: 3, alignItems: 'center' }}>
                                         <Ionicons name={'location'} size={15} color={'#cf2a3a'} style={{ padding: 3, backgroundColor: '#fff', borderRadius: 5, borderColor: '#8B8BA0', borderWidth: 1 }} />
-                                        <Text style={{ fontSize: 12, fontWeight: 'bold' }}>{destination}</Text>
+                                        <Text style={{ fontSize: 12, fontWeight: 'bold' }}>{trip.split(" ")[4]}</Text>
                                     </View>
                                 </View>
                                 <View>
-                                    {trip == 'Sea Runner' ? (
+                                    {trip.match(/\[(.*?)\]/)?.[1] == 'Sea Runner' ? (
                                         <SRVessel onSeatSelect={handleSeatSelect} />
                                     ) : (
                                         <L2Vessel onSeatSelect={handleSeatSelect} />

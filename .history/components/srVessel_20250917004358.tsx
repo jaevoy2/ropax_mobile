@@ -53,14 +53,14 @@ const SeatPlan: React.FC<SeatProps> = ({ start, limit, skipPattern = false, onSe
 }
 
 type SRVesselProps = {
-  onSeatSelect?: (seat: number | string) => void;
+  onSeatSelect?: (seat: number | string, type: string) => void;
 };
 
 export default function SRVessel({ onSeatSelect }: SRVesselProps) {
     const { passengers, setPassengers } = usePassengers();
     const assignseat = (seat: number | string, type: string) => {
-        setPassengers(prev => [...prev, { seatNumber: seat, accommodation: type }]);
-        onSeatSelect?.(seat);
+        setPassengers(prev => [...prev, { seatNumber: seat }]);
+        onSeatSelect?.(seat, type);
     }
 
     return (

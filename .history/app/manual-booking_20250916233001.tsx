@@ -13,12 +13,10 @@ type TripProps = {
     vessel: string;
     route_origin: string;
     route_destination: string;
-    vessel_id: number;
-    route_id: number;
 }
 
 export default function ManualBooking() {
-    const { trip, setTrip, setID, setOrigin, setDestination, setRouteID, setVesselID } = useTrip();
+    const { trip, setTrip, setID, setOrigin, setDestination } = useTrip();
     const { clearPassengers } = usePassengers();
     const [trips, setTrips] = useState<TripProps[] | null>(null);
     const [contentLoading, setContentLoading] = useState(true);
@@ -35,8 +33,6 @@ export default function ManualBooking() {
                         vessel: t.trip.vessel.name,
                         route_origin: t.trip.route.origin,
                         route_destination: t.trip.route.destination,
-                        vessel_id: t.trip.vessel_id,
-                        route_id: t.trip.route_id
                     }))
 
                     setTrips(tripsData);
@@ -60,9 +56,8 @@ export default function ManualBooking() {
     
             setTrip(selectedTrip);
             setID(trip_id);
-            setOrigin(origin);
             setDestination(destination);
-            setVesselID(trip_id)
+            setOrigin(origin);
             setLoading(false);
             router.push('/seatPlan');
         }, 200);
