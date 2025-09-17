@@ -9,7 +9,7 @@ export async function FetchPassengerType() {
     const ORIGIN = extras.ORIGIN as string;
 
     try {
-        const res = await fetch(`${API_URL}passenger-type`, {
+        const res = await fetch(`${API_URL}accommodations`, {
             method: 'GET',
             headers: {
                 'Accept': 'application/json',

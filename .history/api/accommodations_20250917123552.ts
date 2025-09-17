@@ -2,14 +2,14 @@ import Constants from 'expo-constants';
 
 
 
-export async function FetchPassengerType() {
+export async function FetchAccommodations() {
     const extras = Constants.expoConfig?.extra ?? {};
     const API_KEY = extras.API_KEY as string;
     const API_URL = extras.API_URL as string;
     const ORIGIN = extras.ORIGIN as string;
 
     try {
-        const res = await fetch(`${API_URL}passenger-type`, {
+        const res = await fetch(`${API_URL}accommodations`, {
             method: 'GET',
             headers: {
                 'Accept': 'application/json',

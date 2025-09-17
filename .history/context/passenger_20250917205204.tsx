@@ -19,7 +19,6 @@ export type PassengerProps = {
     gender?: string;
     seatNumber?: number | string;
     trip?: string;
-    fare?: number;
     refNumber?: number;
     infant?: InfantProps[];
     hasInfant?: boolean;

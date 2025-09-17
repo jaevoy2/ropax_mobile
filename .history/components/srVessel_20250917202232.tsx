@@ -14,12 +14,11 @@ interface SeatProps {
     start: number; 
     limit: number;
     type: string;
-    accomm_id: number;
     skipPattern?: boolean;
-    onSeatSelect?: (seat: number, type: string, accomm_id: number) => void;
+    onSeatSelect?: (seat: number, type: string) => void;
 }
 
-const SeatPlan: React.FC<SeatProps> = ({ start, limit, skipPattern = false, onSeatSelect, type, accomm_id }) => {
+const SeatPlan: React.FC<SeatProps> = ({ start, limit, skipPattern = false, onSeatSelect, type }) => {
     const [items, setItems] = useState<number[]>([]);
     const { passengers } = usePassengers();
 
@@ -45,7 +44,7 @@ const SeatPlan: React.FC<SeatProps> = ({ start, limit, skipPattern = false, onSe
     return (
         <View style={{ flexDirection: 'row', flexWrap: 'wrap', gap: 2, justifyContent: 'center' }}>
             {items.map((seat) => (
-                <TouchableOpacity disabled={passengers.some((p) => p.seatNumber == Number(seat))} onPress={() => onSeatSelect?.(seat, type, accomm_id)} key={seat} style={{  paddingVertical: 2, width: 32, height: 32, borderColor: '#A9A9B2', borderWidth: 1, 
+                <TouchableOpacity disabled={passengers.some((p) => p.seatNumber == Number(seat))} onPress={() => onSeatSelect?.(seat, type)} key={seat} style={{  paddingVertical: 2, width: 32, height: 32, borderColor: '#A9A9B2', borderWidth: 1, 
                 borderRadius: 3, backgroundColor: passengers.some((p) => p.seatNumber == Number(seat)) ? '#BA68C8' : touristSeat.includes(seat) ? '#E6E2C6' : 'transparent', alignItems: 'center', justifyContent: 'center', margin: 2 }}>
                     <Text style={{ fontSize: 14, fontWeight: 'bold', color: passengers.some((p) => p.seatNumber == Number(seat)) ? '#fff' : '#000' }}>{seat}</Text>
                 </TouchableOpacity>
@@ -67,8 +66,8 @@ type AccomsProps = {
 export default function SRVessel({ onSeatSelect }: SRVesselProps) {
     const [accommodations, setAccommodatios] = useState<AccomsProps[] | null>(null);
     const { passengers, setPassengers } = usePassengers();
-    const assignseat = (seat: number | string, type: string, accomm_id: number) => {
-        setPassengers(prev => [...prev, { seatNumber: seat, accommodation: type, accommodationID: accomm_id }]);
+    const assignseat = (seat: number | string, type: string) => {
+        setPassengers(prev => [...prev, { seatNumber: seat, accommodation: type }]);
         onSeatSelect?.(seat);
     }
 
@@ -101,7 +100,7 @@ export default function SRVessel({ onSeatSelect }: SRVesselProps) {
                 <View style={{ flexDirection: 'row', flexWrap: 'wrap', width: 90, gap: 4, justifyContent: 'center' }}>
                     <Text style={{ fontWeight: 'bold', textAlign: 'center', fontSize: 12, marginBottom: 4 }}>Senior/PWD</Text>
                     {seatColumn1.map((seat) => ( 
-                        <TouchableOpacity disabled={passengers.some((p) => p.seatNumber == String(seat))} onPress={() => assignseat?.(seat, accommodations?.[0]?.name ?? '', accommodations?.[0]?.id ?? 0)} key={seat} style={{ paddingVertical: 3, width: '35%', borderColor: '#A9A9B2', borderWidth: 1, borderRadius: 3, 
+                        <TouchableOpacity disabled={passengers.some((p) => p.seatNumber == String(seat))} onPress={() => assignseat?.(seat, accommodations?.[0]?.name ?? '')} key={seat} style={{ paddingVertical: 3, width: '35%', borderColor: '#A9A9B2', borderWidth: 1, borderRadius: 3, 
                         backgroundColor: passengers.some((p) => p.seatNumber == String(seat)) ? '#BA68C8' : seat == 'A' || seat == 'B' ? '#E6E2C6' : 'transparent' }}> 
                             <Text style={{ textAlign: 'center', fontWeight: 'bold', color: passengers.some((p) => p.seatNumber == String(seat)) ? '#fff' : '#000' }}>{seat}</Text> 
                         </TouchableOpacity>
@@ -110,7 +109,7 @@ export default function SRVessel({ onSeatSelect }: SRVesselProps) {
                 <View style={{ flexDirection: 'row', flexWrap: 'wrap', width: 90, gap: 4, justifyContent: 'center' }}>
                     <Text style={{ fontWeight: 'bold', textAlign: 'center', fontSize: 12, marginBottom: 4 }}>Senior/PWD</Text>
                     {seatColumn2.map((seat) => ( 
-                        <TouchableOpacity disabled={passengers.some((p) => p.seatNumber == String(seat))} onPress={() => assignseat?.(seat, accommodations?.[0]?.name ?? '', accommodations?.[0]?.id ?? 0)} key={seat} style={{ paddingVertical: 3, width: '35%', borderColor: '#A9A9B2', borderWidth: 1, borderRadius: 3, 
+                        <TouchableOpacity disabled={passengers.some((p) => p.seatNumber == String(seat))} onPress={() => assignseat?.(seat, accommodations?.[0]?.name ?? '')} key={seat} style={{ paddingVertical: 3, width: '35%', borderColor: '#A9A9B2', borderWidth: 1, borderRadius: 3, 
                         backgroundColor: passengers.some((p) => p.seatNumber == String(seat)) ? '#BA68C8' : '#E6E2C6' }}> 
                             <Text style={{ textAlign: 'center', fontWeight: 'bold', color: passengers.some((p) => p.seatNumber == String(seat)) ? '#fff' : '#000' }}>{seat}</Text> 
                         </TouchableOpacity>
@@ -119,7 +118,7 @@ export default function SRVessel({ onSeatSelect }: SRVesselProps) {
                 <View style={{ flexDirection: 'row', flexWrap: 'wrap', width: 90, gap: 4, justifyContent: 'center' }}>
                     <Text style={{ fontWeight: 'bold', textAlign: 'center', fontSize: 12, marginBottom: 4 }}>Senior/PWD</Text>
                     {seatColumn3.map((seat) => ( 
-                        <TouchableOpacity disabled={passengers.some((p) => p.seatNumber == String(seat))} onPress={() => assignseat?.(seat, accommodations?.[0]?.name ?? '', accommodations?.[0]?.id ?? 0)} key={seat} style={{ paddingVertical: 3, width: '35%', borderColor: '#A9A9B2', borderWidth: 1, borderRadius: 3, 
+                        <TouchableOpacity disabled={passengers.some((p) => p.seatNumber == String(seat))} onPress={() => assignseat?.(seat, accommodations?.[0]?.name ?? '')} key={seat} style={{ paddingVertical: 3, width: '35%', borderColor: '#A9A9B2', borderWidth: 1, borderRadius: 3, 
                         backgroundColor: passengers.some((p) => p.seatNumber == String(seat)) ? '#BA68C8' : seat == 'C' || seat == 'D' ? '#E6E2C6' : 'transparent' }}> 
                             <Text style={{ textAlign: 'center', fontWeight: 'bold', color: passengers.some((p) => p.seatNumber == String(seat)) ? '#fff' : '#000' }}>{seat}</Text> 
                         </TouchableOpacity>
@@ -132,26 +131,26 @@ export default function SRVessel({ onSeatSelect }: SRVesselProps) {
                 <View style={{ marginTop: 10, flexDirection: 'row', justifyContent: 'space-between', width: '100%'}}>
                     <View style={{ flexDirection: 'column', width: '46%', alignItems: 'center',  }}>
                         <Text style={{ fontWeight: 'bold', textAlign: 'center', fontSize: 12, marginBottom: 4 }}>Senior/PWD</Text>
-                        <SeatPlan start={1} limit={52} skipPattern={true} onSeatSelect={assignseat} type={accommodations?.[1]?.name ?? ''} accomm_id={accommodations?.[1]?.id ?? 0} />
+                        <SeatPlan start={1} limit={52} skipPattern={true} onSeatSelect={assignseat} type='Tourist' />
                     </View>
                     <View style={{  width: '46%', alignItems: 'center', }}>
                         <Text style={{ fontWeight: 'bold', fontSize: 12, marginBottom: 4 }}>Senior/PWD</Text>
-                        <SeatPlan start={5} limit={56} skipPattern={true} onSeatSelect={assignseat} type={accommodations?.[1]?.name ?? ''} accomm_id={accommodations?.[1]?.id ?? 0} />
+                        <SeatPlan start={5} limit={56} skipPattern={true} onSeatSelect={assignseat} type={accommodations?.[1]?.name ?? ''} />
                     </View>
                 </View>
                 <View style={{ marginTop: 10, flexDirection: 'row', gap: 10, justifyContent: 'space-between', width: '100%' }}>
                     <View style={{ width: '46%' }}>
                         <Text style={{ fontWeight: 'bold', textAlign: 'center', fontSize: 12, marginBottom: 4 }}>Senior/PWD</Text>
-                        <SeatPlan start={57} limit={108} skipPattern={true} onSeatSelect={assignseat} type={accommodations?.[1]?.name ?? ''} accomm_id={accommodations?.[1]?.id ?? 0} />
+                        <SeatPlan start={57} limit={108} skipPattern={true} onSeatSelect={assignseat} type={accommodations?.[1]?.name ?? ''} />
                     </View>
                     <View style={{ width: '46%' }}>
                         <Text style={{ fontWeight: 'bold', textAlign: 'center', fontSize: 12, marginBottom: 4 }}>Senior/PWD</Text>
-                        <SeatPlan start={61} limit={112} skipPattern={true} onSeatSelect={assignseat} type={accommodations?.[1]?.name ?? ''} accomm_id={accommodations?.[1]?.id ?? 0} />
+                        <SeatPlan start={61} limit={112} skipPattern={true} onSeatSelect={assignseat} type={accommodations?.[1]?.name ?? ''} />
                     </View>
                 </View>
                 <View style={{ marginTop: 10, flexDirection: 'row', gap: 10, justifyContent: 'center',}}>
                     <View style={{ width: '60%' }}>
-                        <SeatPlan start={113} limit={134} type={accommodations?.[1]?.name ?? ''} onSeatSelect={assignseat} accomm_id={accommodations?.[1]?.id ?? 0} />
+                        <SeatPlan start={113} limit={134} type={accommodations?.[1]?.name ?? ''} onSeatSelect={assignseat} />
                     </View>
                 </View>
             </View>

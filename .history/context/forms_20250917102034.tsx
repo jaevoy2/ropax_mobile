@@ -1,9 +1,7 @@
-import { FetchFares } from '@/api/fares';
-import { FetchPassengerType } from '@/api/passengerType';
 import { useTrip } from '@/context/trip';
 import { Ionicons } from '@expo/vector-icons';
 import React, { useEffect, useState } from 'react';
-import { Alert, ScrollView, Text, TextInput, TouchableOpacity, View } from 'react-native';
+import { ScrollView, Text, TextInput, TouchableOpacity, View } from 'react-native';
 import { Checkbox } from 'react-native-paper';
 import { InfantProps, usePassengers } from './passenger';
 
@@ -14,58 +12,15 @@ type FormProps = {
     errorForm: string | number;
 }
 
-type PassTypeProps = {
-    id: number;
-    name: string;
-    code: string;
-}
-
 export default function Forms({ errorForm }: FormProps) {
-    const { id, destination, origin } = useTrip();
+    const { destination, origin } = useTrip();
     const { passengers, setPassengers, updatePassenger, updateInfant } = usePassengers();
     const [year, setYear] = useState('');
-    const [typeLoading, setTypeLoading] = useState(true);
-    const [passengerType, setPassengerType] = useState<PassTypeProps[] | null>(null);
 
     useEffect(() => {
         const date = new Date();
         setYear(date.getFullYear().toString().slice(-2));
-
-        const passengerType = async () => {
-            try {
-                const passTypes = await FetchPassengerType();
-
-                if(!passTypes.error) {
-                    const types: PassTypeProps[] = passTypes.data.map((type: any) => ({
-                        id: type.id,
-                        name: type.name,
-                        code: type.passenger_types_code
-                    }));
-
-                    setPassengerType(types);
-                }
-            }catch(error: any) {
-                Alert.alert('Error', error.message);
-            }finally{
-                setTypeLoading(false);
-            }
-        }
-
-        passengerType();
     }, []);
-
-    const getPassengerFare = async (passType_id: number, accomm_id: number, vesselID: number, seatNum: string | number) => {
-        try{
-            const passFare = await FetchFares(passType_id, accomm_id, vesselID);
-
-            if(!passFare.error) {
-                const fare = passFare.data.fare;
-                updatePassenger(seatNum, 'fare', fare);
-            }
-        }catch(error: any) {
-            Alert.alert('Error', error.message);
-        }
-    }
 
     const hasInfantChecker = (seat: number | string, hasInfantValue: boolean) => {
         const currentValue = !hasInfantValue;
@@ -104,9 +59,9 @@ export default function Forms({ errorForm }: FormProps) {
     return (
         <View>
             <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'flex-end' }}>
-                <View style={{ borderColor: '#cf2a3a', backgroundColor: '#cf2a3b1a', borderWidth: 2, borderRadius: 5, flexDirection: 'row', alignItems: 'center', paddingHorizontal: 15 }}>
+                <View style={{ borderColor: '#cf2a3a', borderWidth: 1, borderRadius: 5, flexDirection: 'row', alignItems: 'center', paddingHorizontal: 15 }}>
                     <Text style={{ fontSize: 16 }}>₱</Text>
-                    <TextInput placeholder='00.00' style={{ fontWeight: 'bold' }} keyboardType={'numeric'} />
+                    <TextInput placeholder='00.00' keyboardType={'numeric'} />
                 </View>
                 <View style={{ flexDirection: 'column', alignItems: 'flex-end' }}>
                     <Text style={{ fontSize: 11 }}>Reference#:</Text>
@@ -127,30 +82,20 @@ export default function Forms({ errorForm }: FormProps) {
                                 </View>
                                 <View style={{ flexDirection: 'column', alignItems: 'flex-start' }}>
                                     <Text style={{ fontSize: 9, fontWeight: 'bold', color: '#545454' }}>Fare:</Text>
-                                    <View style={{ borderColor: '#FFC107', backgroundColor: '#ffc10727', borderWidth: 2, borderRadius: 5, flexDirection: 'row', alignItems: 'center', paddingHorizontal: 15 }}>
+                                    <View style={{ borderColor: '#FFC107', borderWidth: 1, borderRadius: 5, flexDirection: 'row', alignItems: 'center', paddingHorizontal: 15 }}>
                                         <Text style={{ fontSize: 16 }}>₱</Text>
-                                        <TextInput value={String(p.fare ?? '')} keyboardType={'numeric'} placeholder='00.00' style={{ fontWeight: 'bold' }} />
+                                        <TextInput keyboardType={'numeric'} placeholder='00.00' />
                                     </View>
                                 </View>
                             </View>
                             <View style={{ flexDirection: 'column', alignItems: 'flex-start', marginTop: 10, gap: 5 }}>
                                 <Text style={{ fontSize: 9, fontWeight: 'bold', color: '#545454' }}>Type:</Text>
                                 <View style={{ flexDirection: 'row', flexWrap: 'wrap', gap: 5 }}>
-                                    {typeLoading == true ? (
-                                        <>
-                                            <Text style={{ fontSize: 11, fontWeight: 'bold', color: '#545454' }}>Fetching Passenger Types...</Text>
-                                        </>
-                                    ) : (
-                                        <>
-                                            {passengerType?.filter((t) => t.name != 'Infant')
-                                                .map((type) => (
-                                                <TouchableOpacity onPress={() => {updatePassenger(p.seatNumber!, 'passType', type.name), getPassengerFare(type.id, p.accommodationID!, id, p.seatNumber!)}} key={type.id} style={{ backgroundColor: p.passType == type.name ? '#cf2a3a' : 'transparent', borderColor: '#cf2a3a', borderWidth: 1, paddingVertical: 4, paddingHorizontal: 18, borderRadius: 5  }}>
-                                                    <Text style={{ textAlign: 'center', fontSize: 12, color: p.passType == type.name ? '#fff' : '#cf2a3a' }}>{type.name}</Text>
-                                                </TouchableOpacity>
-                                            ))}
-                                        </>
-                                    )}
-
+                                    {passengerType.map((type) => (
+                                        <TouchableOpacity onPress={() => updatePassenger(p.seatNumber!, 'passType', type)} key={type} style={{ backgroundColor: p.passType == type ? '#cf2a3a' : 'transparent', borderColor: '#cf2a3a', borderWidth: 1, paddingVertical: 4, paddingHorizontal: 18, borderRadius: 5  }}>
+                                            <Text style={{ textAlign: 'center', fontSize: 12, color: p.passType == type ? '#fff' : '#cf2a3a' }}>{type}</Text>
+                                        </TouchableOpacity>
+                                    ))}
                                 </View>
                             </View>
                             <View style={{ marginTop: 10 }}>

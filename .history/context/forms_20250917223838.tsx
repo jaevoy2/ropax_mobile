@@ -104,9 +104,9 @@ export default function Forms({ errorForm }: FormProps) {
     return (
         <View>
             <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'flex-end' }}>
-                <View style={{ borderColor: '#cf2a3a', backgroundColor: '#cf2a3b1a', borderWidth: 2, borderRadius: 5, flexDirection: 'row', alignItems: 'center', paddingHorizontal: 15 }}>
+                <View style={{ borderColor: '#cf2a3a', borderWidth: 2, borderRadius: 5, flexDirection: 'row', alignItems: 'center', paddingHorizontal: 15 }}>
                     <Text style={{ fontSize: 16 }}>₱</Text>
-                    <TextInput placeholder='00.00' style={{ fontWeight: 'bold' }} keyboardType={'numeric'} />
+                    <TextInput placeholder='00.00' keyboardType={'numeric'} />
                 </View>
                 <View style={{ flexDirection: 'column', alignItems: 'flex-end' }}>
                     <Text style={{ fontSize: 11 }}>Reference#:</Text>
@@ -127,9 +127,9 @@ export default function Forms({ errorForm }: FormProps) {
                                 </View>
                                 <View style={{ flexDirection: 'column', alignItems: 'flex-start' }}>
                                     <Text style={{ fontSize: 9, fontWeight: 'bold', color: '#545454' }}>Fare:</Text>
-                                    <View style={{ borderColor: '#FFC107', backgroundColor: '#ffc10727', borderWidth: 2, borderRadius: 5, flexDirection: 'row', alignItems: 'center', paddingHorizontal: 15 }}>
+                                    <View style={{ borderColor: '#FFC107', borderWidth: 2, borderRadius: 5, flexDirection: 'row', alignItems: 'center', paddingHorizontal: 15 }}>
                                         <Text style={{ fontSize: 16 }}>₱</Text>
-                                        <TextInput value={String(p.fare ?? '')} keyboardType={'numeric'} placeholder='00.00' style={{ fontWeight: 'bold' }} />
+                                        <TextInput value={String(p.fare ?? '')} keyboardType={'numeric'} placeholder='00.00' />
                                     </View>
                                 </View>
                             </View>
