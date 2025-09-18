@@ -155,8 +155,6 @@ export default function SeatPlan() {
                         `Passenger in seat ${child.seatNumber} is marked as "Child" but age is ${child.age}.`
                     );
                 });
-                setSaveLoading(false);
-                return;
             }
             
             const adultAgeError = passengers.filter((p) => p.passType == 'Adult' && (p.age! < 19 || p.age! > 59));
@@ -168,11 +166,9 @@ export default function SeatPlan() {
                         `Passenger in seat ${adult.seatNumber} is marked as "Adult" but age is ${adult.age}.`
                     );
                 });
-                setSaveLoading(false);
-                return;
             }
 
-            const seniorAgeError = passengers.filter((p) => p.passType == 'Senior' && p.age! < 60);
+            const seniorAgeError = passengers.filter((p) => p.passType == 'Adult' && (p.age! < 60));
             if(seniorAgeError.length > 0) {
                 setErrorForm(prev => [...prev, ...seniorAgeError.map(p => p.seatNumber ?? '')]);
                 seniorAgeError.forEach((senior: any) => {
@@ -181,8 +177,6 @@ export default function SeatPlan() {
                         `Passenger in seat ${senior.seatNumber} is marked as "Senior" but age is ${senior.age}.`
                     );
                 });
-                setSaveLoading(false);
-                return;
             }
             
             router.push('/summary');

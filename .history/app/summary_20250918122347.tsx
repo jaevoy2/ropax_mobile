@@ -29,9 +29,9 @@ export default function TicketGenerator() {
                 return;
             }
             setCashTendered(cashTendered)
-            setLoading(false);
-            router.push('/generateTicket');
+            
         }, 300);
+        router.push('/generateTicket');
     }
 
     return (

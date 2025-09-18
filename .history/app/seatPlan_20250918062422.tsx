@@ -172,7 +172,7 @@ export default function SeatPlan() {
                 return;
             }
 
-            const seniorAgeError = passengers.filter((p) => p.passType == 'Senior' && p.age! < 60);
+            const seniorAgeError = passengers.filter((p) => p.passType == 'Adult' && (p.age! < 60));
             if(seniorAgeError.length > 0) {
                 setErrorForm(prev => [...prev, ...seniorAgeError.map(p => p.seatNumber ?? '')]);
                 seniorAgeError.forEach((senior: any) => {

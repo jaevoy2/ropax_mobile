@@ -11,7 +11,7 @@ const passengerType = ['Adult', 'Senior', 'Student', 'PWD', 'Child', 'Passes'];
 const passGender = ['Male', 'Female'];
 
 type FormProps = {
-    errorForm: (string | number)[];
+    errorForm: string | number;
 }
 
 type PassTypeProps = {
@@ -104,23 +104,23 @@ export default function Forms({ errorForm }: FormProps) {
     return (
         <View>
             <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'flex-end' }}>
-                <View style={{ flexDirection: 'column', alignItems: 'flex-start' }}>
-                    <Text style={{ fontSize: 11 }}>Reference#:</Text>
-                    <Text style={{ fontWeight: '900', fontSize: 14, color: '#cf2a3a' }}>LMBS-000000-{year}{origin.charAt(0)}{destination.charAt(0)}</Text>
-                </View>
-                <View style={{ flexDirection: 'column', alignItems: 'flex-end' }}>
+                <View>
                     <Text style={{ fontSize: 9, fontWeight: '900', color: '#cf2a3a' }}>Total Fare:</Text>
                     <View style={{ borderColor: '#cf2a3a', backgroundColor: '#cf2a3b1a', borderWidth: 2, borderRadius: 5, flexDirection: 'row', alignItems: 'center', paddingHorizontal: 15 }}>
                         <Text style={{ fontSize: 16 }}>₱</Text>
                         <TextInput value={String(totalFare != 0 ? totalFare.toString() : '')} onChangeText={(text) => setTotalFare(Number(text))} placeholder='00.00' style={{ fontWeight: 'bold' }} keyboardType={'numeric'} />
                     </View>
                 </View>
+                <View style={{ flexDirection: 'column', alignItems: 'flex-end' }}>
+                    <Text style={{ fontSize: 11 }}>Reference#:</Text>
+                    <Text style={{ fontWeight: '900', fontSize: 14, color: '#cf2a3a' }}>LMBS-000000-{year}{origin.charAt(0)}{destination.charAt(0)}</Text>
+                </View>
             </View>
 
             <View style={{ height: '82%', marginTop: 10 }}>
                 <ScrollView>
                     {passengers.map((p) => (
-                        <View key={p.seatNumber} style={{ borderColor: errorForm.includes(p.seatNumber ?? '') ? '#cf2a3a' : '#B3B3B3', borderWidth: 1, borderRadius: 8, paddingHorizontal: 5, paddingVertical: 10, marginBottom: 20, backgroundColor: '#fff' }}>
+                        <View key={p.seatNumber} style={{ borderColor: errorForm == p.seatNumber ? '#cf2a3a' : '#B3B3B3', borderWidth: 1, borderRadius: 8, paddingHorizontal: 5, paddingVertical: 10, marginBottom: 20, backgroundColor: '#fff' }}>
                             <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' }}>
                                 <View style={{ flexDirection: 'column', alignItems: 'flex-start' }}>
                                     <Text style={{ color: '#cf2a3a', fontSize: 10, fontWeight: 'bold' }}>{p.accommodation} Seat#</Text>
@@ -147,7 +147,7 @@ export default function Forms({ errorForm }: FormProps) {
                                         <>
                                             {passengerType?.filter((t) => t.name != 'Infant')
                                                 .map((type) => (
-                                                <TouchableOpacity onPress={() => {updatePassenger(p.seatNumber!, 'passType', type.name), getPassengerFare(type.id, p.accommodationID!, id, p.seatNumber!), updatePassenger(p.seatNumber!, 'passTypeCode', type.code)}} key={type.id} style={{ backgroundColor: p.passType == type.name ? '#cf2a3a' : 'transparent', borderColor: '#cf2a3a', borderWidth: 1, paddingVertical: 4, paddingHorizontal: 18, borderRadius: 5  }}>
+                                                <TouchableOpacity onPress={() => {updatePassenger(p.seatNumber!, 'passType', type.name), getPassengerFare(type.id, p.accommodationID!, id, p.seatNumber!)}} key={type.id} style={{ backgroundColor: p.passType == type.name ? '#cf2a3a' : 'transparent', borderColor: '#cf2a3a', borderWidth: 1, paddingVertical: 4, paddingHorizontal: 18, borderRadius: 5  }}>
                                                     <Text style={{ textAlign: 'center', fontSize: 12, color: p.passType == type.name ? '#fff' : '#cf2a3a' }}>{type.name}</Text>
                                                 </TouchableOpacity>
                                             ))}

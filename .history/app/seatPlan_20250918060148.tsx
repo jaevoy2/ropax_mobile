@@ -112,16 +112,16 @@ export default function SeatPlan() {
                 !p.name?.trim() || !p.passType?.trim() || !p.age || !p.gender?.trim() 
             )
             if (hasEmpty) {
-                setErrorForm([hasEmpty.seatNumber ?? '']);
-                Alert.alert('Invalid', `Seat number ${hasEmpty.seatNumber} still has some required fields missing.`);
+                setErrorForm([hasEmpty.seatNumber!]);
+                Alert.alert('Invalid', `Invalid name format for seat number ${hasEmpty.seatNumber}`);
                 setSaveLoading(false);
                 return;
             }
 
             const invalidNameFormat = passengers.find((p) => !p.name?.includes(',') )
             if (invalidNameFormat) {
-                setErrorForm([invalidNameFormat.seatNumber ?? '']);
-                Alert.alert('Invalid', `Invalid name format for seat number ${invalidNameFormat.seatNumber}`);
+                setErrorForm([invalidNameFormat.seatNumber!]);
+                Alert.alert('Invalid', `Seat number ${invalidNameFormat.seatNumber} still has some required fields missing.`);
                 setSaveLoading(false);
                 return;
             }
@@ -130,7 +130,7 @@ export default function SeatPlan() {
                 p.infant?.find((i) => !i.name.trim() || !i.gender.trim() || !i.age)
             )
             if (infantFieldError) {
-                setErrorForm(prev => [...prev, infantFieldError!.seatNumber ?? '']);
+                setErrorForm(prev => [...prev, hasEmpty!.seatNumber!]);
                 Alert.alert('Invalid', `Seat number ${infantFieldError.seatNumber} has missing infant details.`);
                 setSaveLoading(false);
                 return;
@@ -140,49 +140,43 @@ export default function SeatPlan() {
                 p.infant?.find((i) => i.age > 2)
             )
             if (infantAgeError) {
-                setErrorForm(prev => [...prev, infantAgeError!.seatNumber ?? '']);
+                setErrorForm(prev => [...prev, hasEmpty!.seatNumber!]);
                 Alert.alert('Check Infant Age', `Please provide a valid age for the infant in seat ${infantAgeError.seatNumber}.`);
                 setSaveLoading(false);
                 return;
             }
 
-            const childAgeError = passengers.filter((p) => p.passType == 'Child' && (p.age! > 18 || p.age! < 3));
-            if(childAgeError.length > 0) {
-                setErrorForm(prev => [...prev, ...childAgeError.map(p => p.seatNumber ?? '')]);
+            const childAgeError = passengers.filter((p) => p.passType == 'Child' && p.age! > 18 || p.age! < 3 );
+            if(childAgeError) {
+                setErrorForm(prev => [...prev, hasEmpty!.seatNumber!]);
                 childAgeError.forEach((child: any) => {
                     Alert.alert(
                         "Invalid Age",
                         `Passenger in seat ${child.seatNumber} is marked as "Child" but age is ${child.age}.`
                     );
                 });
-                setSaveLoading(false);
-                return;
             }
             
-            const adultAgeError = passengers.filter((p) => p.passType == 'Adult' && (p.age! < 19 || p.age! > 59));
-            if(adultAgeError.length > 0) {
-                setErrorForm(prev => [...prev, ...adultAgeError.map(p => p.seatNumber ?? '')]);
+            const adultAgeError = passengers.filter((p) => p.passType == 'Adult' && p.age! < 19 || p.age! > 59 );
+            if(adultAgeError) {
+                setErrorForm(prev => [...prev, hasEmpty!.seatNumber!]);
                 adultAgeError.forEach((adult: any) => {
                     Alert.alert(
                         "Invalid Age",
                         `Passenger in seat ${adult.seatNumber} is marked as "Adult" but age is ${adult.age}.`
                     );
                 });
-                setSaveLoading(false);
-                return;
             }
 
-            const seniorAgeError = passengers.filter((p) => p.passType == 'Senior' && p.age! < 60);
-            if(seniorAgeError.length > 0) {
-                setErrorForm(prev => [...prev, ...seniorAgeError.map(p => p.seatNumber ?? '')]);
+            const seniorAgeError = passengers.filter((p) => p.passType == 'Adult' && p.age! < 60 );
+            if(seniorAgeError) {
+                setErrorForm(prev => [...prev, hasEmpty!.seatNumber!]);
                 seniorAgeError.forEach((senior: any) => {
                     Alert.alert(
                         "Invalid Age",
                         `Passenger in seat ${senior.seatNumber} is marked as "Senior" but age is ${senior.age}.`
                     );
                 });
-                setSaveLoading(false);
-                return;
             }
             
             router.push('/summary');

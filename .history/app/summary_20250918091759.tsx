@@ -3,15 +3,15 @@ import { useTrip } from '@/context/trip';
 import { Ionicons } from '@expo/vector-icons';
 import { router } from 'expo-router';
 import React, { useEffect, useState } from 'react';
-import { ActivityIndicator, Alert, Dimensions, Text, TextInput, TouchableOpacity, View } from 'react-native';
+import { Alert, Dimensions, Text, TextInput, TouchableOpacity, View } from 'react-native';
 
 const { height } = Dimensions.get('screen');
 
 export default function TicketGenerator() {
     const { passengers } = usePassengers();
-    const { totalFare, fareChange, setFareChange, setCashTendered } = useTrip();
+    const { totalFare, fareChange, setFareChange } = useTrip();
     const [loading, setLoading] = useState(false);
-    const [cashTendered, setPassCashTendered] = useState(0);
+    const [cashTendered, setCashTendered] = useState(0);
 
     useEffect(() => {
         if(cashTendered != 0) {
@@ -28,10 +28,9 @@ export default function TicketGenerator() {
                 Alert.alert('Invalid', 'Passenger payment is missing.');
                 return;
             }
-            setCashTendered(cashTendered)
-            setLoading(false);
+
             router.push('/generateTicket');
-        }, 300);
+        })
     }
 
     return (
@@ -74,7 +73,7 @@ export default function TicketGenerator() {
                             <Text style={{ fontSize: 12, fontWeight: 'bold', color: '#545454' }}>Cash Tendered:</Text>
                             <View style={{ borderBottomColor: '#FFC107', borderBottomWidth: 1, marginTop: -10, flexDirection: 'row', alignItems: 'center' }}>
                                 <Text style={{ fontWeight: 'bold', fontSize: 16, marginTop: 8 }}>₱ </Text>
-                                <TextInput onChangeText={(text) => setPassCashTendered(Number(text))} keyboardType={'numeric'} placeholder='00.00' style={{ fontWeight: 'bold', fontSize: 16, paddingBottom: -2, paddingLeft: -10, width: 150, }} />
+                                <TextInput onChangeText={(text) => setCashTendered(Number(text))} keyboardType={'numeric'} placeholder='00.00' style={{ fontWeight: 'bold', fontSize: 16, paddingBottom: -2, paddingLeft: -10, width: 150, }} />
                             </View>
                         </View>
                     </View>
@@ -89,11 +88,7 @@ export default function TicketGenerator() {
             </View>
 
             <TouchableOpacity onPress={() => handleConfirmation()} style={{ position: 'absolute', bottom: 10, backgroundColor: '#cf2a3a', width: '95%', alignSelf: 'center', borderRadius: 30, paddingVertical: 15, zIndex: 5 }}>
-                {loading == true ? (
-                    <ActivityIndicator size={'small'} color={'#fff'} style={{ alignSelf: 'center' }} />
-                ) : (
-                    <Text style={{ fontSize: 16, fontWeight: 'bold', textAlign: 'center', color: '#fff' }}>Confirm</Text>
-                )}
+                <Text style={{ fontSize: 16, fontWeight: 'bold', textAlign: 'center', color: '#fff' }}>Confirm</Text>
             </TouchableOpacity>
         </View>
     )

@@ -103,15 +103,15 @@ export default function TicketGenerator() {
                             </View>
                             <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' }}>
                                 <Text style={{ fontSize: 14, fontWeight: '900' }}>Total:</Text>
-                                <Text style={{ fontSize: 14, fontWeight: '900', color: '#cf2a3a' }}>₱ {totalFare}</Text>
+                                <Text style={{ fontSize: 14, fontWeight: '900', color: '#cf2a3a' }}>{totalFare}</Text>
                             </View>
                             <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' }}>
                                 <Text style={{ fontSize: 12 }}>Cash Tendered:</Text>
-                                <Text style={{ fontSize: 12 }}>₱ {cashTendered}</Text>
+                                <Text style={{ fontSize: 12 }}>{cashTendered}</Text>
                             </View>
                             <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' }}>
                                 <Text style={{ fontSize: 12 }}>Change:</Text>
-                                <Text style={{ fontSize: 12 }}>₱ {fareChange}</Text>
+                                <Text style={{ fontSize: 12 }}>{fareChange}</Text>
                             </View>
                         </View>
                         <View style={{ flexDirection: 'column', alignItems: 'center', justifyContent: 'center', paddingVertical: 10, borderBottomWidth: 1, borderBlockColor: '#9B9B9B' }}>
@@ -129,9 +129,9 @@ export default function TicketGenerator() {
                             {passengers.map((p) => (
                                 <View key={p.seatNumber} style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' }}>
                                     <Text style={{ fontSize: 12, width: '40%' }}>{`${p.name?.split(',')[1]?.trim().charAt(0)}, ${p.name?.split(',')[0]}`}</Text>
-                                    <Text style={{ fontSize: 12, width: 50 }}>{p.passTypeCode}</Text>
+                                    <Text style={{ fontSize: 12, width: 50 }}>{p.passType?.charAt(0)}</Text>
                                     <Text style={{ fontSize: 12, width: 50 }}>{`#${p.seatNumber}`}</Text>
-                                    <Text style={{ fontSize: 12, width: 50, textAlign: 'right' }}>₱ {p.fare}</Text>
+                                    <Text style={{ fontSize: 12, width: 50, textAlign: 'right' }}>₱350.00</Text>
                                 </View>
                             ))}
                             {passengers.map((p) => 

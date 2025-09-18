@@ -2,37 +2,14 @@ import { usePassengers } from '@/context/passenger';
 import { useTrip } from '@/context/trip';
 import { Ionicons } from '@expo/vector-icons';
 import { router } from 'expo-router';
-import React, { useEffect, useState } from 'react';
-import { ActivityIndicator, Alert, Dimensions, Text, TextInput, TouchableOpacity, View } from 'react-native';
+import React from 'react';
+import { Dimensions, Text, TextInput, TouchableOpacity, View } from 'react-native';
 
 const { height } = Dimensions.get('screen');
 
 export default function TicketGenerator() {
     const { passengers } = usePassengers();
-    const { totalFare, fareChange, setFareChange, setCashTendered } = useTrip();
-    const [loading, setLoading] = useState(false);
-    const [cashTendered, setPassCashTendered] = useState(0);
-
-    useEffect(() => {
-        if(cashTendered != 0) {
-            const change = cashTendered - totalFare;
-            setFareChange(change);
-        }
-    }, [cashTendered]);
-
-    const handleConfirmation = () => {
-        setLoading(true);
-
-        setTimeout(() => {
-            if(cashTendered == 0) {
-                Alert.alert('Invalid', 'Passenger payment is missing.');
-                return;
-            }
-            setCashTendered(cashTendered)
-            setLoading(false);
-            router.push('/generateTicket');
-        }, 300);
-    }
+    const { totalFare } = useTrip();
 
     return (
         <View style={{ backgroundColor: '#f1f1f1', position: 'relative', height: height }}>
@@ -51,15 +28,15 @@ export default function TicketGenerator() {
                 {passengers.map((p) => (
                     <View key={p.seatNumber} style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' }}>
                         <Text style={{ fontSize: 14, width: '40%' }}>{`${p.name?.split(',')[1]?.trim().charAt(0)}, ${p.name?.split(',')[0]}`}</Text>
-                        <Text style={{ fontSize: 14 }}>₱ {p.fare}</Text>
+                        <Text style={{ fontSize: 14 }}>₱{p.fare}</Text>
                     </View>
                 ))}
                 {passengers.map((p) => 
                     p.hasInfant && p.infant?.map((i, index) => (
                         <View key={`${p.seatNumber}-${index}`} style={{ marginBottom: 3 }}>
                             <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' }}>
-                                <Text style={{ fontSize: 12, width: '40%' }}>{`${i.name?.split(',')[1]?.trim().charAt(0)}, ${i.name?.split(',')[0]} (Infant)`}</Text>
-                                <Text style={{ fontSize: 12, width: 60, textAlign: 'right' }}>₱ 00.00</Text>
+                                <Text style={{ fontSize: 12, width: '40%' }}>{`${i.name?.split(',')[1]?.trim().charAt(0)}, ${i.name?.split(',')[0]}`}</Text>
+                                <Text style={{ fontSize: 12, width: 60, textAlign: 'right' }}>₱00.00</Text>
                             </View>
                         </View>
                     ))
@@ -68,32 +45,24 @@ export default function TicketGenerator() {
                     <View style={{ flexDirection: 'column', gap: 15 }}>
                         <View style={{ flexDirection: 'column', alignItems: 'flex-start' }}>
                             <Text style={{ fontSize: 12, fontWeight: 'bold', color: '#545454' }}>Subtotal:</Text>
-                            <Text style={{ fontSize: 16, fontWeight: '900', color: '#545454' }}>₱ {totalFare}</Text>
+                            <Text style={{ fontSize: 16, fontWeight: '900', color: '#545454' }}>₱{totalFare}</Text>
                         </View>
                         <View style={{ flexDirection: 'column', alignItems: 'flex-start' }}>
                             <Text style={{ fontSize: 12, fontWeight: 'bold', color: '#545454' }}>Cash Tendered:</Text>
-                            <View style={{ borderBottomColor: '#FFC107', borderBottomWidth: 1, marginTop: -10, flexDirection: 'row', alignItems: 'center' }}>
-                                <Text style={{ fontWeight: 'bold', fontSize: 16, marginTop: 8 }}>₱ </Text>
-                                <TextInput onChangeText={(text) => setPassCashTendered(Number(text))} keyboardType={'numeric'} placeholder='00.00' style={{ fontWeight: 'bold', fontSize: 16, paddingBottom: -2, paddingLeft: -10, width: 150, }} />
+                            <View style={{ borderBottomColor: '#FFC107', borderBottomWidth: 1, marginTop: -10 }}>
+                                <TextInput keyboardType={'numeric'} placeholder='₱00.00' style={{ fontWeight: 'bold', fontSize: 16, paddingBottom: -2, paddingLeft: -10, width: 150, }} />
                             </View>
                         </View>
                     </View>
                     <View style={{ flexDirection: 'column', alignItems: 'flex-end' }}>
                         <Text style={{ fontSize: 12, fontWeight: 'bold', color: '#545454' }}>Change:</Text>
-                        <View style={{ flexDirection: 'row', alignItems: 'center', }}>
-                            <Text style={{ fontWeight: 'bold', fontSize: 20, color: '#cf2a3a' }}>₱ </Text>
-                            <Text style={{ fontSize: 20, fontWeight: '900', color: '#cf2a3a' }}>{cashTendered != 0 ? fareChange : '00.00'}</Text>
-                        </View>
+                        <Text style={{ fontSize: 20, fontWeight: '900', color: '#cf2a3a' }}>₱150.00</Text>
                     </View>
                 </View>
             </View>
 
-            <TouchableOpacity onPress={() => handleConfirmation()} style={{ position: 'absolute', bottom: 10, backgroundColor: '#cf2a3a', width: '95%', alignSelf: 'center', borderRadius: 30, paddingVertical: 15, zIndex: 5 }}>
-                {loading == true ? (
-                    <ActivityIndicator size={'small'} color={'#fff'} style={{ alignSelf: 'center' }} />
-                ) : (
-                    <Text style={{ fontSize: 16, fontWeight: 'bold', textAlign: 'center', color: '#fff' }}>Confirm</Text>
-                )}
+            <TouchableOpacity onPress={() => router.push('/generateTicket')} style={{ position: 'absolute', bottom: 10, backgroundColor: '#cf2a3a', width: '95%', alignSelf: 'center', borderRadius: 30, paddingVertical: 15, zIndex: 5 }}>
+                <Text style={{ fontSize: 16, fontWeight: 'bold', textAlign: 'center', color: '#fff' }}>Confirm</Text>
             </TouchableOpacity>
         </View>
     )

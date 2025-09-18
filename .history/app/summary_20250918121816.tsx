@@ -3,7 +3,7 @@ import { useTrip } from '@/context/trip';
 import { Ionicons } from '@expo/vector-icons';
 import { router } from 'expo-router';
 import React, { useEffect, useState } from 'react';
-import { ActivityIndicator, Alert, Dimensions, Text, TextInput, TouchableOpacity, View } from 'react-native';
+import { Dimensions, Text, TextInput, TouchableOpacity, View } from 'react-native';
 
 const { height } = Dimensions.get('screen');
 
@@ -21,17 +21,17 @@ export default function TicketGenerator() {
     }, [cashTendered]);
 
     const handleConfirmation = () => {
-        setLoading(true);
+        // setLoading(true);
 
-        setTimeout(() => {
-            if(cashTendered == 0) {
-                Alert.alert('Invalid', 'Passenger payment is missing.');
-                return;
-            }
-            setCashTendered(cashTendered)
-            setLoading(false);
-            router.push('/generateTicket');
-        }, 300);
+        // setTimeout(() => {
+        //     if(cashTendered == 0) {
+        //         Alert.alert('Invalid', 'Passenger payment is missing.');
+        //         return;
+        //     }
+
+        // })
+        setCashTendered(cashTendered)
+        router.push('/generateTicket');
     }
 
     return (
@@ -89,11 +89,7 @@ export default function TicketGenerator() {
             </View>
 
             <TouchableOpacity onPress={() => handleConfirmation()} style={{ position: 'absolute', bottom: 10, backgroundColor: '#cf2a3a', width: '95%', alignSelf: 'center', borderRadius: 30, paddingVertical: 15, zIndex: 5 }}>
-                {loading == true ? (
-                    <ActivityIndicator size={'small'} color={'#fff'} style={{ alignSelf: 'center' }} />
-                ) : (
-                    <Text style={{ fontSize: 16, fontWeight: 'bold', textAlign: 'center', color: '#fff' }}>Confirm</Text>
-                )}
+                <Text style={{ fontSize: 16, fontWeight: 'bold', textAlign: 'center', color: '#fff' }}>Confirm</Text>
             </TouchableOpacity>
         </View>
     )

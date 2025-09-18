@@ -62,9 +62,9 @@ export default function ManualBooking() {
     
             setTrip(selectedTrip);
             setID(trip_id);
-            setVesselID(trip_id);
             setOrigin(origin);
             setDestination(destination);
+            setVesselID(trip_id);
             setCode(code);
             setLoading(false);
             router.push('/seatPlan');

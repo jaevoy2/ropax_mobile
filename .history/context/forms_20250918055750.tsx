@@ -147,7 +147,7 @@ export default function Forms({ errorForm }: FormProps) {
                                         <>
                                             {passengerType?.filter((t) => t.name != 'Infant')
                                                 .map((type) => (
-                                                <TouchableOpacity onPress={() => {updatePassenger(p.seatNumber!, 'passType', type.name), getPassengerFare(type.id, p.accommodationID!, id, p.seatNumber!), updatePassenger(p.seatNumber!, 'passTypeCode', type.code)}} key={type.id} style={{ backgroundColor: p.passType == type.name ? '#cf2a3a' : 'transparent', borderColor: '#cf2a3a', borderWidth: 1, paddingVertical: 4, paddingHorizontal: 18, borderRadius: 5  }}>
+                                                <TouchableOpacity onPress={() => {updatePassenger(p.seatNumber!, 'passType', type.name), getPassengerFare(type.id, p.accommodationID!, id, p.seatNumber!)}} key={type.id} style={{ backgroundColor: p.passType == type.name ? '#cf2a3a' : 'transparent', borderColor: '#cf2a3a', borderWidth: 1, paddingVertical: 4, paddingHorizontal: 18, borderRadius: 5  }}>
                                                     <Text style={{ textAlign: 'center', fontSize: 12, color: p.passType == type.name ? '#fff' : '#cf2a3a' }}>{type.name}</Text>
                                                 </TouchableOpacity>
                                             ))}

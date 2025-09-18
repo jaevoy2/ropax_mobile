@@ -108,7 +108,7 @@ export default function Forms({ errorForm }: FormProps) {
                     <Text style={{ fontSize: 11 }}>Reference#:</Text>
                     <Text style={{ fontWeight: '900', fontSize: 14, color: '#cf2a3a' }}>LMBS-000000-{year}{origin.charAt(0)}{destination.charAt(0)}</Text>
                 </View>
-                <View style={{ flexDirection: 'column', alignItems: 'flex-end' }}>
+                <View>
                     <Text style={{ fontSize: 9, fontWeight: '900', color: '#cf2a3a' }}>Total Fare:</Text>
                     <View style={{ borderColor: '#cf2a3a', backgroundColor: '#cf2a3b1a', borderWidth: 2, borderRadius: 5, flexDirection: 'row', alignItems: 'center', paddingHorizontal: 15 }}>
                         <Text style={{ fontSize: 16 }}>₱</Text>
@@ -147,7 +147,7 @@ export default function Forms({ errorForm }: FormProps) {
                                         <>
                                             {passengerType?.filter((t) => t.name != 'Infant')
                                                 .map((type) => (
-                                                <TouchableOpacity onPress={() => {updatePassenger(p.seatNumber!, 'passType', type.name), getPassengerFare(type.id, p.accommodationID!, id, p.seatNumber!), updatePassenger(p.seatNumber!, 'passTypeCode', type.code)}} key={type.id} style={{ backgroundColor: p.passType == type.name ? '#cf2a3a' : 'transparent', borderColor: '#cf2a3a', borderWidth: 1, paddingVertical: 4, paddingHorizontal: 18, borderRadius: 5  }}>
+                                                <TouchableOpacity onPress={() => {updatePassenger(p.seatNumber!, 'passType', type.name), getPassengerFare(type.id, p.accommodationID!, id, p.seatNumber!)}} key={type.id} style={{ backgroundColor: p.passType == type.name ? '#cf2a3a' : 'transparent', borderColor: '#cf2a3a', borderWidth: 1, paddingVertical: 4, paddingHorizontal: 18, borderRadius: 5  }}>
                                                     <Text style={{ textAlign: 'center', fontSize: 12, color: p.passType == type.name ? '#fff' : '#cf2a3a' }}>{type.name}</Text>
                                                 </TouchableOpacity>
                                             ))}
