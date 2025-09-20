@@ -1,6 +1,6 @@
 import { SaveBooking } from '@/api/saveBooking';
 import { usePassengers } from '@/context/passenger';
-import { TripContextProps, useTrip } from '@/context/trip';
+import { useTrip } from '@/context/trip';
 import { Ionicons } from '@expo/vector-icons';
 import { router } from 'expo-router';
 import React, { useEffect, useState } from 'react';
@@ -8,9 +8,9 @@ import { ActivityIndicator, Alert, Dimensions, Text, TextInput, TouchableOpacity
 
 const { height } = Dimensions.get('screen');
 
-export default function PaymentSummary() {
+export default function TicketGenerator() {
     const { passengers } = usePassengers();
-    const { id, totalFare, fareChange, webCode, setRefNumber, setFareChange, setCashTendered } = useTrip();
+    const { id, totalFare, fareChange, webCode, setFareChange, setCashTendered } = useTrip();
     const [loading, setLoading] = useState(false);
     const [cashTendered, setPassCashTendered] = useState(0);
 
@@ -32,11 +32,9 @@ export default function PaymentSummary() {
         
         setCashTendered(cashTendered);
         try {
-            const trip = { id, totalFare, fareChange, webCode } as TripContextProps;
-            const response = await SaveBooking(trip, passengers);
+            const response = await SaveBooking(id, webCode, passengers);
 
             if(!response.error) {
-                setRefNumber(response.reference_no);
                 router.push('/generateTicket');
             }
         }catch(error: any) {

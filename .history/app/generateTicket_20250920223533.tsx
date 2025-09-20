@@ -115,7 +115,7 @@ export default function TicketGenerator() {
                             </View>
                         </View>
                         <View style={{ flexDirection: 'column', alignItems: 'center', justifyContent: 'center', paddingVertical: 10, borderBottomWidth: 1, borderBlockColor: '#9B9B9B' }}>
-                            <Text style={{ fontWeight: '900', fontSize: 16, color: '#cf2a3a' }}>{refNumber}</Text>
+                            <Text style={{ fontWeight: '900', fontSize: 16, color: '#cf2a3a' }}>LMBS-{refNumber.toString().padStart(6, '0')}-{year}{trip.split(" ")[0].charAt(0)}{trip.split(" ")[4].charAt(0)}</Text>
                             <QRCode value={refNumber} size={160} backgroundColor='#fff' color='#000' />
                         </View>
                         <View style={{ paddingVertical: 5, marginTop: 10 }}>

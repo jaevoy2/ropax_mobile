@@ -74,6 +74,7 @@ export default function Forms({ errorForm }: FormProps) {
             updatePassenger(seat, 'infant', []);
         }else {
             addInfant(seat, {name: '', gender: '', age: 0, passType_id: type_id});
+            console.log(type_id);
         }
     }
 

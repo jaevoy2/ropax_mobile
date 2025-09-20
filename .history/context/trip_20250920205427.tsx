@@ -11,7 +11,6 @@ export type TripContextProps = {
     cashTendered: number;
     webCode: string;
     code: string;
-    refNumber: string;
     setTrip: React.Dispatch<React.SetStateAction<string>>;
     setOrigin: React.Dispatch<React.SetStateAction<string>>;
     setDestination: React.Dispatch<React.SetStateAction<string>>;
@@ -22,7 +21,6 @@ export type TripContextProps = {
     setWebCode: React.Dispatch<React.SetStateAction<string>>;
     setCode: React.Dispatch<React.SetStateAction<string>>;
     setCashTendered: React.Dispatch<React.SetStateAction<number>>;
-    setRefNumber: React.Dispatch<React.SetStateAction<string>>;
 }
 
 const TripContext = createContext<TripContextProps | undefined>(undefined);
@@ -36,7 +34,6 @@ export const TripProvider = ({ children }: TripProviderProps) => {
     const [trip, setTrip] = useState<string>('');
     const [origin, setOrigin] = useState<string>('');
     const [destination, setDestination] = useState<string>('');
-    const [refNumber, setRefNumber] = useState<string>('');
     const [webCode, setWebCode] = useState('');
     const [code, setCode] = useState('');
     const [totalFare, setTotalFare] = useState<number>(0);
@@ -46,8 +43,7 @@ export const TripProvider = ({ children }: TripProviderProps) => {
     const [cashTendered, setCashTendered] = useState<number>(0);
 
     return (
-        <TripContext.Provider value={{ id, trip, origin, destination, vessel_id, totalFare, fareChange, code, webCode, cashTendered, refNumber,
-                                    setTrip, setID, setOrigin, setDestination, setVesselID, setTotalFare, setFareChange, setCode, setWebCode, setCashTendered, setRefNumber }}>
+        <TripContext.Provider value={{ id, trip, origin, destination, vessel_id, totalFare, fareChange, code, webCode, cashTendered, setTrip, setID, setOrigin, setDestination, setVesselID, setTotalFare, setFareChange, setCode, setWebCode, setCashTendered }}>
             {children}
         </TripContext.Provider>
     );

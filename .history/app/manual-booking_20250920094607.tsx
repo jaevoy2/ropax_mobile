@@ -2,7 +2,7 @@ import { FetchTrips } from "@/api/trips";
 import { usePassengers } from "@/context/passenger";
 import { useTrip } from "@/context/trip";
 import { Ionicons } from "@expo/vector-icons";
-import { router } from 'expo-router';
+import { router } from "expo-router";
 import { useEffect, useState } from "react";
 import { ActivityIndicator, Alert, Dimensions, Modal, Text, TouchableOpacity, View } from "react-native";
 
@@ -103,10 +103,6 @@ export default function ManualBooking() {
                     {contentLoading == true ? (
                         <View style={{ height: height / 2, justifyContent: 'center' }}>
                             <ActivityIndicator size={'large'} color={'#cf2a3a'} />
-                        </View>
-                    ) : trips?.length == 0 ? (
-                        <View style={{ height: height / 2, justifyContent: 'center' }}>
-                            <Text style={{ color: '#7A7A85', textAlign: 'center' }}>No Available Trips</Text>
                         </View>
                     ) : (
                         <>

@@ -73,7 +73,7 @@ export default function Forms({ errorForm }: FormProps) {
         if(!currentValue) {
             updatePassenger(seat, 'infant', []);
         }else {
-            addInfant(seat, {name: '', gender: '', age: 0, passType_id: type_id});
+            addInfant(seat, {name: '', gender: '', age: 0, passType_id: type_id})
         }
     }
 

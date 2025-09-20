@@ -1,7 +1,7 @@
 import React, { createContext, useContext, useState } from "react";
 
 export type InfantProps = {
-    passType_id: number;
+    id: number;
     name: string;
     age: number;
     gender: string;
@@ -12,7 +12,6 @@ export type PassengerProps = {
     accommodation?: string;
     accommodationID?: number;
     passType?: string;
-    passType_id?: number;
     passTypeCode?: string;
     name?: string;
     address?: string;

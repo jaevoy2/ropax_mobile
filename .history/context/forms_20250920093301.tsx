@@ -7,8 +7,9 @@ import { Alert, ScrollView, Text, TextInput, TouchableOpacity, View } from 'reac
 import { Checkbox } from 'react-native-paper';
 import { InfantProps, usePassengers } from './passenger';
 
-
+const passengerType = ['Adult', 'Senior', 'Student', 'PWD', 'Child', 'Passes'];
 const passGender = ['Male', 'Female'];
+
 type FormProps = {
     errorForm: (string | number)[];
 }
@@ -66,14 +67,14 @@ export default function Forms({ errorForm }: FormProps) {
         }
     }
 
-    const hasInfantChecker = (seat: number | string, hasInfantValue: boolean, type_id: number) => {
+    const hasInfantChecker = (seat: number | string, hasInfantValue: boolean, passType_id: number) => {
         const currentValue = !hasInfantValue;
         updatePassenger(seat, 'hasInfant', currentValue);
 
         if(!currentValue) {
             updatePassenger(seat, 'infant', []);
         }else {
-            addInfant(seat, {name: '', gender: '', age: 0, passType_id: type_id});
+            addInfant(seat, {name: '', gender: '', age: 0, passType_id: id})
         }
     }
 
@@ -200,7 +201,7 @@ export default function Forms({ errorForm }: FormProps) {
                                         <TextInput placeholder='+63' onChangeText={(text) => updatePassenger(p.seatNumber!, 'contact', text)} style={{ fontSize: 13 }} />
                                     </View>
                                 </View>
-                                <TouchableOpacity onPress={() => hasInfantChecker(p.seatNumber!, p.hasInfant!, passengerType?.find((i) => i.name == 'Infant')?.id ?? 0 )}
+                                <TouchableOpacity onPress={() => hasInfantChecker(p.seatNumber!, p.hasInfant!, passengerType?.find((i) => i.name == 'Infant')?.id! )}
                                     style={{ flexDirection: 'row', alignItems: 'center', marginTop: 15 }}>
                                     <Text>With Infant</Text>
                                     <Checkbox status={p.hasInfant ? 'checked' : 'unchecked'} color='#cf2a3a' uncheckedColor="#999" />

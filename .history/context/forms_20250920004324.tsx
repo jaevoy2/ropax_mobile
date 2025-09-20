@@ -7,8 +7,9 @@ import { Alert, ScrollView, Text, TextInput, TouchableOpacity, View } from 'reac
 import { Checkbox } from 'react-native-paper';
 import { InfantProps, usePassengers } from './passenger';
 
-
+const passengerType = ['Adult', 'Senior', 'Student', 'PWD', 'Child', 'Passes'];
 const passGender = ['Male', 'Female'];
+
 type FormProps = {
     errorForm: (string | number)[];
 }
@@ -66,14 +67,14 @@ export default function Forms({ errorForm }: FormProps) {
         }
     }
 
-    const hasInfantChecker = (seat: number | string, hasInfantValue: boolean, type_id: number) => {
+    const hasInfantChecker = (seat: number | string, hasInfantValue: boolean) => {
         const currentValue = !hasInfantValue;
         updatePassenger(seat, 'hasInfant', currentValue);
 
         if(!currentValue) {
             updatePassenger(seat, 'infant', []);
         }else {
-            addInfant(seat, {name: '', gender: '', age: 0, passType_id: type_id});
+            addInfant(seat, {name: '', gender: '', age: 0})
         }
     }
 
@@ -146,7 +147,7 @@ export default function Forms({ errorForm }: FormProps) {
                                         <>
                                             {passengerType?.filter((t) => t.name != 'Infant')
                                                 .map((type) => (
-                                                <TouchableOpacity onPress={() => {updatePassenger(p.seatNumber!, 'passType', type.name), updatePassenger(p.seatNumber!, 'passType_id', type.id), getPassengerFare(type.id, p.accommodationID!, id, p.seatNumber!), updatePassenger(p.seatNumber!, 'passTypeCode', type.code)}} key={type.id} style={{ backgroundColor: p.passType == type.name ? '#cf2a3a' : 'transparent', borderColor: '#cf2a3a', borderWidth: 1, paddingVertical: 4, paddingHorizontal: 18, borderRadius: 5  }}>
+                                                <TouchableOpacity onPress={() => {updatePassenger(p.seatNumber!, 'passType', type.name), getPassengerFare(type.id, p.accommodationID!, id, p.seatNumber!), updatePassenger(p.seatNumber!, 'passTypeCode', type.code)}} key={type.id} style={{ backgroundColor: p.passType == type.name ? '#cf2a3a' : 'transparent', borderColor: '#cf2a3a', borderWidth: 1, paddingVertical: 4, paddingHorizontal: 18, borderRadius: 5  }}>
                                                     <Text style={{ textAlign: 'center', fontSize: 12, color: p.passType == type.name ? '#fff' : '#cf2a3a' }}>{type.name}</Text>
                                                 </TouchableOpacity>
                                             ))}
@@ -200,7 +201,7 @@ export default function Forms({ errorForm }: FormProps) {
                                         <TextInput placeholder='+63' onChangeText={(text) => updatePassenger(p.seatNumber!, 'contact', text)} style={{ fontSize: 13 }} />
                                     </View>
                                 </View>
-                                <TouchableOpacity onPress={() => hasInfantChecker(p.seatNumber!, p.hasInfant!, passengerType?.find((i) => i.name == 'Infant')?.id ?? 0 )}
+                                <TouchableOpacity onPress={() => hasInfantChecker(p.seatNumber!, p.hasInfant!)}
                                     style={{ flexDirection: 'row', alignItems: 'center', marginTop: 15 }}>
                                     <Text>With Infant</Text>
                                     <Checkbox status={p.hasInfant ? 'checked' : 'unchecked'} color='#cf2a3a' uncheckedColor="#999" />
@@ -208,7 +209,7 @@ export default function Forms({ errorForm }: FormProps) {
                             </View>
                             {p.hasInfant && (
                                 <>
-                                    <TouchableOpacity onPress={() => addInfant(p.seatNumber!, {name: '', gender: '', age: 0, passType_id: passengerType?.find((i) => i.name == 'Infant')?.id!})} style={{ backgroundColor: '#cf2a3a', borderColor: '#cf2a3a', borderWidth: 1, padding: 5, borderRadius: 5, alignSelf: 'flex-end', marginTop: 10, marginBottom: -15, flexDirection: 'row', gap: 5, alignItems: 'center' }}>
+                                    <TouchableOpacity onPress={() => addInfant(p.seatNumber!, {name: '', gender: '', age: 0})} style={{ backgroundColor: '#cf2a3a', borderColor: '#cf2a3a', borderWidth: 1, padding: 5, borderRadius: 5, alignSelf: 'flex-end', marginTop: 10, marginBottom: -15, flexDirection: 'row', gap: 5, alignItems: 'center' }}>
                                         <Text style={{ color: '#fff', fontWeight: 600 }}>Add Infant</Text>
                                         <Ionicons name={'add-circle'} size={20} color={'#fff'} />
                                     </TouchableOpacity>

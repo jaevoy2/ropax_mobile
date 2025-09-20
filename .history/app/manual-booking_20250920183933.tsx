@@ -104,10 +104,6 @@ export default function ManualBooking() {
                         <View style={{ height: height / 2, justifyContent: 'center' }}>
                             <ActivityIndicator size={'large'} color={'#cf2a3a'} />
                         </View>
-                    ) : trips?.length == 0 ? (
-                        <View style={{ height: height / 2, justifyContent: 'center' }}>
-                            <Text style={{ color: '#7A7A85', textAlign: 'center' }}>No Available Trips</Text>
-                        </View>
                     ) : (
                         <>
                         {trips?.map((trip) => (

@@ -12,7 +12,7 @@ export type PassengerProps = {
     accommodation?: string;
     accommodationID?: number;
     passType?: string;
-    passType_id?: number;
+    passType_id: number;
     passTypeCode?: string;
     name?: string;
     address?: string;

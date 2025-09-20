@@ -32,11 +32,10 @@ export default function PaymentSummary() {
         
         setCashTendered(cashTendered);
         try {
-            const trip = { id, totalFare, fareChange, webCode } as TripContextProps;
+            const trip = { id, totalFare, fareChange, webCode, setRefNumber } as TripContextProps;
             const response = await SaveBooking(trip, passengers);
 
             if(!response.error) {
-                setRefNumber(response.reference_no);
                 router.push('/generateTicket');
             }
         }catch(error: any) {
