@@ -65,7 +65,7 @@ type AccomsProps = {
 }
 
 export default function SRVessel({ onSeatSelect }: SRVesselProps) {
-    const [accommodations, setAccommodations] = useState<AccomsProps[] | null>(null);
+    const [accommodations, setAccommodatios] = useState<AccomsProps[] | null>(null);
     const { passengers, setPassengers } = usePassengers();
     const assignseat = (seat: number | string, type: string, accomm_id: number) => {
         setPassengers(prev => [...prev, { seatNumber: seat, accommodation: type, accommodationID: accomm_id }]);
@@ -84,7 +84,7 @@ export default function SRVessel({ onSeatSelect }: SRVesselProps) {
                         code: a.code
                     }));
 
-                    setAccommodations(accomms);
+                    setAccommodatios(accomms);
                 }
             }catch(error: any) {
                 Alert.alert('Error', error.message)
@@ -126,6 +126,10 @@ export default function SRVessel({ onSeatSelect }: SRVesselProps) {
                     ))}
                 </View>
             </View>
+
+
+
+
 
             <View style={{ marginTop: 25, paddingHorizontal: 4, width: width - 20 }}>
                 <Text style={{ textAlign: 'center', fontWeight: '900', letterSpacing: 1, fontSize: 16, color: '#cf2a3a' }}>TOURIST CLASS</Text>

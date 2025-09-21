@@ -44,9 +44,8 @@ const SeatPlan: React.FC<SeatProps> = ({ start, limit, skipPattern = false, lett
     return (
         <View style={{ flexDirection: 'row', flexWrap: 'wrap', gap: 2, justifyContent: 'center' }}>
             {items.map((seat) => (
-                <TouchableOpacity disabled={passengers.some((p) => p.seatNumber == String(`${letter}${seat}`))} key={seat} onPress={() => onSeatSelect?.(`${letter}${seat}`, type, accomm_id)} 
-                style={{ width: 33, height: 33, borderColor: '#A9A9B2', borderWidth: 1, borderRadius: 3, backgroundColor: passengers.some((p) => p.seatNumber == String(`${letter}${seat}`)) ? '#BA68C8' : touristSeat.includes(`${letter}${seat}`) ? '#E6E2C6' : 'transparent', alignItems: 'center', justifyContent: 'center', margin: 2 }}>
-                    <Text style={{ fontSize: 10.5, fontWeight: 'bold', color: passengers.some((p) => p.seatNumber == String(`${letter}${seat}`)) ? '#fff' : '#000' }}>{`${letter}${seat}`} </Text>
+                <TouchableOpacity disabled={passengers.some((p) => p.seatNumber == Number(seat))} key={seat} onPress={() => onSeatSelect?.(`${letter}${seat}`, type, accomm_id)} style={{ width: 33, height: 33, borderColor: '#A9A9B2', borderWidth: 1, borderRadius: 3, backgroundColor: touristSeat.includes(`${letter}${seat}`) ? '#E6E2C6' : 'transparent', alignItems: 'center', justifyContent: 'center', margin: 2 }}>
+                    <Text style={{ fontSize: 10.5, fontWeight: 'bold' }}>{`${letter}${seat}`} </Text>
                 </TouchableOpacity>
             ))} 
         </View>
