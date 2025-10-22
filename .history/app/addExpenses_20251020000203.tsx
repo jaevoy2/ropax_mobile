@@ -1,0 +1,37 @@
+import { Ionicons } from '@expo/vector-icons';
+import { router } from 'expo-router';
+import { Dimensions, Text, TextInput, TouchableOpacity, View } from 'react-native';
+
+const { height } = Dimensions.get('window');
+
+export default function AddExpenses() {
+
+    return (
+        <View style={{ backgroundColor: '#f1f1f1', position: 'relative', height: height, }}>
+            <TouchableOpacity onPress={() => router.back()} style={{ position: 'absolute', top: 45, left: 10, zIndex: 3 }}>
+                <Ionicons name='chevron-back' size={30} color={'#fff'} />
+            </TouchableOpacity>
+            <View style={{ height: 100, backgroundColor: '#cf2a3a', paddingTop: 50 }}>
+                <Text style={{ fontSize: 18, color: '#fff', fontWeight: 'bold', textAlign: 'center' }}>Add Expense</Text>
+            </View>
+            <View style={{ padding: 10 }}>
+                <View style={{ padding: 10, borderColor: '#cf2a3a', borderWidth: 1, borderRadius: 8 }}>
+                    <View style={{ marginTop: 10 }}>
+                        <Text style={{ fontSize: 9, fontWeight: 'bold', color: '#545454' }}>Full Name:</Text>
+                        <View style={{ borderColor: '#B3B3B3', borderWidth: 1, borderRadius: 5 }}>
+                            <TextInput placeholder='Last Name, First Name' style={{ fontSize: 13 }} />
+                        </View>
+                    </View>
+                    <View style={{ marginTop: 5, flexDirection: 'row', gap: 8, alignItems: 'flex-end' }}>
+                        <View style={{ width: '40%' }}>
+                            <Text style={{ fontSize: 9, fontWeight: 'bold', color: '#545454' }}>Age:</Text>
+                            <View style={{ borderColor: '#B3B3B3', borderWidth: 1, borderRadius: 5 }}>
+                                <TextInput keyboardType='numeric' placeholder='Age' style={{ fontSize: 13 }} />
+                            </View>
+                        </View>
+                    </View>
+                </View>
+            </View>
+        </View>
+    )
+}
