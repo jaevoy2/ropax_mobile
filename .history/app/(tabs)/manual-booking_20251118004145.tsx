@@ -24,6 +24,15 @@ type TripProps = {
     mobile_code: string;
 }
 
+type PassengerReport = {
+    station: {
+        id: number;
+        name: string;
+        created_at?: string;
+        updated_at?: string;
+    }
+}
+
 type TotalBookingProps = {
     station: string;
     color: string;

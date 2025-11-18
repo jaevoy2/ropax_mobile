@@ -102,8 +102,8 @@ export default function TicketGenerator() {
                     <View ref={viewRef} style={{ backgroundColor: '#fff', left: '50%', transform: [{ translateX: '-50%' }], width: '85%', borderRadius: 10, padding: 10 }}>
                         <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', paddingVertical: 5, borderBottomWidth: 1, borderBlockColor: '#9B9B9B' }}>
                             <View style={{ flexDirection: 'row', alignItems: 'center', gap: 5 }}>
-                                <Image source={logo_icon} style={{ width: 38, height: 37 }} />
-                                <Image source={logo_text} style={{ width: 105, height: 25 }} />
+                                <Image source={logo_icon} style={{ width: 36, height: 35 }} />
+                                <Image source={logo_text} style={{ width: 95, height: 23 }} />
                             </View>
                             <View style={{ flexDirection: 'column', alignItems: 'flex-end' }}>
                                 <Text style={{ color: '#cf2a3a', fontSize: 17, fontWeight: '900' }}>E-TICKET</Text>

@@ -1,7 +1,7 @@
 import { SaveBooking } from '@/api/saveBooking';
 import { usePassengers } from '@/context/passenger';
 import { TripContextProps, useTrip } from '@/context/trip';
-import { Ionicons, MaterialCommunityIcons } from '@expo/vector-icons';
+import { Ionicons } from '@expo/vector-icons';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { router } from 'expo-router';
 import React, { useEffect, useState } from 'react';
@@ -11,7 +11,7 @@ const { height } = Dimensions.get('window');
 
 export default function PaymentSummary() {
     const { passengers } = usePassengers();
-    const { id, totalFare, fareChange, webCode, mobileCode, destination, origin, setRefNumber, setFareChange, setCashTendered } = useTrip();
+    const { id, totalFare, fareChange, webCode, setRefNumber, setFareChange, setCashTendered } = useTrip();
     const [loading, setLoading] = useState(false);
     const [cashTendered, setPassCashTendered] = useState(0);
 
@@ -67,38 +67,27 @@ export default function PaymentSummary() {
                 <Text style={{ fontSize: 18, color: '#fff', fontWeight: 'bold', textAlign: 'center' }}>Payment Summary</Text>
             </View>
             <View style={{ padding: 10 }}>
-                <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', paddingHorizontal: 10, paddingBottom: 10, borderBottomColor: '#cf2a3a', borderBottomWidth: 1 }}>
-                    <View style={{ flexDirection: 'column', alignItems: 'center' }}>
-                        <Text style={{ fontSize: 30, fontWeight: '900', color: '#cf2a3a' }}>{`${mobileCode.split('-')[0]}`}</Text>
-                        <Text style={{ fontSize: 10, color: '#cf2a3a', marginTop: -5 }}>{origin}</Text>
+                <View style={{ borderBottomColor: '#B3B3B3', borderBottomWidth: 1, paddingBottom: 15 }}>
+                    <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', marginBottom: 3, marginTop: 10 }}>
+                        <Text style={{ fontSize: 13, width: '40%' }}>Name:</Text>
+                        <Text style={{ fontSize: 13, width: 60, textAlign: 'right' }}>Fare</Text>
                     </View>
-                    <MaterialCommunityIcons name='sail-boat' size={25} color={'#cf2a3a'}  />
-                    <View style={{ flexDirection: 'column', alignItems: 'center' }}>
-                        <Text style={{ fontSize: 30, fontWeight: '900', color: '#cf2a3a' }}>{`${mobileCode.split('-')[1]}`}</Text>
-                        <Text style={{ fontSize: 10, color: '#cf2a3a', marginTop: -5 }}>{destination}</Text>
-                    </View>
-                </View>
-                <View style={{ borderBottomColor: '#B3B3B3', borderBottomWidth: 1, paddingVertical: 15 }}>
-                    <View style={{ gap: 5 }}>
-                        {passengers.map((p, index) => (
-                            <View key={`${p.accommodationID}-${index}`} style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' }}>
-                                <Text style={{ fontSize: 14, width: '40%', fontWeight: '500' }}>{`${p.name?.split(',')[1]?.trim().charAt(0)}. ${p.name?.split(',')[0]}`}</Text>
-                                <Text style={{ fontSize: 14, fontWeight: 'bold' }}>₱ {p.fare ? `${p.fare}.00` : '0.00'}</Text>
-                            </View>
-                        ))}
-                    </View>
-                    <View style={{ gap: 5 }}>
-                        {passengers.map((p, index) => 
-                            p.hasInfant && p.infant?.map((i, index) => (
-                                <View key={`${p.accommodationID}-${index}`} style={{ marginBottom: 3 }}>
-                                    <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' }}>
-                                        <Text style={{ fontSize: 14, width: '40%', fontWeight: '500' }}>{`${i.name?.split(',')[1]?.trim().charAt(0)}. ${i.name?.split(',')[0]} (Infant)`}</Text>
-                                        <Text style={{ fontSize: 14, width: 60, textAlign: 'right', fontWeight: 'bold' }}>₱ 00.00</Text>
-                                    </View>
+                    {passengers.map((p, index) => (
+                        <View key={`${p.accommodationID}-${index}`} style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' }}>
+                            <Text style={{ fontSize: 14, width: '40%', fontWeight: '500' }}>{`${p.name?.split(',')[1]?.trim().charAt(0)}. ${p.name?.split(',')[0]}`}</Text>
+                            <Text style={{ fontSize: 14, fontWeight: 'bold' }}>₱ {p.fare ? `${p.fare}.00` : '0.00'}</Text>
+                        </View>
+                    ))}
+                    {passengers.map((p, index) => 
+                        p.hasInfant && p.infant?.map((i, index) => (
+                            <View key={`${p.accommodationID}-${index}`} style={{ marginBottom: 3 }}>
+                                <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' }}>
+                                    <Text style={{ fontSize: 14, width: '40%', fontWeight: '500' }}>{`${i.name?.split(',')[1]?.trim().charAt(0)}. ${i.name?.split(',')[0]} (Infant)`}</Text>
+                                    <Text style={{ fontSize: 14, width: 60, textAlign: 'right', fontWeight: 'bold' }}>₱ 00.00</Text>
                                 </View>
-                            ))
-                        )}
-                    </View>
+                            </View>
+                        ))
+                    )}
                 </View>
                 <View style={{ borderBottomColor: '#B3B3B3', borderBottomWidth: 1, paddingVertical: 10 }}>
                     <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' }}>
@@ -107,11 +96,11 @@ export default function PaymentSummary() {
                     </View>
                 </View>
                 <View style={{ paddingVertical: 10 }}>
-                    <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', marginTop: 10 }}>
-                        <Text style={{ fontSize: 12, fontWeight: 'bold', color: '#545454' }}>Cash Tendered:</Text>
+                    <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' }}>
+                        <Text style={{ fontSize: 12, color: '#545454' }}>Cash Tendered:</Text>
                         <View style={{ marginTop: -10, flexDirection: 'row', alignItems: 'center' }}>
                             <Text style={{ fontWeight: 'bold', fontSize: 21, marginTop: 8 }}>₱ </Text>
-                            <TextInput onChangeText={(text) => setPassCashTendered(Number(text))} keyboardType={'numeric'} placeholder='00.00' style={{ fontWeight: 'bold', fontSize: 20, paddingHorizontal: 10, textAlign: 'right', borderColor: '#979797ff', borderWidth: 1, borderRadius: 5 }} />
+                            <TextInput onChangeText={(text) => setPassCashTendered(Number(text))} keyboardType={'numeric'} placeholder='00.00' style={{ fontWeight: 'bold', fontSize: 20, paddingBottom: -2, paddingHorizontal: 10, textAlign: 'right', borderColor: '#FFC107', borderBottomWidth: 1 }} />
                         </View>
                     </View>
                 </View>

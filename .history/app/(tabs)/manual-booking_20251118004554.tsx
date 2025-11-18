@@ -347,7 +347,7 @@ export default function ManualBooking() {
                                         ))}
                                     </View>
                                     <View style={{ marginTop: 20 }}>
-                                        <Text style={{ fontWeight: 'bold', fontSize: 18, color: '#cf2a3a', marginBottom: 10 }}>30 TOTAL PAYING PASSENGERS</Text>
+                                        <Text style={{ fontWeight: 'bold', fontSize: 18, color: '#cf2a3a', marginBottom: 10 }}>{} TOTAL PAYING PASSENGERS</Text>
                                         <View style={{ gap: 15 }}>
                                             {totalBookings?.map((tb, index) => (
                                                 <View key={index} style={{ paddingBottom: 10, borderBottomColor: '#b4b4b4ff', borderBottomWidth: 1 }}>
@@ -365,7 +365,7 @@ export default function ManualBooking() {
                                                                 <View style={{ flexDirection: 'row', alignItems: 'center', gap: 5 }}>
                                                                     {accom.passenger.map((p, pIndex) => (
                                                                         <View key={pIndex} style={{ flexDirection: 'row', alignItems: 'center' }}>
-                                                                            <Text style={{ color: '#5c5c5cff', fontSize: 12 }}>{p.type}: </Text>
+                                                                            <Text style={{ color: '#5c5c5cff', fontSize: 12 }}>{p.type}:</Text>
                                                                             <Text style={{ color: '#5c5c5cff', fontSize: 12 }}>{p.passenger_count}</Text>
                                                                         </View>
                                                                     ))}

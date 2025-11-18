@@ -24,10 +24,18 @@ type TripProps = {
     mobile_code: string;
 }
 
+type PassengerReport = {
+    station: {
+        id: number;
+        name: string;
+        created_at?: string;
+        updated_at?: string;
+    }
+}
+
 type TotalBookingProps = {
     station: string;
     color: string;
-    count: number;
     accommodationGroup: {
         accommodation: string;
         passenger: {
@@ -218,7 +226,6 @@ export default function ManualBooking() {
             if(!totalBookingFetch.error) {
                 const totalBookingFetchData: TotalBookingProps[] = totalBookingFetch.data.map((t: any) => ({
                     station: t.station,
-                    count: t.count,
                     color: t.color,
                     accommodationGroup: t.accommodations.map((a: any) => ({
                         accommodation: a.accommodation,
@@ -323,53 +330,46 @@ export default function ManualBooking() {
             <Animated.View style={{ height, position: 'absolute', bottom: 0, backgroundColor: '#fff', width: width, transform: [{ translateY }], borderTopRightRadius: 20, borderTopLeftRadius: 20 }}>
                 <View style={{ padding: 10 }}>
                     {totalSheetLoading == true ? (
-                        <View style={{ height: '80%', justifyContent: 'center', alignSelf: 'center' }}>
+                        <View style={{ justifyContent: 'center', alignSelf: 'center' }}>
                             <ActivityIndicator size={'large'} color={'#cf2a3a'} />
                         </View>
                     ) : (
                         <>
-                            {trips && trips?.length > 0 ? (
-                                <>
-                                    <View style={{ flexDirection: 'row', alignItems: 'flex-end', justifyContent: 'space-between' }}>
-                                        <Text style={{ fontSize: 18, fontWeight: 'bold' }}>Available Trips</Text>
-                                        <TouchableOpacity onPress={() => closeToggle()} style={{ alignSelf:'flex-end' }}>
-                                            <Ionicons name={'chevron-down'} size={30} color={'#cf2a3a'} />
-                                        </TouchableOpacity>
-                                    </View>
-                                    <View style={{ flexDirection: 'row', gap: 8, alignItems: 'center', flexWrap: 'wrap', marginTop: 10 }}>
-                                        {trips?.map((trip) => (
-                                            <TouchableOpacity onPress={() => {setTotalSheetLoading(true), setBottomSheetTripID(trip.trip_id), handleFetchTotalBookings(trip.trip_id)}} key={trip.trip_id} style={{ paddingHorizontal: 12, paddingVertical: 8, backgroundColor: bottomSheetTripID == trip.trip_id ? '#cf2a3a' : '#fff', borderRadius: 5, marginTop: 12, flexDirection: 'row', alignItems: 'center', borderColor: '#cf2a3a', borderWidth: 1 }}>
-                                                <View style={{ flexDirection: 'row', alignItems: "center", gap: 5 }}>
-                                                    <Text style={{ fontWeight: 'bold', fontSize: 12, color:  bottomSheetTripID == trip.trip_id ? '#fff' : '#000' }}>{`${trip.mobile_code} [ ${trip.code} ]`}</Text>
-                                                    <Text style={{ fontWeight: 'bold', fontSize: 13, color:  bottomSheetTripID == trip.trip_id ? '#fff' : '#cf2a3a' }}>{`${trip.departure}`}</Text>
-                                                </View>
-                                            </TouchableOpacity>
-                                        ))}
-                                    </View>
-                                    <View style={{ marginTop: 20 }}>
-                                        <Text style={{ fontWeight: 'bold', fontSize: 18, color: '#cf2a3a', marginBottom: 10 }}>30 TOTAL PAYING PASSENGERS</Text>
-                                        <View style={{ gap: 15 }}>
-                                            {totalBookings?.map((tb, index) => (
-                                                <View key={index} style={{ paddingBottom: 10, borderBottomColor: '#b4b4b4ff', borderBottomWidth: 1 }}>
-                                                    <View>
-                                                        <View style={{ flexDirection: 'row', alignItems: 'center', gap: 5 }}>
-                                                            <View style={{ backgroundColor: tb.color, height: 15, width: 15 }} />
-                                                            <Text style={{ fontWeight: 'bold', fontSize: 17 }}>{tb.station}</Text>
-                                                            <Text style={{ color: '#5c5c5cff', fontSize: 12 }}>{`[${tb.count} paying passenger/s]`}</Text>
-                                                        </View>
-                                                    </View>
-                                                    <View style={{ flexDirection: 'row', alignItems: 'center', marginTop: 5 }}>
-                                                        {tb.accommodationGroup.map((accom, accomIndex) => (
-                                                            <View key={accomIndex} style={{ width: '50%' }}>
-                                                                <Text style={{ fontWeight: 'bold' }}>{accom.accommodation}</Text>
-                                                                <View style={{ flexDirection: 'row', alignItems: 'center', gap: 5 }}>
-                                                                    {accom.passenger.map((p, pIndex) => (
-                                                                        <View key={pIndex} style={{ flexDirection: 'row', alignItems: 'center' }}>
-                                                                            <Text style={{ color: '#5c5c5cff', fontSize: 12 }}>{p.type}: </Text>
-                                                                            <Text style={{ color: '#5c5c5cff', fontSize: 12 }}>{p.passenger_count}</Text>
-                                                                        </View>
-                                                                    ))}
-                                                                </View>
+                            <View style={{ flexDirection: 'row', alignItems: 'flex-end', justifyContent: 'space-between' }}>
+                                <Text style={{ fontSize: 18, fontWeight: 'bold' }}>Available Trips</Text>
+                                <TouchableOpacity onPress={() => closeToggle()} style={{ alignSelf:'flex-end' }}>
+                                    <Ionicons name={'chevron-down'} size={30} color={'#cf2a3a'} />
+                                </TouchableOpacity>
+                            </View>
+                            <View style={{ flexDirection: 'row', gap: 8, alignItems: 'center', flexWrap: 'wrap', marginTop: 10 }}>
+                                {trips?.map((trip) => (
+                                    <TouchableOpacity onPress={() => {setTotalSheetLoading(true), setBottomSheetTripID(trip.trip_id), handleFetchTotalBookings(trip.trip_id)}} key={trip.trip_id} style={{ paddingHorizontal: 12, paddingVertical: 8, backgroundColor: bottomSheetTripID == trip.trip_id ? '#cf2a3a' : '#fff', borderRadius: 5, marginTop: 12, flexDirection: 'row', alignItems: 'center', borderColor: '#cf2a3a', borderWidth: 1 }}>
+                                        <View style={{ flexDirection: 'row', alignItems: "center", gap: 5 }}>
+                                            <Text style={{ fontWeight: 'bold', fontSize: 12, color:  bottomSheetTripID == trip.trip_id ? '#fff' : '#000' }}>{`${trip.mobile_code} [ ${trip.code} ]`}</Text>
+                                            <Text style={{ fontWeight: 'bold', fontSize: 13, color:  bottomSheetTripID == trip.trip_id ? '#fff' : '#cf2a3a' }}>{`${trip.departure}`}</Text>
+                                        </View>
+                                    </TouchableOpacity>
+                                ))}
+                            </View>
+                            <View style={{ marginTop: 20 }}>
+                                <Text style={{ fontWeight: 'bold', fontSize: 16, color: '#cf2a3a', marginBottom: 10 }}>30 TOTAL PAYING PASSENGERS</Text>
+                                {totalBookings?.map((tb, index) => (
+                                    <View key={index}>
+                                        <View>
+                                            <View style={{ flexDirection: 'row', alignItems: 'center', gap: 5 }}>
+                                                <View style={{ backgroundColor: tb.color, height: 15, width: 15 }} />
+                                                <Text style={{ fontWeight: 'bold', fontSize: 17 }}>{tb.station}</Text>
+                                            </View>
+                                        </View>
+                                        <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', marginTop: 5 }}>
+                                            {tb.accommodationGroup.map((accom, accomIndex) => (
+                                                <View key={accomIndex}>
+                                                    <Text style={{ fontWeight: 'bold' }}>{accom.accommodation}</Text>
+                                                    <View style={{ flexDirection: 'row', alignItems: 'center', gap: 5 }}>
+                                                        {accom.passenger.map((p, pIndex) => (
+                                                            <View key={pIndex} style={{ flexDirection: 'row', alignItems: 'center' }}>
+                                                                <Text style={{ color: '#5c5c5cff', fontSize: 12 }}>{p.type}: </Text>
+                                                                <Text style={{ color: '#5c5c5cff', fontSize: 12 }}>{p.passenger_count}</Text>
                                                             </View>
                                                         ))}
                                                     </View>
@@ -377,12 +377,8 @@ export default function ManualBooking() {
                                             ))}
                                         </View>
                                     </View>
-                                </>
-                            ) : (
-                                <View style={{ height: '80%', justifyContent: 'center' }}>
-                                    <Text style={{ color: '#7A7A85', textAlign: 'center' }}>No Available Trips</Text>
-                                </View>
-                            )}
+                                ))}
+                            </View>
                         </>
                     )}
                 </View>

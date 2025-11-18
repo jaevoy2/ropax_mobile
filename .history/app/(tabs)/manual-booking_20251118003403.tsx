@@ -24,10 +24,18 @@ type TripProps = {
     mobile_code: string;
 }
 
+type PassengerReport = {
+    station: {
+        id: number;
+        name: string;
+        created_at?: string;
+        updated_at?: string;
+    }
+}
+
 type TotalBookingProps = {
     station: string;
     color: string;
-    count: number;
     accommodationGroup: {
         accommodation: string;
         passenger: {
@@ -218,7 +226,6 @@ export default function ManualBooking() {
             if(!totalBookingFetch.error) {
                 const totalBookingFetchData: TotalBookingProps[] = totalBookingFetch.data.map((t: any) => ({
                     station: t.station,
-                    count: t.count,
                     color: t.color,
                     accommodationGroup: t.accommodations.map((a: any) => ({
                         accommodation: a.accommodation,
@@ -350,15 +357,27 @@ export default function ManualBooking() {
                                         <Text style={{ fontWeight: 'bold', fontSize: 18, color: '#cf2a3a', marginBottom: 10 }}>30 TOTAL PAYING PASSENGERS</Text>
                                         <View style={{ gap: 15 }}>
                                             {totalBookings?.map((tb, index) => (
-                                                <View key={index} style={{ paddingBottom: 10, borderBottomColor: '#b4b4b4ff', borderBottomWidth: 1 }}>
+                                                <View key={index}>
                                                     <View>
                                                         <View style={{ flexDirection: 'row', alignItems: 'center', gap: 5 }}>
                                                             <View style={{ backgroundColor: tb.color, height: 15, width: 15 }} />
                                                             <Text style={{ fontWeight: 'bold', fontSize: 17 }}>{tb.station}</Text>
-                                                            <Text style={{ color: '#5c5c5cff', fontSize: 12 }}>{`[${tb.count} paying passenger/s]`}</Text>
                                                         </View>
                                                     </View>
                                                     <View style={{ flexDirection: 'row', alignItems: 'center', marginTop: 5 }}>
+                                                        {tb.accommodationGroup.map((accom, accomIndex) => (
+                                                            <View key={accomIndex} style={{ width: '50%' }}>
+                                                                <Text style={{ fontWeight: 'bold' }}>{accom.accommodation}</Text>
+                                                                <View style={{ flexDirection: 'row', alignItems: 'center', gap: 5 }}>
+                                                                    {accom.passenger.map((p, pIndex) => (
+                                                                        <View key={pIndex} style={{ flexDirection: 'row', alignItems: 'center' }}>
+                                                                            <Text style={{ color: '#5c5c5cff', fontSize: 12 }}>{p.type}: </Text>
+                                                                            <Text style={{ color: '#5c5c5cff', fontSize: 12 }}>{p.passenger_count}</Text>
+                                                                        </View>
+                                                                    ))}
+                                                                </View>
+                                                            </View>
+                                                        ))}
                                                         {tb.accommodationGroup.map((accom, accomIndex) => (
                                                             <View key={accomIndex} style={{ width: '50%' }}>
                                                                 <Text style={{ fontWeight: 'bold' }}>{accom.accommodation}</Text>

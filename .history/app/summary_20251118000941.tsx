@@ -107,11 +107,11 @@ export default function PaymentSummary() {
                     </View>
                 </View>
                 <View style={{ paddingVertical: 10 }}>
-                    <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', marginTop: 10 }}>
-                        <Text style={{ fontSize: 12, fontWeight: 'bold', color: '#545454' }}>Cash Tendered:</Text>
+                    <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' }}>
+                        <Text style={{ fontSize: 12, color: '#545454' }}>Cash Tendered:</Text>
                         <View style={{ marginTop: -10, flexDirection: 'row', alignItems: 'center' }}>
                             <Text style={{ fontWeight: 'bold', fontSize: 21, marginTop: 8 }}>₱ </Text>
-                            <TextInput onChangeText={(text) => setPassCashTendered(Number(text))} keyboardType={'numeric'} placeholder='00.00' style={{ fontWeight: 'bold', fontSize: 20, paddingHorizontal: 10, textAlign: 'right', borderColor: '#979797ff', borderWidth: 1, borderRadius: 5 }} />
+                            <TextInput onChangeText={(text) => setPassCashTendered(Number(text))} keyboardType={'numeric'} placeholder='00.00' style={{ fontWeight: 'bold', fontSize: 20, paddingHorizontal: 10, textAlign: 'right', borderColor: '#353535ff', borderWidth: 1 }} />
                         </View>
                     </View>
                 </View>

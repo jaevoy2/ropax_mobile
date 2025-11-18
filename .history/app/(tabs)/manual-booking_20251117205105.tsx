@@ -1,4 +1,3 @@
-import { FetchTotalBookings } from "@/api/totalBookings";
 import { FetchTrips } from "@/api/trips";
 import { usePassengers } from "@/context/passenger";
 import { useTrip } from "@/context/trip";
@@ -21,27 +20,21 @@ type TripProps = {
     route_id: number;
     code: string;
     web_code: string;
-    mobile_code: string;
 }
 
-type TotalBookingProps = {
-    station: string;
-    color: string;
-    count: number;
-    accommodationGroup: {
-        accommodation: string;
-        passenger: {
-            type: string;
-            passenger_count: number;
-        }[];
-    }[];
+type PassengerReport = {
+    station: {
+        id: number;
+        name: string;
+        created_at?: string;
+        updated_at?: string;
+    }
 }
 
 export default function ManualBooking() {
-    const { trip, setTrip, setID, setOrigin, setDestination, setVesselID, setCode, setWebCode, setDepartureTime, setMobileCode } = useTrip();
+    const { trip, setTrip, setID, setOrigin, setDestination, setVesselID, setCode, setWebCode, setDepartureTime } = useTrip();
     const { clearPassengers } = usePassengers();
     const [trips, setTrips] = useState<TripProps[] | null>(null);
-    const [totalBookings, setTotalBookings] = useState<TotalBookingProps[] | null>(null);
     const [contentLoading, setContentLoading] = useState(true);
     const [loading, setLoading] = useState(false);
     const [refresh, setRefresh] = useState(false);
@@ -50,13 +43,11 @@ export default function ManualBooking() {
     const [formattedDate, setFormattedDate] = useState('');
     const [expanded, setExpanded] = useState(false);
     const [totalSheetLoading, setTotalSheetLoading] = useState(false);
-    const [bottomSheetTripID, setBottomSheetTripID] = useState<number | null>(null);
     const translateY = useRef(new Animated.Value(height + 50)).current;
     const fadeInAnim = useRef(new Animated.Value(0)).current;
 
 
     useEffect(() => {
-
         setContentLoading(true);
         const today = new Date().toLocaleDateString("en-CA", { timeZone: "Asia/Manila" });
         setTripDate(today);
@@ -134,9 +125,8 @@ export default function ManualBooking() {
                     departure_time: t.trip.departure_time,
                     vessel_id: t.trip.vessel_id,
                     route_id: t.trip.route_id,
-                    mobile_code: t.trip.route.mobile_code,
+                    code: t.trip.route.mobile_code,
                     web_code: t.trip.route.web_code,
-                    code: t.trip.vessel.code,
                     departure: new Date(`1970-01-01T${t.trip.departure_time}`).toLocaleTimeString(
                         'en-US', {
                             hour: 'numeric',
@@ -147,9 +137,6 @@ export default function ManualBooking() {
                 }))
 
                 setTrips(tripsData);
-                if(tripsData.length > 0) {
-                    setBottomSheetTripID(tripsData?.[0].trip_id ?? null);
-                }
             }
         }catch(error: any) {
             Alert.alert('Error', error.message);
@@ -158,7 +145,7 @@ export default function ManualBooking() {
         }
     }
 
-    const handleSaveTrip = (selectedTrip: string, trip_id: number, origin: string, destination: string, mobileCode: string, code: string, web_code: string, departureTime: string, vesselID: number) => {
+    const handleSaveTrip = (selectedTrip: string, trip_id: number, origin: string, destination: string, code: string, web_code: string, departureTime: string, vesselID: number) => {
         setLoading(true);            
         setTimeout(() => {
             if(trip != selectedTrip) {
@@ -171,7 +158,6 @@ export default function ManualBooking() {
             setVesselID(vesselID);
             setOrigin(origin);
             setDestination(destination);
-            setMobileCode(mobileCode);
             setCode(code);
             setWebCode(web_code);
             setLoading(false);
@@ -181,8 +167,7 @@ export default function ManualBooking() {
     }
 
     const toggleSheet = () => {
-        handleFetchTotalBookings(bottomSheetTripID)
-        setTotalSheetLoading(true);
+        // setTotalSheetLoading(true);
         setExpanded(true);
 
         Animated.spring(translateY, {
@@ -210,34 +195,7 @@ export default function ManualBooking() {
         }).start();
     }
 
-    const handleFetchTotalBookings = async (trip_id: number | null) => {
-        try {
-            if(!trip_id) return;
-            const totalBookingFetch = await FetchTotalBookings(trip_id);
-
-            if(!totalBookingFetch.error) {
-                const totalBookingFetchData: TotalBookingProps[] = totalBookingFetch.data.map((t: any) => ({
-                    station: t.station,
-                    count: t.count,
-                    color: t.color,
-                    accommodationGroup: t.accommodations.map((a: any) => ({
-                        accommodation: a.accommodation,
-                        passenger: a.passenger.map((p: any) => ({
-                            type: p.type,
-                            passenger_count: p.passenger_count
-                        }))
-                    }))
-                }));
-
-                setTotalBookings(totalBookingFetchData);
-            }
-        }catch(error: any) {
-            setTotalSheetLoading(false);
-            Alert.alert('Error', error.message);
-        }finally {
-            setTotalSheetLoading(false);
-        }
-    }
+    
 
 
     return (
@@ -300,10 +258,10 @@ export default function ManualBooking() {
                         ) : (
                             <>
                             {trips?.map((trip) => (
-                                <TouchableOpacity onPress={() => handleSaveTrip(trip.vessel, trip.trip_id, trip.route_origin, trip.route_destination, trip.mobile_code, trip.code, trip.web_code, trip.departure_time, trip.vessel_id)} key={trip.trip_id} style={{ paddingHorizontal: 15, paddingVertical: 20, backgroundColor: '#fff', borderRadius: 10, marginTop: 12, flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' }}>
+                                <TouchableOpacity onPress={() => handleSaveTrip(trip.vessel, trip.trip_id, trip.route_origin, trip.route_destination, trip.code, trip.web_code, trip.departure_time, trip.vessel_id)} key={trip.trip_id} style={{ paddingHorizontal: 15, paddingVertical: 20, backgroundColor: '#fff', borderRadius: 10, marginTop: 12, flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' }}>
                                     <View>
-                                        <Text style={{ fontWeight: 'bold', fontSize: 13, color: '#cf2a3a' }}>{`${trip.departure}`}</Text>
-                                        <Text style={{ fontWeight: 'bold', fontSize: 13 }}>{`${trip.route_origin}  >  ${trip.route_destination} [ ${trip.vessel} ]`}</Text>
+                                        {/* <Text style={{ fontWeight: 'bold', fontSize: 13, color: '#cf2a3a' }}>{`${trip.departure}`}</Text> */}
+                                        <Text style={{ fontWeight: 'bold', fontSize: 13 }}>{trip.code}</Text>
                                     </View>
                                     <Ionicons name="chevron-forward" size={18} />
                                 </TouchableOpacity>
@@ -322,69 +280,19 @@ export default function ManualBooking() {
             )}
             <Animated.View style={{ height, position: 'absolute', bottom: 0, backgroundColor: '#fff', width: width, transform: [{ translateY }], borderTopRightRadius: 20, borderTopLeftRadius: 20 }}>
                 <View style={{ padding: 10 }}>
-                    {totalSheetLoading == true ? (
-                        <View style={{ height: '80%', justifyContent: 'center', alignSelf: 'center' }}>
-                            <ActivityIndicator size={'large'} color={'#cf2a3a'} />
-                        </View>
-                    ) : (
-                        <>
-                            {trips && trips?.length > 0 ? (
-                                <>
-                                    <View style={{ flexDirection: 'row', alignItems: 'flex-end', justifyContent: 'space-between' }}>
-                                        <Text style={{ fontSize: 18, fontWeight: 'bold' }}>Available Trips</Text>
-                                        <TouchableOpacity onPress={() => closeToggle()} style={{ alignSelf:'flex-end' }}>
-                                            <Ionicons name={'chevron-down'} size={30} color={'#cf2a3a'} />
-                                        </TouchableOpacity>
-                                    </View>
-                                    <View style={{ flexDirection: 'row', gap: 8, alignItems: 'center', flexWrap: 'wrap', marginTop: 10 }}>
-                                        {trips?.map((trip) => (
-                                            <TouchableOpacity onPress={() => {setTotalSheetLoading(true), setBottomSheetTripID(trip.trip_id), handleFetchTotalBookings(trip.trip_id)}} key={trip.trip_id} style={{ paddingHorizontal: 12, paddingVertical: 8, backgroundColor: bottomSheetTripID == trip.trip_id ? '#cf2a3a' : '#fff', borderRadius: 5, marginTop: 12, flexDirection: 'row', alignItems: 'center', borderColor: '#cf2a3a', borderWidth: 1 }}>
-                                                <View style={{ flexDirection: 'row', alignItems: "center", gap: 5 }}>
-                                                    <Text style={{ fontWeight: 'bold', fontSize: 12, color:  bottomSheetTripID == trip.trip_id ? '#fff' : '#000' }}>{`${trip.mobile_code} [ ${trip.code} ]`}</Text>
-                                                    <Text style={{ fontWeight: 'bold', fontSize: 13, color:  bottomSheetTripID == trip.trip_id ? '#fff' : '#cf2a3a' }}>{`${trip.departure}`}</Text>
-                                                </View>
-                                            </TouchableOpacity>
-                                        ))}
-                                    </View>
-                                    <View style={{ marginTop: 20 }}>
-                                        <Text style={{ fontWeight: 'bold', fontSize: 18, color: '#cf2a3a', marginBottom: 10 }}>30 TOTAL PAYING PASSENGERS</Text>
-                                        <View style={{ gap: 15 }}>
-                                            {totalBookings?.map((tb, index) => (
-                                                <View key={index} style={{ paddingBottom: 10, borderBottomColor: '#b4b4b4ff', borderBottomWidth: 1 }}>
-                                                    <View>
-                                                        <View style={{ flexDirection: 'row', alignItems: 'center', gap: 5 }}>
-                                                            <View style={{ backgroundColor: tb.color, height: 15, width: 15 }} />
-                                                            <Text style={{ fontWeight: 'bold', fontSize: 17 }}>{tb.station}</Text>
-                                                            <Text style={{ color: '#5c5c5cff', fontSize: 12 }}>{`[${tb.count} paying passenger/s]`}</Text>
-                                                        </View>
-                                                    </View>
-                                                    <View style={{ flexDirection: 'row', alignItems: 'center', marginTop: 5 }}>
-                                                        {tb.accommodationGroup.map((accom, accomIndex) => (
-                                                            <View key={accomIndex} style={{ width: '50%' }}>
-                                                                <Text style={{ fontWeight: 'bold' }}>{accom.accommodation}</Text>
-                                                                <View style={{ flexDirection: 'row', alignItems: 'center', gap: 5 }}>
-                                                                    {accom.passenger.map((p, pIndex) => (
-                                                                        <View key={pIndex} style={{ flexDirection: 'row', alignItems: 'center' }}>
-                                                                            <Text style={{ color: '#5c5c5cff', fontSize: 12 }}>{p.type}: </Text>
-                                                                            <Text style={{ color: '#5c5c5cff', fontSize: 12 }}>{p.passenger_count}</Text>
-                                                                        </View>
-                                                                    ))}
-                                                                </View>
-                                                            </View>
-                                                        ))}
-                                                    </View>
-                                                </View>
-                                            ))}
-                                        </View>
-                                    </View>
-                                </>
-                            ) : (
-                                <View style={{ height: '80%', justifyContent: 'center' }}>
-                                    <Text style={{ color: '#7A7A85', textAlign: 'center' }}>No Available Trips</Text>
+                    <TouchableOpacity onPress={() => closeToggle()} style={{ alignSelf:'flex-end' }}>
+                        <Ionicons name={'chevron-down'} size={30} color={'#cf2a3a'} />
+                    </TouchableOpacity>
+                    <View style={{ flexDirection: 'row', gap: 10, alignItems: 'center', flexWrap: 'wrap' }}>
+                        {trips?.map((trip) => (
+                            <TouchableOpacity key={trip.trip_id} style={{ paddingHorizontal: 15, paddingVertical: 20, backgroundColor: '#fff', borderRadius: 10, marginTop: 12, flexDirection: 'row', alignItems: 'center', borderColor: '#cf2a3a', borderWidth: 1 }}>
+                                <View>
+                                    <Text style={{ fontWeight: 'bold', fontSize: 13, color: '#cf2a3a' }}>{`${trip.departure}`}</Text>
+                                    <Text style={{ fontWeight: 'bold', fontSize: 13 }}>{`${trip.route_origin}  >  ${trip.route_destination} [ ${trip.vessel} ]`}</Text>
                                 </View>
-                            )}
-                        </>
-                    )}
+                            </TouchableOpacity>
+                        ))}
+                    </View>
                 </View>
             </Animated.View>
         </View>

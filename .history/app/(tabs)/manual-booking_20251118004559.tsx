@@ -347,7 +347,7 @@ export default function ManualBooking() {
                                         ))}
                                     </View>
                                     <View style={{ marginTop: 20 }}>
-                                        <Text style={{ fontWeight: 'bold', fontSize: 18, color: '#cf2a3a', marginBottom: 10 }}>30 TOTAL PAYING PASSENGERS</Text>
+                                        <Text style={{ fontWeight: 'bold', fontSize: 18, color: '#cf2a3a', marginBottom: 10 }}>{} TOTAL PAYING PASSENGERS</Text>
                                         <View style={{ gap: 15 }}>
                                             {totalBookings?.map((tb, index) => (
                                                 <View key={index} style={{ paddingBottom: 10, borderBottomColor: '#b4b4b4ff', borderBottomWidth: 1 }}>
