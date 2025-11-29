@@ -4,7 +4,7 @@ import { useTrip } from '@/context/trip';
 import { Ionicons } from '@expo/vector-icons';
 import { router } from 'expo-router';
 import { useEffect, useRef, useState } from 'react';
-import { ActivityIndicator, Alert, Animated, Dimensions, Text, TextInput, TouchableOpacity, View } from 'react-native';
+import { ActivityIndicator, Alert, Animated, Dimensions, Modal, Text, TextInput, TouchableOpacity, View } from 'react-native';
 import { Dropdown } from 'react-native-element-dropdown';
 
 const { height, width } = Dimensions.get('window');
@@ -52,7 +52,7 @@ export default function CargoComponent({ dateChange }: {dateChange: string} ) {
     const [timeWithRoute, setTimeWithRoute] = useState('');
     const [selectedBrand, setSelectdBrand] = useState(null);
     const [selectedCC, setSelectedCC] = useState(null);
-    const [saveCargoLoading, setSaveCargoLoading] = useState(false);
+    const [saveLoading, setSaveLoading] = useState(false);
     const [formLoading, setFormLoading] = useState(false);
     const tripsAnimation = useRef(new Animated.Value(width)).current;
     const formSheetAnim = useRef(new Animated.Value(0)).current;
@@ -174,49 +174,45 @@ export default function CargoComponent({ dateChange }: {dateChange: string} ) {
     }));
 
     const handleSaveCargo = () => {
-        setSaveCargoLoading(true);
-        console.log(passengers[0]);
+        setSaveLoading(true);
         
-        setTimeout(() => {
-            if(!passengers[0].name?.trim()) {
-                Alert.alert('Invalid', 'Owner name is required.');
-                setSaveCargoLoading(false);
-                return;
-            }
-            if(!passengers[0].name?.includes(',')) {
-                Alert.alert('Invalid', 'Invalid name format.');
-                setSaveCargoLoading(false);
-                return;
-            }
-            if(!passengers[0].cargo?.brand?.trim()) {
-                Alert.alert('Invalid', 'Brand is required.');
-                setSaveCargoLoading(false);
-                return;
-            }
-            if(!passengers[0].cargo.cc?.trim()) {
-                Alert.alert('Invalid', 'CC is required.');
-                setSaveCargoLoading(false);
-                return;
-            }
-            if(!passengers[0].cargo?.plateNo?.trim()) {
-                Alert.alert('Invalid', 'Plate number is required.');
-                setSaveCargoLoading(false);
-                return;
-            }
-            if(!passengers[0].cargo?.cargoFare) {
-                Alert.alert('Invalid', 'Cargo fare number is required.');
-                setSaveCargoLoading(false);
-                return;
-            }
+        if(!passengers[0].name?.trim()) {
+            Alert.alert('Invalid', 'Owner name is required.');
+            return;
+        }
+        if(!passengers[0].name?.includes(',')) {
+            Alert.alert('Invalid', 'Invalid name format.');
+            return;
+        }
+        if(!passengers[0].cargo?.brand?.trim()) {
+            Alert.alert('Invalid', 'Brand is required.');
+            return;
+        }
+        if(!passengers[0].cargo.cc?.trim()) {
+            Alert.alert('Invalid', 'CC is required.');
+            return;
+        }
+        if(!passengers[0].cargo?.plateNo?.trim()) {
+            Alert.alert('Invalid', 'Plate number is required.');
+            return;
+        }
+        if(!passengers[0].cargo?.cargoFare) {
+            Alert.alert('Invalid', 'Cargo fare number is required.');
+            return;
+        }
 
-            setSaveCargoLoading(false);
-            router.push('/seatPlan');
-        }, 500);
-
+        router.push('/seatPlan');
     }
 
     return (
         <View style={{ height: height }}>
+            <Modal visible={saveLoading} transparent animationType="fade">
+                <View style={{ backgroundColor: '#00000048', flex: 1, justifyContent: 'center', alignItems: 'center' }}>
+                    <View style={{ height: height / 5, width: width - 100, backgroundColor: '#fff', borderRadius: 10, justifyContent :'center' }}>
+                        <ActivityIndicator size={'large'} color={'#cf2a3a'} />
+                    </View>
+                </View> 
+            </Modal>
             <Animated.View style={{ opacity: tripsAnimation, height: height }}> 
                 {cargoContentLoading == true ? (
                     <View style={{ height: height / 2, justifyContent: 'center' }}>
@@ -321,13 +317,13 @@ export default function CargoComponent({ dateChange }: {dateChange: string} ) {
                                 <View style={{ width: '48%' }}>
                                     <Text style={{ fontSize: 9, fontWeight: 'bold', color: '#545454' }}>Plate#:</Text>
                                     <View style={{ borderColor: '#B3B3B3', borderWidth: 1, borderRadius: 5 }}>
-                                        <TextInput onChangeText={(text) => updateCargo(0, 'plateNo', text)} placeholder='Plate#' style={{ fontSize: 13 }} />
+                                        <TextInput onChangeText={(text) => updateCargo(0, 'plateNo', text)} placeholder='Address' style={{ fontSize: 13 }} />
                                     </View>
                                 </View>
                             </View>
                         </View>
-                        <TouchableOpacity disabled={saveCargoLoading} onPress={() => handleSaveCargo()} style={{ backgroundColor: '#cf2a3a', width: '100%', alignSelf: 'center', borderRadius: 30, paddingVertical: 15, marginTop: 30 }}>
-                            {saveCargoLoading == true ? (
+                        <TouchableOpacity onPress={() => handleSaveCargo()} style={{ backgroundColor: '#cf2a3a', width: '100%', alignSelf: 'center', borderRadius: 30, paddingVertical: 15, marginTop: 30 }}>
+                            {saveLoading == true ? (
                                 <ActivityIndicator size='small' color={'#fff'} />
                             ) : (
                                 <Text style={{ fontSize: 16, fontWeight: 'bold', textAlign: 'center', color: '#fff' }}>Proceed</Text>

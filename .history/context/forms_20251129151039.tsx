@@ -225,7 +225,7 @@ export default function Forms({ errorForm }: FormProps) {
                                 </View>
                             </View>
                         </View>
-                        <View style={{ marginTop: 5, flexDirection: 'row', alignItems: 'flex-end', justifyContent: 'space-between' }}>
+                        <View style={{ marginTop: 5, flexDirection: 'row', alignItems: 'flex-end', gap: 5 }}>
                             <View style={{ width: '40%' }}>
                                 <Text style={{ fontSize: 9, fontWeight: 'bold', color: '#545454' }}>Contact#:</Text>
                                 <View style={{ borderColor: '#B3B3B3', borderWidth: 1, borderRadius: 5 }}>
@@ -233,7 +233,7 @@ export default function Forms({ errorForm }: FormProps) {
                                 </View>
                             </View>
                             <TouchableOpacity onPress={() => hasInfantChecker(p.seatNumber!, index, p.hasInfant!, passengerType?.find((i) => i.name == 'Infant')?.id ?? 0 )}
-                                style={{ flexDirection: 'row', alignItems: 'center', marginTop: 15 }}>
+                                style={{ flexDirection: 'row', alignItems: 'center', marginTop: 15, alignSelf: 'flex-end' }}>
                                 <Text style={{ fontSize: 13 }}>With Infant</Text>
                                 <Checkbox status={p.hasInfant ? 'checked' : 'unchecked'} color='#cf2a3a' uncheckedColor="#999" />
                             </TouchableOpacity>

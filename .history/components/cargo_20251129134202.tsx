@@ -2,9 +2,8 @@ import { FetchCargoVessel } from '@/api/cargoVessel';
 import { usePassengers } from '@/context/passenger';
 import { useTrip } from '@/context/trip';
 import { Ionicons } from '@expo/vector-icons';
-import { router } from 'expo-router';
 import { useEffect, useRef, useState } from 'react';
-import { ActivityIndicator, Alert, Animated, Dimensions, Text, TextInput, TouchableOpacity, View } from 'react-native';
+import { ActivityIndicator, Alert, Animated, Dimensions, Modal, Text, TextInput, TouchableOpacity, View } from 'react-native';
 import { Dropdown } from 'react-native-element-dropdown';
 
 const { height, width } = Dimensions.get('window');
@@ -25,34 +24,21 @@ type CargoTripProps = {
 }
 
 const brands = [
-    {value: 'Honda', name: 'Honda'},
-    {value: 'Rusi', name: 'Rusi'},
-    {value: 'Motopush', name: 'Motopush'},
-    {value: 'SkyGo', name: 'SkyGo'}
-]
-
-const motorCycleCC = [
-    {value: '110cc', name: '110cc'},
-    {value: '125cc', name: '125cc'},
-    {value: '150cc', name: '150cc'},
-    {value: '160cc', name: '160cc'},
-    {value: '200cc', name: '200cc'},
-    {value: '250cc', name: '250cc'},
-    {value: '300cc', name: '300cc'},
-    {value: '400cc', name: '400cc'},
-    {value: '500cc', name: '500cc'}
+    {id: 1, name: 'Honda'},
+    {id: 2, name: 'Rusi'},
+    {id: 3, name: 'Motopush'},
+    {id: 4, name: 'SkyGo'}
 ]
 
 export default function CargoComponent({ dateChange }: {dateChange: string} ) {
     const { vessel, setVessel, setID, setOrigin, setDestination, setVesselID, setCode, setWebCode, setDepartureTime, setMobileCode, clearTrip } = useTrip();
-    const { passengers, setPassengers, updatePassenger, clearPassengers, updateCargo } = usePassengers();
+    const { clearPassengers } = usePassengers();
     const [trips, setTrips] = useState<CargoTripProps[] | null>(null);
     const [cargoContentLoading, setCargoContentLoading] = useState(true);
     const [selectedVessel, setSelectedVessel] = useState('');
     const [timeWithRoute, setTimeWithRoute] = useState('');
-    const [selectedBrand, setSelectdBrand] = useState(null);
-    const [selectedCC, setSelectedCC] = useState(null);
-    const [saveCargoLoading, setSaveCargoLoading] = useState(false);
+    const [selectedBrand, setSelectdBrand] = useState('');
+    const [saveLoading, setSaveLoading] = useState(false);
     const [formLoading, setFormLoading] = useState(false);
     const tripsAnimation = useRef(new Animated.Value(width)).current;
     const formSheetAnim = useRef(new Animated.Value(0)).current;
@@ -82,8 +68,6 @@ export default function CargoComponent({ dateChange }: {dateChange: string} ) {
                 setVessel('');
                 clearPassengers();
             }
-
-            setPassengers(prev => [...prev, { name: '', hasCargo: true }]);
     
             setVessel(vesselName);
             setID(trip_id);
@@ -148,8 +132,6 @@ export default function CargoComponent({ dateChange }: {dateChange: string} ) {
 
     const closeFormSheet = () => {
         clearTrip();
-        setSelectdBrand(null);
-        setSelectedCC(null);
         Animated.timing(tripsAnimation, {
             toValue: width,
             duration: 200,
@@ -165,58 +147,18 @@ export default function CargoComponent({ dateChange }: {dateChange: string} ) {
 
     const formattedBrands = brands.map((brand) => ({
         label: brand.name,
-        value: brand.value
+        value: brand.id
     }));
-
-    const formattedCCs = motorCycleCC.map((cc) => ({
-        label: cc.name,
-        value: cc.value
-    }));
-
-    const handleSaveCargo = () => {
-        setSaveCargoLoading(true);
-        console.log(passengers[0]);
-        
-        setTimeout(() => {
-            if(!passengers[0].name?.trim()) {
-                Alert.alert('Invalid', 'Owner name is required.');
-                setSaveCargoLoading(false);
-                return;
-            }
-            if(!passengers[0].name?.includes(',')) {
-                Alert.alert('Invalid', 'Invalid name format.');
-                setSaveCargoLoading(false);
-                return;
-            }
-            if(!passengers[0].cargo?.brand?.trim()) {
-                Alert.alert('Invalid', 'Brand is required.');
-                setSaveCargoLoading(false);
-                return;
-            }
-            if(!passengers[0].cargo.cc?.trim()) {
-                Alert.alert('Invalid', 'CC is required.');
-                setSaveCargoLoading(false);
-                return;
-            }
-            if(!passengers[0].cargo?.plateNo?.trim()) {
-                Alert.alert('Invalid', 'Plate number is required.');
-                setSaveCargoLoading(false);
-                return;
-            }
-            if(!passengers[0].cargo?.cargoFare) {
-                Alert.alert('Invalid', 'Cargo fare number is required.');
-                setSaveCargoLoading(false);
-                return;
-            }
-
-            setSaveCargoLoading(false);
-            router.push('/seatPlan');
-        }, 500);
-
-    }
 
     return (
         <View style={{ height: height }}>
+            <Modal visible={saveLoading} transparent animationType="fade">
+                <View style={{ backgroundColor: '#00000048', flex: 1, justifyContent: 'center', alignItems: 'center' }}>
+                    <View style={{ height: height / 5, width: width - 100, backgroundColor: '#fff', borderRadius: 10, justifyContent :'center' }}>
+                        <ActivityIndicator size={'large'} color={'#cf2a3a'} />
+                    </View>
+                </View> 
+            </Modal>
             <Animated.View style={{ opacity: tripsAnimation, height: height }}> 
                 {cargoContentLoading == true ? (
                     <View style={{ height: height / 2, justifyContent: 'center' }}>
@@ -241,93 +183,71 @@ export default function CargoComponent({ dateChange }: {dateChange: string} ) {
                 )}
             </Animated.View>
 
-            <Animated.View style={{ paddingHorizontal: 15, paddingTop: 10, backgroundColor: '#f1f1f1', height: '100%', transform: [{ translateX: tripsAnimation }], bottom: '105%' }}>
+            <Animated.View style={{ paddingHorizontal: 15, paddingTop: 25, backgroundColor: '#f1f1f1', height: '100%', transform: [{ translateX: tripsAnimation }], bottom: '105%' }}>
                 {formLoading == true ? (
                     <View style={{ height: '50%', justifyContent: 'center', alignSelf: 'center' }}>
                         <ActivityIndicator size={'large'} color={'#cf2a3a'} />
                     </View>
                 ) : (
                     <View>
-                        <TouchableOpacity onPress={() => closeFormSheet()} style={{ flexDirection: 'row', alignItems: 'center', gap: 5, paddingVertical: 10, paddingHorizontal: 15, backgroundColor: '#cf2a3a', borderRadius: 5, alignSelf: 'flex-start' }}>
-                            <Ionicons name={'swap-horizontal'} color={'#fff'} size={18} />
-                            <Text style={{ color: '#fff', fontWeight: 'bold', fontSize: 15 }}>Change Trip</Text>
-                        </TouchableOpacity>
-                        <View style={{ borderColor: '#B3B3B3', padding: 10, borderRadius: 8, borderWidth: 1, marginTop: 10 }}>
-                            <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' }}>
-                                <View style={{ flexDirection: 'row', alignItems: 'center', gap: 8 }}>
-                                    <Ionicons name={'boat'} color={'#fff'} size={26} style={{ backgroundColor: '#cf2a3a', padding: 5, borderRadius: 50 }} />
-                                    <View style={{ flexDirection: 'column' }}>
-                                        <Text style={{ color: '#747373ff', fontSize: 11 }}>{timeWithRoute}</Text>
-                                        <Text style={{ color: '#cf2a3a', fontSize: 20, fontWeight: '900', marginTop: -5 }}>{selectedVessel}</Text>
-                                    </View>
-                                </View>
-                                <View style={{ flexDirection: 'column', alignItems: 'flex-end', alignSelf: 'flex-end' }}>
-                                    <Text style={{ fontSize: 9, fontWeight: 'bold', color: '#545454' }}>Fare:</Text>
-                                    <View style={{ borderColor: '#FFC107', backgroundColor: '#ffc10727', borderWidth: 2, borderRadius: 5, flexDirection: 'row', alignItems: 'center', paddingHorizontal: 15 }}>
-                                        <Text style={{ fontSize: 16 }}>₱</Text>
-                                        <TextInput onChangeText={(text) => updateCargo(0, 'cargoFare', Number(text))} keyboardType={'numeric'} placeholder='00.00' style={{ fontWeight: 'bold', textAlign: 'right' }} />
-                                    </View>
+                        <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' }}>
+                            <View style={{ flexDirection: 'row', alignItems: 'center', gap: 8 }}>
+                                <Ionicons name={'boat'} color={'#fff'} size={28} style={{ backgroundColor: '#cf2a3a', padding: 5, borderRadius: 50 }} />
+                                <View style={{ flexDirection: 'column' }}>
+                                    <Text style={{ color: '#747373ff', fontSize: 12 }}>{timeWithRoute}</Text>
+                                    <Text style={{ color: '#cf2a3a', fontSize: 22, fontWeight: '900', marginTop: -5 }}>{selectedVessel}</Text>
                                 </View>
                             </View>
+                            <TouchableOpacity onPress={() => closeFormSheet()} style={{ flexDirection: 'row', alignItems: 'center', gap: 5, paddingVertical: 8, paddingHorizontal: 10, backgroundColor: '#cf2a3a', borderRadius: 5 }}>
+                                <Ionicons name={'swap-horizontal'} color={'#fff'} size={15} />
+                                <Text style={{ color: '#fff', fontWeight: 'bold', fontSize: 13 }}>Change Trip</Text>
+                            </TouchableOpacity>
+                        </View>
+                        <View style={{ borderColor: '#B3B3B3', padding: 10, borderRadius: 8, borderWidth: 1, marginTop: 25 }}>
                             <View style={{ marginTop: 10 }}>
                                 <Text style={{ fontSize: 9, fontWeight: 'bold', color: '#545454' }}>Owner Full Name:</Text>
                                 <View style={{ borderColor: '#B3B3B3', borderWidth: 1, borderRadius: 5 }}>
-                                    <TextInput onChangeText={(text) => updatePassenger(0, 'name', text)} placeholder='Last Name, First Name' style={{ fontSize: 13 }} />
+                                    <TextInput placeholder='Last Name, First Name' style={{ fontSize: 13 }} />
                                 </View>
                             </View>
                             <View style={{ marginTop: 10 }}>
                                 <Text style={{ fontSize: 9, fontWeight: 'bold', color: '#545454' }}>Brand:</Text>
                                 <View style={{ borderColor: '#B3B3B3', borderWidth: 1, borderRadius: 5 }}>
-                                    <Dropdown onChange={(item) => {updateCargo(0, 'brand', item.value), setSelectdBrand(item.value)}} value={selectedBrand} data={formattedBrands} labelField="label" valueField="value" placeholder="Select Brand" style={{ height: 40, width: '100%', paddingHorizontal: 10 }}
+                                    <Dropdown onChange={(item) => setSelectdBrand(item.value)} value={selectedBrand} data={formattedBrands} labelField="label" valueField="id" placeholder="Select Category" style={{ height: 40, width: '100%', paddingHorizontal: 10 }}
                                         containerStyle={{
                                             alignSelf: 'flex-start',
-                                            width: '85%',
+                                            width: '80%',
                                         }}
-                                        selectedTextStyle={{ fontSize: 14, lineHeight: 35, }}
+                                        selectedTextStyle={{ fontWeight: '500', fontSize: 12, lineHeight: 35, }}
                                         renderRightIcon={() => (
                                             <Ionicons name="chevron-down" size={15} />
                                         )}
                                         dropdownPosition="bottom"
                                         renderItem={(item) => (
                                             <View style={{ width: '80%', padding: 8 }}>
-                                                <Text>{item.label}</Text>
+                                            <Text>{item.label}</Text>
                                             </View>
                                         )}
                                     />
                                 </View>
                             </View>
-                            <View style={{ marginTop: 5, flexDirection: 'row', justifyContent: 'space-between' }}>
+                            <View style={{ marginTop: 5, flexDirection: 'row', gap: 8 }}>
                                 <View style={{ width: '50%' }}>
                                     <Text style={{ fontSize: 9, fontWeight: 'bold', color: '#545454' }}>CC:</Text>
                                     <View style={{ borderColor: '#B3B3B3', borderWidth: 1, borderRadius: 5 }}>
-                                        <Dropdown onChange={(item) => {updateCargo(0, 'cc', item.value), setSelectedCC(item.value)}} value={selectedCC} data={formattedCCs} labelField="label" valueField="value" placeholder="Select CC" style={{ height: 40, width: '100%', paddingHorizontal: 10 }}
-                                            containerStyle={{
-                                                alignSelf: 'flex-start',
-                                                width: '42%',
-                                            }}
-                                            selectedTextStyle={{ fontSize: 14, lineHeight: 35, }}
-                                            renderRightIcon={() => (
-                                                <Ionicons name="chevron-down" size={15} />
-                                            )}
-                                            dropdownPosition="bottom"
-                                            renderItem={(item) => (
-                                                <View style={{ width: '80%', padding: 8 }}>
-                                                    <Text>{item.label}</Text>
-                                                </View>
-                                            )}
-                                        />
+                                        <TextInput placeholder='CC' style={{ fontSize: 13 }} />
                                     </View>
                                 </View>
-                                <View style={{ width: '48%' }}>
+                                <View style={{ width: '45%' }}>
                                     <Text style={{ fontSize: 9, fontWeight: 'bold', color: '#545454' }}>Plate#:</Text>
                                     <View style={{ borderColor: '#B3B3B3', borderWidth: 1, borderRadius: 5 }}>
-                                        <TextInput onChangeText={(text) => updateCargo(0, 'plateNo', text)} placeholder='Plate#' style={{ fontSize: 13 }} />
+                                        <TextInput placeholder='Address' style={{ fontSize: 13 }} />
                                     </View>
                                 </View>
                             </View>
                         </View>
-                        <TouchableOpacity disabled={saveCargoLoading} onPress={() => handleSaveCargo()} style={{ backgroundColor: '#cf2a3a', width: '100%', alignSelf: 'center', borderRadius: 30, paddingVertical: 15, marginTop: 30 }}>
-                            {saveCargoLoading == true ? (
+                        <TouchableOpacity style={{ backgroundColor: '#cf2a3a', width: '100%', alignSelf: 'center', borderRadius: 30, paddingVertical: 15, marginTop: 30 }}>
+                            {saveLoading == true ? (
                                 <ActivityIndicator size='small' color={'#fff'} />
                             ) : (
                                 <Text style={{ fontSize: 16, fontWeight: 'bold', textAlign: 'center', color: '#fff' }}>Proceed</Text>

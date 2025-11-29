@@ -321,7 +321,7 @@ export default function CargoComponent({ dateChange }: {dateChange: string} ) {
                                 <View style={{ width: '48%' }}>
                                     <Text style={{ fontSize: 9, fontWeight: 'bold', color: '#545454' }}>Plate#:</Text>
                                     <View style={{ borderColor: '#B3B3B3', borderWidth: 1, borderRadius: 5 }}>
-                                        <TextInput onChangeText={(text) => updateCargo(0, 'plateNo', text)} placeholder='Plate#' style={{ fontSize: 13 }} />
+                                        <TextInput onChangeText={(text) => updateCargo(0, 'plateNo', text)} placeholder='Address' style={{ fontSize: 13 }} />
                                     </View>
                                 </View>
                             </View>

@@ -89,10 +89,10 @@ export default function SeatPlan() {
         setFormLoading(true);
         
         setTimeout(() => {
+            seatSheetRef.current?.snapToIndex(0);
             setIsFormVisible(false);
-            setFormLoading(false);
+            setFormLoading(true);
         }, 300);
-        seatSheetRef.current?.snapToIndex(0);
     }
 
     const onFormView = () => {
@@ -221,14 +221,6 @@ export default function SeatPlan() {
         }, 300);
     }
 
-    const handleSheetChange = (index: number) => {
-        if(index >= 4 ) {
-            onFormView()
-        }else {
-            handleSeatChange()
-        }
-    }
-
 
     return (
         <GestureHandlerRootView style={{ flex: 1 }}>
@@ -282,7 +274,7 @@ export default function SeatPlan() {
                 </View>
 
                 {!passengers.some((p) => p.passType == 'Passes') && (
-                    <BottomSheet ref={seatSheetRef} snapPoints={seatSnapPoints} index={passengers.length > 0 ? 0 : -1} bottomInset={1} onChange={(index) => handleSheetChange(index)}>
+                    <BottomSheet ref={seatSheetRef} snapPoints={seatSnapPoints} index={passengers.length > 0 ? 0 : -1} bottomInset={1}>
                         <View style={{ flexDirection:'row', justifyContent: 'space-between', alignItems: 'center', paddingTop: 5, paddingHorizontal: 10 }}>
                             <Text style={{ fontSize: 10, fontWeight: "bold" }}>Seat# selected</Text>
                             {isFormVisible == true && (
@@ -325,7 +317,7 @@ export default function SeatPlan() {
                         )}
 
 
-                        <BottomSheetScrollView contentContainerStyle={{ paddingHorizontal: 10, paddingBottom: 10 }} showsVerticalScrollIndicator={true}>
+                        <BottomSheetScrollView contentContainerStyle={{ paddingHorizontal: 10, paddingBottom: 10 }} showsVerticalScrollIndicator={false}>
                             {isFormVisible == true && (
                                 <View style={{ position: 'relative' }}>
                                     {formLoading == true ? (

@@ -175,7 +175,6 @@ export default function CargoComponent({ dateChange }: {dateChange: string} ) {
 
     const handleSaveCargo = () => {
         setSaveCargoLoading(true);
-        console.log(passengers[0]);
         
         setTimeout(() => {
             if(!passengers[0].name?.trim()) {
@@ -321,12 +320,12 @@ export default function CargoComponent({ dateChange }: {dateChange: string} ) {
                                 <View style={{ width: '48%' }}>
                                     <Text style={{ fontSize: 9, fontWeight: 'bold', color: '#545454' }}>Plate#:</Text>
                                     <View style={{ borderColor: '#B3B3B3', borderWidth: 1, borderRadius: 5 }}>
-                                        <TextInput onChangeText={(text) => updateCargo(0, 'plateNo', text)} placeholder='Plate#' style={{ fontSize: 13 }} />
+                                        <TextInput onChangeText={(text) => updateCargo(0, 'plateNo', text)} placeholder='Address' style={{ fontSize: 13 }} />
                                     </View>
                                 </View>
                             </View>
                         </View>
-                        <TouchableOpacity disabled={saveCargoLoading} onPress={() => handleSaveCargo()} style={{ backgroundColor: '#cf2a3a', width: '100%', alignSelf: 'center', borderRadius: 30, paddingVertical: 15, marginTop: 30 }}>
+                        <TouchableOpacity onPress={() => handleSaveCargo()} style={{ backgroundColor: '#cf2a3a', width: '100%', alignSelf: 'center', borderRadius: 30, paddingVertical: 15, marginTop: 30 }}>
                             {saveCargoLoading == true ? (
                                 <ActivityIndicator size='small' color={'#fff'} />
                             ) : (

@@ -96,11 +96,7 @@ export const PassengerProvider: React.FC<{ children: React.ReactNode }> = ({ chi
         indentifier: number,
         key: K,
         value: CargoProps[K]
-    ) => setPassengers((prev) => 
-        prev.map((p, index) => index == indentifier ? {
-            ...p, cargo: {...p.cargo, [key]: value}
-        }: p)
-    );
+    ) => setPassengers((prev) => prev.map((p, index) => index == indentifier ? { ...p, [key]: value }: p));
 
 
     return (
