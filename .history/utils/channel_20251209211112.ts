@@ -1,0 +1,15 @@
+import { supabase } from "./supabase";
+
+export const channel = supabase.channel('seat_selection')
+    .on('broadcast', { event: 'seat_select' }, (payload) => {
+        console.log('Seat selected:', payload);
+    })
+    .subscribe();
+
+export function broadcastSEatSelection(seat: string) {
+    channel.send({
+        type: 'broadcast',
+        event: 'seat_select',
+        payload: { seat }
+    })
+}
