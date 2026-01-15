@@ -1,0 +1,13 @@
+import { Text, View } from "react-native";
+
+export default function ManageBooking() {
+    return (
+        <View style={{ flex: 1, backgroundColor: '#fff' }}>
+            <View style={{ paddingTop: 30, height: 100, backgroundColor: '#cf2a3a', paddingHorizontal: 20, flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' }}>
+                <Text style={{ color: '#fff', fontSize: 20, fontWeight: 'bold' }}>Manage Booking</Text>
+            </View>
+
+            
+        </View>
+    )
+}
