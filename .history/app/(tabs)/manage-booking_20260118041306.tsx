@@ -1,9 +1,8 @@
 import { FetchManageBookingList } from "@/api/manageBookingList";
 import { Ionicons } from "@expo/vector-icons";
 import React, { useEffect, useState } from "react";
-import { ActivityIndicator, Alert, Dimensions, FlatList, Modal, RefreshControl, Text, TextInput, TouchableOpacity, View } from "react-native";
+import { ActivityIndicator, Alert, Dimensions, FlatList, Modal, Text, TextInput, TouchableOpacity, View } from "react-native";
 import { Calendar } from "react-native-calendars";
-import { GestureHandlerRootView } from 'react-native-gesture-handler';
 
 type PaxBookingProps = {
     id: number;
@@ -17,13 +16,13 @@ type PaxBookingProps = {
 
 const { height } = Dimensions.get('window')
 
+
 export default function ManageBooking() {
     const [passengers, setPassengers] = useState<PaxBookingProps[] | []>([])
     const [loading, setLoading] = useState(true);
     const [calendarVisible, setCalendarVisible] = useState(false);
     const [date, setDate] = useState('');
     const [formattedDate, setFormattedDate] = useState('');
-    const [searchValue, setSearchValue] = useState('');
 
     useEffect(() => {
         const date = new Date;
@@ -35,9 +34,10 @@ export default function ManageBooking() {
         }
 
         const dateString = date.toISOString().split('T')[0];
+        const formatteDate = date.toLocaleDateString('en-US', options)
 
         setDate(date.toLocaleDateString('en-CA', { timeZone: 'Asia/Manila' }))
-        setFormattedDate(date.toLocaleDateString('en-US', options));
+        setFormattedDate(formatteDate);
         fetchBooking(dateString, null);
     }, []);
 
@@ -74,41 +74,6 @@ export default function ManageBooking() {
         }
     }
 
-    const handleDateSelect = (date: string) => {
-        const selectedDate = new Date(date);
-        const options: Intl.DateTimeFormatOptions = {
-            year: 'numeric',
-            month: 'long',
-            day: 'numeric',
-            timeZone: 'Asia/Manila'
-        }
-
-        setFormattedDate(selectedDate.toLocaleDateString('en-US', options))
-        fetchBooking(selectedDate.toISOString().split('T')[0], null),
-        setLoading(true);
-    }
-
-    const handleFilter = (search: string) => {
-        if (searchValue.length == 0) return;
-        setTimeout(() => {
-            fetchBooking(date, search);
-        }, 400);
-    }
-
-    const handleRefresh = () => {
-        const today = new Date();
-        const options: Intl.DateTimeFormatOptions = {
-            year: 'numeric',
-            month: 'long',
-            day: 'numeric',
-            timeZone: 'Asia/Manila'
-        }
-
-        setLoading(true)
-        fetchBooking(today.toISOString().split('T')[0], null)
-        setDate(today.toLocaleDateString('en-CA', { timeZone: 'Asia/Manila' })),
-        setFormattedDate(today.toLocaleDateString('en-US', options))
-    }
 
     const PassengerItem = React.memo(({ paxDatas }: { paxDatas: PaxBookingProps }) => {
         return (
@@ -124,20 +89,20 @@ export default function ManageBooking() {
     })
 
     return (
-        <GestureHandlerRootView style={{ flex: 1, backgroundColor: '#fff' }}>
+        <View style={{ flex: 1, backgroundColor: '#fff' }}>
             {calendarVisible && (
                 <Modal transparent animationType="slide" onRequestClose={() => setCalendarVisible(false)} >
                     <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center', backgroundColor: 'rgba(0, 0, 0, 0.5)' }}>
                         <View style={{ width: '80%', backgroundColor: '#fff', padding: 20, borderRadius: 10, shadowColor: '#000', shadowOffset: { width: 0, height: 2 }, shadowOpacity: 0.25, shadowRadius: 4 }}>
                             <Text style={{ fontSize: 18, fontWeight: 'bold' }}>Select Date</Text>
                             <Calendar
-                            // minDate={new Date().toISOString().split('T')[0]}
+                            minDate={new Date().toISOString().split('T')[0]}
                             onDayPress={(day) => {
-                                setDate(day.dateString),
-                                setCalendarVisible(false),
-                                handleDateSelect(day.dateString)
+                                setDate(day.dateString);
+                                setCalendarVisible(false)
+                                // handleOnDateSelect(day.dateString)
                             }}
-                            markedDates={{ [date]: {selected: true, selectedColor: '#CF2A3A'} }} 
+                            markedDates={{ [date ]: {selected: true, selectedColor: '#CF2A3A'} }} 
                             />
                             <TouchableOpacity onPress={() => setCalendarVisible(false)} style={{ marginTop: 20, padding: 10, backgroundColor: '#CF2A3A', borderRadius: 5 }}>
                                 <Text style={{ color: '#fff', textAlign: 'center' }}>Close Calendar</Text>
@@ -154,13 +119,9 @@ export default function ManageBooking() {
                     </TouchableOpacity>
                 </View>
                 <View style={{ position: 'relative', borderColor: '#cfcfcf73', backgroundColor: '#d4abab73', borderWidth: 1, borderRadius: 50, flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', paddingHorizontal: 10 }}>
-                    <TextInput onChangeText={(text) => {handleFilter(text), setSearchValue(text)}} value={searchValue} placeholder='Search' placeholderTextColor='#fff' style={{ fontSize: 13, fontWeight: '600', width: '90%', color: '#fff' }} />
-                    <TouchableOpacity disabled={searchValue.length == 0} onPress={() => {setSearchValue(''), fetchBooking(date, null)}} style={{ borderLeftWidth: 1, borderLeftColor: '#cfcfcfd0', paddingLeft: 10 }}>
-                        {searchValue.length > 0 ? (
-                            <Ionicons name={'close'} size={20} color={'#fff'} />
-                        ) : (
-                            <Ionicons name={'search'} size={20} color={'#fff'} />
-                        )}
+                    <TextInput placeholder='Search' placeholderTextColor='#fff' style={{ fontSize: 13, fontWeight: '600', width: '90%', color: '#fff' }} />
+                    <TouchableOpacity style={{ borderLeftWidth: 1, borderLeftColor: '#cfcfcfd0', paddingLeft: 10 }}>
+                        <Ionicons name={'search'} size={20} color={'#fff'} />
                     </TouchableOpacity>
                 </View>
             </View>
@@ -176,8 +137,7 @@ export default function ManageBooking() {
                                     <Text style={{ fontWeight: 'bold', fontSize: 18 }}>Bookings</Text>
                                     <Text style={{ fontSize: 15, fontWeight: 'bold' }}>{formattedDate}</Text>
                                 </View>
-                                <FlatList data={passengers.reverse()} keyExtractor={(passengers) => String(passengers.id)} showsVerticalScrollIndicator={false}
-                                    refreshControl={<RefreshControl refreshing={loading} onRefresh={() => handleRefresh()} colors={['#cf2a3a']} />}
+                                <FlatList data={passengers.reverse()} keyExtractor={(passengers) => String(passengers.id)} showsVerticalScrollIndicator={false} 
                                     renderItem={({ item: passengerDatas }) => <PassengerItem paxDatas={passengerDatas}/>}
                                     getItemLayout={(passengerDatas, index) => ({
                                         length: 90,
@@ -188,12 +148,12 @@ export default function ManageBooking() {
                             </>
                         ) : (
                             <>
-                                <Text style={{ textAlign: 'center', color: '#7A7A85', top: -50 }}>No bookings found</Text>
+                                <Text style={{ fontSize: 16, textAlign: 'center', color: '#7A7A85' }}>No bookings found.</Text>
                             </>
                         )}
                     </>
                 )}
             </View>
-        </GestureHandlerRootView>
+        </View>
     )
 }

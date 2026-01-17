@@ -315,20 +315,20 @@ export default function ManualBooking() {
             {calendar && (
                 <Modal transparent animationType="slide" onRequestClose={() => setCalendar(false)} >
                     <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center', backgroundColor: 'rgba(0, 0, 0, 0.5)' }}>
-                        <View style={{ width: '80%', backgroundColor: '#fff', padding: 20, borderRadius: 10, shadowColor: '#000', shadowOffset: { width: 0, height: 2 }, shadowOpacity: 0.25, shadowRadius: 4 }}>
-                            <Text style={{ fontSize: 18, fontWeight: 'bold' }}>Select Date</Text>
-                            <Calendar
-                            minDate={new Date().toISOString().split('T')[0]}
-                            onDayPress={(day) => {
-                                setTripDate(day.dateString); setCalendar(false),
-                                handleOnDateSelect(day.dateString)
-                            }}
-                            markedDates={{ [tripDate ]: {selected: true, selectedColor: '#CF2A3A'} }} 
-                            />
-                            <TouchableOpacity onPress={() => setCalendar(false)} style={{ marginTop: 20, padding: 10, backgroundColor: '#CF2A3A', borderRadius: 5 }}>
-                                <Text style={{ color: '#fff', textAlign: 'center' }}>Close Calendar</Text>
-                            </TouchableOpacity>
-                        </View>
+                    <View style={{ width: '80%', backgroundColor: '#fff', padding: 20, borderRadius: 10, shadowColor: '#000', shadowOffset: { width: 0, height: 2 }, shadowOpacity: 0.25, shadowRadius: 4 }}>
+                        <Text style={{ fontSize: 18, fontWeight: 'bold' }}>Select Date</Text>
+                        <Calendar
+                        minDate={new Date().toISOString().split('T')[0]}
+                        onDayPress={(day) => {
+                            setTripDate(day.dateString); setCalendar(false),
+                            handleOnDateSelect(day.dateString)
+                        }}
+                        markedDates={{ [tripDate ]: {selected: true, selectedColor: '#CF2A3A'} }} 
+                        />
+                        <TouchableOpacity onPress={() => setCalendar(false)} style={{ marginTop: 20, padding: 10, backgroundColor: '#CF2A3A', borderRadius: 5 }}>
+                            <Text style={{ color: '#fff', textAlign: 'center' }}>Close Calendar</Text>
+                        </TouchableOpacity>
+                    </View>
                     </View>
                 </Modal>
             )}

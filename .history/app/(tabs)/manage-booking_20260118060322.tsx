@@ -104,7 +104,6 @@ export default function ManageBooking() {
             timeZone: 'Asia/Manila'
         }
 
-        setLoading(true)
         fetchBooking(today.toISOString().split('T')[0], null)
         setDate(today.toLocaleDateString('en-CA', { timeZone: 'Asia/Manila' })),
         setFormattedDate(today.toLocaleDateString('en-US', options))

@@ -17,6 +17,7 @@ type PaxBookingProps = {
 
 const { height } = Dimensions.get('window')
 
+
 export default function ManageBooking() {
     const [passengers, setPassengers] = useState<PaxBookingProps[] | []>([])
     const [loading, setLoading] = useState(true);
@@ -35,9 +36,10 @@ export default function ManageBooking() {
         }
 
         const dateString = date.toISOString().split('T')[0];
+        const formatteDate = date.toLocaleDateString('en-US', options)
 
         setDate(date.toLocaleDateString('en-CA', { timeZone: 'Asia/Manila' }))
-        setFormattedDate(date.toLocaleDateString('en-US', options));
+        setFormattedDate(formatteDate);
         fetchBooking(dateString, null);
     }, []);
 
@@ -93,21 +95,6 @@ export default function ManageBooking() {
         setTimeout(() => {
             fetchBooking(date, search);
         }, 400);
-    }
-
-    const handleRefresh = () => {
-        const today = new Date();
-        const options: Intl.DateTimeFormatOptions = {
-            year: 'numeric',
-            month: 'long',
-            day: 'numeric',
-            timeZone: 'Asia/Manila'
-        }
-
-        setLoading(true)
-        fetchBooking(today.toISOString().split('T')[0], null)
-        setDate(today.toLocaleDateString('en-CA', { timeZone: 'Asia/Manila' })),
-        setFormattedDate(today.toLocaleDateString('en-US', options))
     }
 
     const PassengerItem = React.memo(({ paxDatas }: { paxDatas: PaxBookingProps }) => {
@@ -177,7 +164,7 @@ export default function ManageBooking() {
                                     <Text style={{ fontSize: 15, fontWeight: 'bold' }}>{formattedDate}</Text>
                                 </View>
                                 <FlatList data={passengers.reverse()} keyExtractor={(passengers) => String(passengers.id)} showsVerticalScrollIndicator={false}
-                                    refreshControl={<RefreshControl refreshing={loading} onRefresh={() => handleRefresh()} colors={['#cf2a3a']} />}
+                                    refreshControl={<RefreshControl refreshing={loading} onRefresh={() => {fetchBooking(new Date().toISOString().split('T')[0], null), setLoading(true)}} colors={['#cf2a3a']} />}
                                     renderItem={({ item: passengerDatas }) => <PassengerItem paxDatas={passengerDatas}/>}
                                     getItemLayout={(passengerDatas, index) => ({
                                         length: 90,
