@@ -114,7 +114,7 @@ export default function ManualBooking() {
 
         setFormattedDate(queryDate);
         handleFetchTrips(today);
-        
+        console.log(trips)
         return () => appState.remove();
     }, [])
 
@@ -126,22 +126,10 @@ export default function ManualBooking() {
     }, [trips])
 
     const handleTimeChecker = () => {
-        const currentTime = new Date();
+        const now = new Date();
+        const currentTime = now.getTime();
 
-        const updatedTrips = trips?.map(trip => {
-            const timeString = trip.departure_time;
-            const [hours, minutes] = timeString.split(':').map(Number);
-            const tripTime = new Date();
-            tripTime.setHours(hours, minutes, 0, 0);
-    
-            if(currentTime > tripTime && trip.hasDeparted == false) {
-                return {...trip, hasDeparted: true}
-            }
-
-            return trip;
-        })
-
-        setTrips(updatedTrips as TripProps[])
+        
     }
 
     const handleRefresh = () => {
@@ -432,7 +420,7 @@ export default function ManualBooking() {
                                 </View>
                             ) : (
                                 <>
-                                    { trips && trips.filter(t => t.hasDeparted == false).map((trip) => (
+                                    {trips?.filter(t => t.hasDeparted == false).map((trip) => (
                                         <TouchableOpacity onPress={() => handleSaveTrip(trip.vessel, trip.trip_id, trip.route_id, trip.route_origin, trip.route_destination, trip.mobile_code, trip.code, trip.web_code, trip.departure_time, trip.vessel_id, trip.isCargoable)} key={trip.trip_id} style={{ paddingHorizontal: 15, paddingVertical: 20, backgroundColor: '#fff', borderRadius: 10, marginTop: 12, flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' }}>
                                             <View>
                                                 <Text style={{ fontWeight: 'bold', fontSize: 13, color: '#cf2a3a' }}>{`${trip.departure}`}</Text>

@@ -339,7 +339,7 @@ export default function CargoComponent({ dateChange }: {dateChange: string} ) {
         <View style={{ flex: 1, height }}>
             <View style={{ flexDirection: 'row', gap: 10, paddingHorizontal: 15, paddingTop: 20 }}>
                 <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', width: '100%' }}>
-                    { trips && (trips.length > 0 && trips.some(t => t.hasDeparted == false)) &&  (
+                    { trips && (trips.length > 0 && !trips.some(t => t.hasDeparted == false)) &&  (
                         <Text style={{ fontSize: 18, fontWeight: 'bold' }}>Select Trip</Text>
                     )}
                 </View>
@@ -349,13 +349,13 @@ export default function CargoComponent({ dateChange }: {dateChange: string} ) {
                     <View style={{ height: height / 2, justifyContent: 'center' }}>
                         <ActivityIndicator size={'large'} color={'#cf2a3a'} />
                     </View>
-                ) : trips?.length == 0 || trips.some(t => t.hasDeparted == false) ? (
+                ) : trips?.length == 0 ? (
                     <View style={{ height: height / 2, justifyContent: 'center' }}>
                         <Text style={{ color: '#7A7A85', textAlign: 'center' }}>No Available Trips</Text>
                     </View>
                 ) : (
                     <View style={{ paddingHorizontal: 20 }}>
-                        {trips?.filter(t => t.hasDeparted == true).map((trip) => (
+                        {trips?.filter(t => t.hasDeparted == false).map((trip) => (
                             <TouchableOpacity onPress={() => handleTripSelect(trip.vessel, trip.trip_id, trip.route_id, trip.route_origin, trip.route_destination, trip.mobile_code, trip.code, trip.web_code, trip.departure_time, trip.vessel_id)} key={trip.trip_id} style={{ paddingHorizontal: 15, paddingVertical: 20, backgroundColor: '#fff', borderRadius: 10, marginTop: 12, flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' }}>
                                 <View>
                                     <Text style={{ fontWeight: 'bold', fontSize: 13, color: '#cf2a3a' }}>{`${trip.departure}`}</Text>

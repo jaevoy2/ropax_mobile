@@ -60,7 +60,6 @@ export default function Expenses() {
     const [date, setDate] = useState('');
     const [refresh, setRefresh] = useState(false);
     const [modalVisible, setModalVisible] = useState(false);
-    const [updateLoading, setUpdateLoading] = useState(false);
 
     useEffect(() => {
         const getDate = new Date();
@@ -194,14 +193,13 @@ export default function Expenses() {
     }
 
     const handleSaveExpenseUpdate = async (expense: EditExpenseProps) => {
-        setUpdateLoading(true);
         if(expenseToUpdate.amount == 0 || expenseToUpdate.category.id == 0 || !expense.description.trim() || expenseToUpdate.tripSchedID == 0) {
             Alert.alert('Invalid', 'Failed to save update. Please fill out the form.');
             return;
         }
 
         try {
-            const saveUpdate = await UpdateExpense(expenseToUpdate.id, expenseToUpdate.tripSchedID, expenseToUpdate.description, expenseToUpdate.amount, expenseToUpdate.category.id);
+            const saveUpdate = await UpdateExpense(expenseToUpdate.tripSchedID, expenseToUpdate.description, expenseToUpdate.amount, expenseToUpdate.category.id);
 
             if(!saveUpdate.error) {
                 const getDate = new Date();
@@ -210,13 +208,11 @@ export default function Expenses() {
                 
                 Alert.alert('Success', saveUpdate.success, [{
                     text: 'Ok',
-                    onPress: () => {fetchExpenses(monthName, String(year)), setModalVisible(false)}
+                    onPress: () => fetchExpenses(monthName, String(year))
                 }])
             }
         }catch(error: any) {
             Alert.alert('Error', error.message);
-        }finally {
-            setUpdateLoading(false);
         }
     }
 
@@ -265,12 +261,8 @@ export default function Expenses() {
                                 </View>
                             </View>
                         </View>
-                        <TouchableOpacity disabled={updateLoading} onPress={() => handleSaveExpenseUpdate(expenseToUpdate)} style={{ marginTop: 30, padding: 10, backgroundColor: '#CF2A3A', borderRadius: 5 }}>
-                            {updateLoading == false ? (
-                                <Text style={{ color: '#fff', textAlign: 'center' }}>Update</Text>
-                            ): (
-                                <ActivityIndicator size={'small'} color={'#fff'} />
-                            )}
+                        <TouchableOpacity onPress={() => handleSaveExpenseUpdate(expenseToUpdate)} style={{ marginTop: 30, padding: 10, backgroundColor: '#CF2A3A', borderRadius: 5 }}>
+                            <Text style={{ color: '#fff', textAlign: 'center' }}>Update</Text>
                         </TouchableOpacity>
                         <TouchableOpacity onPress={() => setModalVisible(false)} style={{ marginTop: 10, padding: 10, borderRadius: 5, borderColor: '#cf2a3a', borderWidth: 1 }}>
                             <Text style={{ color: '#cf2a3a', textAlign: 'center' }}>Cancel</Text>

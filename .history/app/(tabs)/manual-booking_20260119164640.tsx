@@ -29,7 +29,6 @@ type TripProps = {
     web_code: string;
     mobile_code: string;
     isCargoable: number;
-    hasDeparted: boolean;
 }
 
 type TotalBookingProps = {
@@ -111,37 +110,21 @@ export default function ManualBooking() {
         const formattedDate = date.toLocaleDateString('en-US', options);
         const day = date.toLocaleDateString('en-US', { weekday: 'long', timeZone: 'Asia/Manila' });
         const queryDate = `${formattedDate} (${day})`;
+  
+        if(trips.length > 0) {
+            // setInterval(handleTimeChecker, 1000)
+        }
 
         setFormattedDate(queryDate);
         handleFetchTrips(today);
-        
         return () => appState.remove();
     }, [])
 
-    useEffect(() => {
-        if(trips && trips.length > 0) {
-            const interval = setInterval(handleTimeChecker, 60 * 60 * 1000)
-            return () => clearInterval(interval)
-        }
-    }, [trips])
-
     const handleTimeChecker = () => {
-        const currentTime = new Date();
+        const now = new Date();
+        const currentTime = now.getTime();
 
-        const updatedTrips = trips?.map(trip => {
-            const timeString = trip.departure_time;
-            const [hours, minutes] = timeString.split(':').map(Number);
-            const tripTime = new Date();
-            tripTime.setHours(hours, minutes, 0, 0);
-    
-            if(currentTime > tripTime && trip.hasDeparted == false) {
-                return {...trip, hasDeparted: true}
-            }
-
-            return trip;
-        })
-
-        setTrips(updatedTrips as TripProps[])
+        console.log(currentTime)
     }
 
     const handleRefresh = () => {
@@ -203,23 +186,7 @@ export default function ManualBooking() {
 
     const handleFetchTrips = async (queryDate: string) => {
         try {
-            const tripsFetch = await FetchTrips(queryDate)
-            let tripStatus = '';
-
-            function verifyTime(timeString: string) {
-                tripStatus = '';
-                const currentTime = new Date();
-                
-                const [hours, minutes] = timeString.split(':').map(Number);
-                const tripTime = new Date();
-                tripTime.setHours(hours, minutes, 0, 0);
-
-                if(currentTime > tripTime) {
-                    tripStatus = 'departed';
-                }else {
-                    tripStatus = 'onPort';
-                }
-            }
+            const tripsFetch = await FetchTrips(queryDate);
 
             if(tripsFetch) {
                 const tripsData: TripProps[] = tripsFetch.data.map((t: any) => ({
@@ -240,8 +207,7 @@ export default function ManualBooking() {
                             hour12: true
                         }
                     ),
-                    isCargoable: t.trip.vessel.is_cargoable,
-                    hasDeparted: (verifyTime(t.trip.departure_time), tripStatus == 'departed' ? true : false)
+                    isCargoable: t.trip.vessel.is_cargoable
                 }))
 
                 setTrips(tripsData);
@@ -426,21 +392,21 @@ export default function ManualBooking() {
                                 <View style={{ height: height / 2, justifyContent: 'center' }}>
                                     <ActivityIndicator size={'large'} color={'#cf2a3a'} />
                                 </View>
-                            ) : trips?.length == 0 || !trips.some(t => t.hasDeparted == false) ? (
+                            ) : trips?.length == 0 ? (
                                 <View style={{ height: height / 2, justifyContent: 'center' }}>
                                     <Text style={{ color: '#7A7A85', textAlign: 'center' }}>No Available Trips</Text>
                                 </View>
                             ) : (
                                 <>
-                                    { trips && trips.filter(t => t.hasDeparted == false).map((trip) => (
-                                        <TouchableOpacity onPress={() => handleSaveTrip(trip.vessel, trip.trip_id, trip.route_id, trip.route_origin, trip.route_destination, trip.mobile_code, trip.code, trip.web_code, trip.departure_time, trip.vessel_id, trip.isCargoable)} key={trip.trip_id} style={{ paddingHorizontal: 15, paddingVertical: 20, backgroundColor: '#fff', borderRadius: 10, marginTop: 12, flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' }}>
-                                            <View>
-                                                <Text style={{ fontWeight: 'bold', fontSize: 13, color: '#cf2a3a' }}>{`${trip.departure}`}</Text>
-                                                <Text style={{ fontWeight: 'bold', fontSize: 13 }}>{`${trip.route_origin}  >  ${trip.route_destination} [ ${trip.vessel} ]`}</Text>
-                                            </View>
-                                            <Ionicons name="chevron-forward" size={18} />
-                                        </TouchableOpacity>
-                                    ))}
+                                {trips?.map((trip) => (
+                                    <TouchableOpacity onPress={() => handleSaveTrip(trip.vessel, trip.trip_id, trip.route_id, trip.route_origin, trip.route_destination, trip.mobile_code, trip.code, trip.web_code, trip.departure_time, trip.vessel_id, trip.isCargoable)} key={trip.trip_id} style={{ paddingHorizontal: 15, paddingVertical: 20, backgroundColor: '#fff', borderRadius: 10, marginTop: 12, flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' }}>
+                                        <View>
+                                            <Text style={{ fontWeight: 'bold', fontSize: 13, color: '#cf2a3a' }}>{`${trip.departure}`}</Text>
+                                            <Text style={{ fontWeight: 'bold', fontSize: 13 }}>{`${trip.route_origin}  >  ${trip.route_destination} [ ${trip.vessel} ]`}</Text>
+                                        </View>
+                                        <Ionicons name="chevron-forward" size={18} />
+                                    </TouchableOpacity>
+                                ))}
                                 </>
                             )}
                         </View>

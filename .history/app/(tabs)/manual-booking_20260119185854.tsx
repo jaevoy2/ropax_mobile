@@ -114,7 +114,7 @@ export default function ManualBooking() {
 
         setFormattedDate(queryDate);
         handleFetchTrips(today);
-        
+        console.log(trips.filter(t => t.hasDeparted == true));
         return () => appState.remove();
     }, [])
 
@@ -432,7 +432,7 @@ export default function ManualBooking() {
                                 </View>
                             ) : (
                                 <>
-                                    { trips && trips.filter(t => t.hasDeparted == false).map((trip) => (
+                                    {trips?.filter(t => t.hasDeparted == false).map((trip) => (
                                         <TouchableOpacity onPress={() => handleSaveTrip(trip.vessel, trip.trip_id, trip.route_id, trip.route_origin, trip.route_destination, trip.mobile_code, trip.code, trip.web_code, trip.departure_time, trip.vessel_id, trip.isCargoable)} key={trip.trip_id} style={{ paddingHorizontal: 15, paddingVertical: 20, backgroundColor: '#fff', borderRadius: 10, marginTop: 12, flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' }}>
                                             <View>
                                                 <Text style={{ fontWeight: 'bold', fontSize: 13, color: '#cf2a3a' }}>{`${trip.departure}`}</Text>

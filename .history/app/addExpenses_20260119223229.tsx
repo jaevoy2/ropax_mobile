@@ -271,8 +271,7 @@ export default function AddExpenses() {
                                         <View style={{ width: '72.5%' }}>
                                             <Text style={{ fontSize: 10, fontWeight: 'bold', color: '#545454' }}>Category</Text>
                                             <View style={{ borderColor: '#B3B3B3', borderWidth: 1, borderRadius: 5, flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' }}>
-                                                <Dropdown onChange={item => updateExpense(e.id, 'expense_category_id', item.id)} value={e.expense_category_id || undefined} data={dropdownCategory} labelField="label" valueField="id" placeholder="Select Category" 
-                                                    style={{ height: 40, width: '80%', paddingHorizontal: 10 }}
+                                                <Dropdown onChange={item => updateExpense(e.id, 'expense_category_id', item.id)} value={e.expense_category_id || undefined} data={dropdownCategory} labelField="label" valueField="id" placeholder="Select Category" style={{ height: 40, width: '80%', paddingHorizontal: 10 }}
                                                     containerStyle={{
                                                         alignSelf: 'flex-start',
                                                         width: '53%',

@@ -114,16 +114,16 @@ export default function ManualBooking() {
 
         setFormattedDate(queryDate);
         handleFetchTrips(today);
-        
+
         return () => appState.remove();
     }, [])
 
-    useEffect(() => {
-        if(trips && trips.length > 0) {
-            const interval = setInterval(handleTimeChecker, 60 * 60 * 1000)
-            return () => clearInterval(interval)
-        }
-    }, [trips])
+    // useEffect(() => {
+    //     if(trips && trips.length > 0) {
+    //         const interval = setInterval(handleTimeChecker, 60 * 60 * 1000)
+    //         return () => clearInterval(interval)
+    //     }
+    // }, [trips])
 
     const handleTimeChecker = () => {
         const currentTime = new Date();

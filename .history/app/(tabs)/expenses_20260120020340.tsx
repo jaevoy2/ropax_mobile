@@ -195,6 +195,7 @@ export default function Expenses() {
 
     const handleSaveExpenseUpdate = async (expense: EditExpenseProps) => {
         setUpdateLoading(true);
+        console.log(expenseToUpdate.id)
         if(expenseToUpdate.amount == 0 || expenseToUpdate.category.id == 0 || !expense.description.trim() || expenseToUpdate.tripSchedID == 0) {
             Alert.alert('Invalid', 'Failed to save update. Please fill out the form.');
             return;
@@ -210,7 +211,7 @@ export default function Expenses() {
                 
                 Alert.alert('Success', saveUpdate.success, [{
                     text: 'Ok',
-                    onPress: () => {fetchExpenses(monthName, String(year)), setModalVisible(false)}
+                    onPress: () => fetchExpenses(monthName, String(year))
                 }])
             }
         }catch(error: any) {

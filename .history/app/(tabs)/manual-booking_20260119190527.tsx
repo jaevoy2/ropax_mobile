@@ -114,7 +114,7 @@ export default function ManualBooking() {
 
         setFormattedDate(queryDate);
         handleFetchTrips(today);
-        
+        console.log(trips.filter(t => t.hasDeparted == true))
         return () => appState.remove();
     }, [])
 

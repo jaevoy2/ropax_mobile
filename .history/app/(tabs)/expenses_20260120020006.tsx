@@ -210,7 +210,7 @@ export default function Expenses() {
                 
                 Alert.alert('Success', saveUpdate.success, [{
                     text: 'Ok',
-                    onPress: () => {fetchExpenses(monthName, String(year)), setModalVisible(false)}
+                    onPress: () => fetchExpenses(monthName, String(year))
                 }])
             }
         }catch(error: any) {

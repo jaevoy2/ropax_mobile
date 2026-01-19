@@ -23,8 +23,6 @@ type CargoTripProps = {
     code: string;
     web_code: string;
     mobile_code: string;
-    isCargoable?: boolean;
-    hasDeparted?: boolean;
 }
 
 export default function CargoComponent({ dateChange }: {dateChange: string} ) {
@@ -52,32 +50,6 @@ export default function CargoComponent({ dateChange }: {dateChange: string} ) {
         setCargoContentLoading(true);
         handleFetchTrips(dateChange);
     }, [dateChange]);
-
-    useEffect(() => {
-        if(trips && trips.length > 0) {
-            const interval = setInterval(handleTimeChecker, 60 * 60 * 1000)
-            return () => clearInterval(interval)
-        }
-    }, [trips]);
-
-    const handleTimeChecker = () => {
-        const currentTime = new Date();
-
-        const updatedTrips = trips?.map(trip => {
-            const timeString = trip.departure_time;
-            const [hours, minutes] = timeString.split(':').map(Number);
-            const tripTime = new Date();
-            tripTime.setHours(hours, minutes, 0, 0);
-    
-            if(currentTime > tripTime && trip.hasDeparted == false) {
-                return {...trip, hasDeparted: true}
-            }
-
-            return trip;
-        })
-
-        setTrips(updatedTrips as CargoTripProps[])
-    }
 
     const addCargo = () => {
         const form_id = formId + 1;
@@ -116,22 +88,6 @@ export default function CargoComponent({ dateChange }: {dateChange: string} ) {
     const handleFetchTrips = async (queryDate: string) => {
         try {
             const tripsFetch = await FetchCargoVessel(queryDate);
-            let tripStatus = '';
-
-            function verifyTime(timeString: string) {
-                tripStatus = '';
-                const currentTime = new Date();
-                
-                const [hours, minutes] = timeString.split(':').map(Number);
-                const tripTime = new Date();
-                tripTime.setHours(hours, minutes, 0, 0);
-
-                if(currentTime > tripTime) {
-                    tripStatus = 'departed';
-                }else {
-                    tripStatus = 'onPort';
-                }
-            }
 
             if(tripsFetch) {
                 const tripsData: CargoTripProps[] = tripsFetch.data.map((t: any) => ({
@@ -151,9 +107,7 @@ export default function CargoComponent({ dateChange }: {dateChange: string} ) {
                             minute: '2-digit',
                             hour12: true
                         }
-                    ),
-                    isCargoable: t.trip?.is_cargoable,
-                    hasDeparted: (verifyTime(t.trip?.departure_time), tripStatus == 'departed' ? true : false)
+                    )
                 }))
 
                 setTrips(tripsData);
@@ -339,9 +293,7 @@ export default function CargoComponent({ dateChange }: {dateChange: string} ) {
         <View style={{ flex: 1, height }}>
             <View style={{ flexDirection: 'row', gap: 10, paddingHorizontal: 15, paddingTop: 20 }}>
                 <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', width: '100%' }}>
-                    { trips && (trips.length > 0 && trips.some(t => t.hasDeparted == false)) &&  (
-                        <Text style={{ fontSize: 18, fontWeight: 'bold' }}>Select Trip</Text>
-                    )}
+                    <Text style={{ fontSize: 18, fontWeight: 'bold' }}>Select Trip</Text>
                 </View>
             </View>
             <Animated.View style={{ opacity: tripsAnimation, height: height }}> 
@@ -349,13 +301,13 @@ export default function CargoComponent({ dateChange }: {dateChange: string} ) {
                     <View style={{ height: height / 2, justifyContent: 'center' }}>
                         <ActivityIndicator size={'large'} color={'#cf2a3a'} />
                     </View>
-                ) : trips?.length == 0 || trips.some(t => t.hasDeparted == false) ? (
+                ) : trips?.length == 0 ? (
                     <View style={{ height: height / 2, justifyContent: 'center' }}>
                         <Text style={{ color: '#7A7A85', textAlign: 'center' }}>No Available Trips</Text>
                     </View>
                 ) : (
                     <View style={{ paddingHorizontal: 20 }}>
-                        {trips?.filter(t => t.hasDeparted == true).map((trip) => (
+                        {trips?.map((trip) => (
                             <TouchableOpacity onPress={() => handleTripSelect(trip.vessel, trip.trip_id, trip.route_id, trip.route_origin, trip.route_destination, trip.mobile_code, trip.code, trip.web_code, trip.departure_time, trip.vessel_id)} key={trip.trip_id} style={{ paddingHorizontal: 15, paddingVertical: 20, backgroundColor: '#fff', borderRadius: 10, marginTop: 12, flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' }}>
                                 <View>
                                     <Text style={{ fontWeight: 'bold', fontSize: 13, color: '#cf2a3a' }}>{`${trip.departure}`}</Text>
@@ -402,7 +354,7 @@ export default function CargoComponent({ dateChange }: {dateChange: string} ) {
                                 <View style={{ borderBottomColor: '#cf2a3a', borderBottomWidth: 2, flexDirection: 'row', alignItems: 'center', paddingHorizontal: 15 }}>
                                     <Text style={{ fontSize: 17, color: '#cf2a3a', fontWeight: 'bold' }}>₱ </Text>
                                     <Text style={{ fontWeight: 'bold', textAlign: 'right', fontSize: 17, color: '#cf2a3a' }}>
-                                        {getTotalAmount.toFixed ? getTotalAmount?.toLocaleString('en-PH', { minimumFractionDigits: 2,  maximumFractionDigits: 2 }) : '0.00'}
+                                        {getTotalAmount?.toLocaleString('en-PH', { minimumFractionDigits: 2,  maximumFractionDigits: 2 })}
                                     </Text>
                                 </View>
                             </View>
@@ -423,7 +375,7 @@ export default function CargoComponent({ dateChange }: {dateChange: string} ) {
                                                 <View style={{ borderColor: '#FFC107', backgroundColor: '#ffc10727', borderWidth: 2, borderRadius: 5, flexDirection: 'row', alignItems: 'center', paddingHorizontal: 15, paddingVertical: 8 }}>
                                                     <Text style={{ fontSize: 16 }}>₱ </Text>
                                                     <Text style={{ fontWeight: 'bold', textAlign: 'right', fontSize: 16 }}>
-                                                        {ComputedCargoAmount(c)?.amount?.toLocaleString('en-PH', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+                                                        {/* {ComputedCargoAmount(c)?.amount?.toLocaleString('en-PH', { minimumFractionDigits: 2, maximumFractionDigits: 2 })} */}
                                                     </Text>
                                                 </View>
                                             </View>

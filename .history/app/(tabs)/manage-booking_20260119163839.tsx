@@ -47,7 +47,22 @@ export default function ManageBooking() {
         }
     }, []);
 
-    
+    const handleTimeChecker = (timeString: string) => {
+        const now = new Date();
+        const hours = now.getHours();
+
+        const [time, modifier] = timeString.split(' ');
+        let [timeHours, minutes] = time.split(':').map(Number);
+
+        if (modifier === 'PM' && timeHours < 12) {
+            timeHours += 12;
+        } else if (modifier === 'AM' && timeHours === 12) {
+            timeHours = 0;
+        }
+        const currentTime = timeHours <= hours;
+        console.log(currentTime);
+    }
+
     const fetchBooking = async (dateString: string, search: string | null) => {
         try {
             const response = await FetchManageBookingList(dateString, search)

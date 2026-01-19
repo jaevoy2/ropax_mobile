@@ -188,7 +188,7 @@ export default function GenSettings() {
                 </TouchableOpacity>
             </View>
             <View style={{ padding: 10 }}>
-                <View style={{ paddingHorizontal: 15, paddingVertical: 20, backgroundColor: '#fff', borderColor: '#cf2a3a', borderWidth: 1, borderRadius: 10, marginTop: 5, flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' }}>
+                <View style={{ paddingHorizontal: 15, paddingVertical: 20, backgroundColor: '#fff', borderRadius: 10, marginTop: 5, flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' }}>
                     <View style={{ flexDirection: 'row', gap: 10, alignItems: 'center' }}>
                         {user?.image ? (
                             <Image source={{ uri: user.image }} style={{ borderRadius: 60, height: 50, width: 50 }} />
@@ -209,7 +209,7 @@ export default function GenSettings() {
                         )}
                     </View>
                 </View>
-                <TouchableOpacity onPress={fetchStations} style={{ paddingHorizontal: 15, paddingVertical: 20, borderRadius: 10, backgroundColor: '#fff', marginTop: 30, flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' }}>
+                <TouchableOpacity onPress={fetchStations} style={{ paddingHorizontal: 15, paddingVertical: 20, backgroundColor: '#fff', borderColor: '#cf2a3a', borderWidth: 1, borderRadius: 10, marginTop: 30, flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' }}>
                     <View style={{ flexDirection: 'row', gap: 10, alignItems: 'center' }}>
                         <MaterialCommunityIcons name="store" size={35} color={'#cf2a3a'} />
                         <View>

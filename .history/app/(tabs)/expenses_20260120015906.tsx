@@ -201,7 +201,7 @@ export default function Expenses() {
         }
 
         try {
-            const saveUpdate = await UpdateExpense(expenseToUpdate.id, expenseToUpdate.tripSchedID, expenseToUpdate.description, expenseToUpdate.amount, expenseToUpdate.category.id);
+            const saveUpdate = await UpdateExpense(expenseToUpdate.tripSchedID, expenseToUpdate.description, expenseToUpdate.amount, expenseToUpdate.category.id);
 
             if(!saveUpdate.error) {
                 const getDate = new Date();
@@ -210,7 +210,7 @@ export default function Expenses() {
                 
                 Alert.alert('Success', saveUpdate.success, [{
                     text: 'Ok',
-                    onPress: () => {fetchExpenses(monthName, String(year)), setModalVisible(false)}
+                    onPress: () => fetchExpenses(monthName, String(year))
                 }])
             }
         }catch(error: any) {

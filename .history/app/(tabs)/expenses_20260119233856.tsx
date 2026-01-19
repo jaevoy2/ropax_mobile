@@ -1,19 +1,16 @@
 import { FetchExpenses } from "@/api/expenses";
-import { FetchCategories } from "@/api/fetchCategories";
-import { UpdateExpense } from "@/api/updateExpense";
 import { useExpense } from "@/context/expense";
 import { Ionicons } from "@expo/vector-icons";
 import { router, useFocusEffect } from "expo-router";
 import { useCallback, useEffect, useState } from "react";
 import { ActivityIndicator, Alert, Dimensions, Modal, RefreshControl, ScrollView, Text, TextInput, TouchableOpacity, View } from "react-native";
-import { Dropdown } from "react-native-element-dropdown";
 
 type ExpenseProps = {
     id: number;
     tripSchedID: number;
     trip: string;
     description: string;
-    amount: number;
+    amount: string;
     date: string;
     category: {
         id: number;
@@ -28,7 +25,7 @@ type EditExpenseProps = {
     tripSchedID: number;
     trip: string;
     description: string;
-    amount: number;
+    amount: string;
     date: string;
     category: {
         id: number;
@@ -38,29 +35,19 @@ type EditExpenseProps = {
     }
 }
 
-type CategoryProps = {
-    categoryID: number;
-    name: string;
-}
-
-type PropPath = 
-    | { key: Exclude<keyof EditExpenseProps, 'category'>; value: EditExpenseProps[keyof EditExpenseProps] }
-    | { key: 'category'; subKey: keyof EditExpenseProps['category']; value: EditExpenseProps['category'][keyof EditExpenseProps['category']] }
 
 const { height } = Dimensions.get('screen');
 
 export default function Expenses() {
     const { setExpenses } = useExpense();
     const [fetchedExpenses, setFetchedExpenses] = useState<ExpenseProps[]>([]);
-    const [expenseToUpdate, setExpenseToUpdate] = useState<EditExpenseProps | null>(null)
-    const [categories, setCategories] = useState<CategoryProps[] | null>([])
+    const [updateExpense, setUpdateExpense] = useState<EditExpenseProps | null>(null)
     const [addDisable, setAddDisable] = useState(false);
     const [totalAmount, setTotalAmount] = useState('');
     const [contentLoading, setContentLoading] = useState(false);
     const [date, setDate] = useState('');
     const [refresh, setRefresh] = useState(false);
     const [modalVisible, setModalVisible] = useState(false);
-    const [updateLoading, setUpdateLoading] = useState(false);
 
     useEffect(() => {
         const getDate = new Date();
@@ -80,7 +67,6 @@ export default function Expenses() {
 
         setDate(fulldate);
         fetchExpenses(monthName, String(year))
-        handleFetchCategories();
     }, []);
 
     useFocusEffect(
@@ -124,23 +110,6 @@ export default function Expenses() {
         }
     }
 
-    const handleFetchCategories = async () => {
-        try {
-            const response = await FetchCategories();
-
-            if(!response.error) {
-                const categories: CategoryProps[] = response.categories.map((c: any) => ({
-                    categoryID: c.id,
-                    name: c.name
-                }))
-
-                setCategories(categories);
-            }
-        }catch(error: any) {
-            Alert.alert('Error', error.message);
-        }
-    }
-
     const handleRefresh = () => {
         setRefresh(true);
         
@@ -173,64 +142,21 @@ export default function Expenses() {
         router.push('/addExpenses');
     }
 
-    const handleExpenseToUpdate = (expense: ExpenseProps) => {
-        setExpenseToUpdate(expense);
+    const handleUpdateExpense = (expense: ExpenseProps) => {
+        setUpdateExpense(expense);
         setModalVisible(true);
-    }
-
-    const handleExpensePropUpdate = (prop: PropPath) => {
-        setExpenseToUpdate(prev => {
-            if(!prev) return prev;
-
-            if(prop.key == 'category') {
-                return {
-                    ...prev,
-                    category: { ...prev.category, [prop.subKey]: prop.value }
-                }
-            }
-
-            return { ...prev, [prop.key]: prop.value }
-        })
-    }
-
-    const handleSaveExpenseUpdate = async (expense: EditExpenseProps) => {
-        setUpdateLoading(true);
-        if(expenseToUpdate.amount == 0 || expenseToUpdate.category.id == 0 || !expense.description.trim() || expenseToUpdate.tripSchedID == 0) {
-            Alert.alert('Invalid', 'Failed to save update. Please fill out the form.');
-            return;
-        }
-
-        try {
-            const saveUpdate = await UpdateExpense(expenseToUpdate.id, expenseToUpdate.tripSchedID, expenseToUpdate.description, expenseToUpdate.amount, expenseToUpdate.category.id);
-
-            if(!saveUpdate.error) {
-                const getDate = new Date();
-                const monthName = getDate.toLocaleDateString('en-US', { month: 'long', timeZone: 'Asia/Manila' });
-                const year = getDate.getFullYear();
-                
-                Alert.alert('Success', saveUpdate.success, [{
-                    text: 'Ok',
-                    onPress: () => {fetchExpenses(monthName, String(year)), setModalVisible(false)}
-                }])
-            }
-        }catch(error: any) {
-            Alert.alert('Error', error.message);
-        }finally {
-            setUpdateLoading(false);
-        }
     }
 
     return (
         <View style={{ flex: 1, backgroundColor: '#fff' }}>
             <Modal transparent animationType={'slide'} onRequestClose={() => setModalVisible(false)} visible={modalVisible}>
                 <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center', backgroundColor: 'rgba(0, 0, 0, 0.5)' }}>
-                    <View style={{ width: '92%', backgroundColor: '#fff', padding: 20, borderRadius: 10, shadowColor: '#000', shadowOffset: { width: 0, height: 2 }, shadowOpacity: 0.25, shadowRadius: 4 }}>
-                        <Text style={{ fontWeight: 'bold', fontSize: 16, marginBottom: 10 }}>Update Expense</Text>
+                    <View style={{ width: '90%', backgroundColor: '#fff', padding: 20, borderRadius: 10, shadowColor: '#000', shadowOffset: { width: 0, height: 2 }, shadowOpacity: 0.25, shadowRadius: 4 }}>
                         <View>
                             <View>
                                 <Text style={{ fontSize: 10, fontWeight: 'bold', color: '#545454' }}>Description</Text>
                                 <View style={{ borderColor: '#B3B3B3', borderWidth: 1, borderRadius: 5 }}>
-                                    <TextInput onChangeText={(text) => handleExpensePropUpdate({ key: 'description', value: text })} value={expenseToUpdate?.description} placeholder='e.g. Vessel Oil' style={{ fontSize: 13 }} />
+                                    <TextInput value={updateExpense.description} placeholder='e.g. Vessel Oil' style={{ fontSize: 13 }} />
                                 </View>
                             </View>
                             <View style={{ marginTop: 5, flexDirection: 'row', gap: 8, alignItems: 'flex-end' }}>
@@ -238,17 +164,17 @@ export default function Expenses() {
                                     <Text style={{ fontSize: 10, fontWeight: 'bold', color: '#545454' }}>Amount:</Text>
                                     <View style={{ borderColor: '#B3B3B3', borderWidth: 1, borderRadius: 5, flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', paddingHorizontal: 5 }}>
                                         <Text style={{ fontWeight: 'bold', fontSize: 16, marginTop: -5 }}>₱</Text>
-                                        <TextInput onChangeText={(text) => handleExpensePropUpdate({ key: 'amount', value: Number(text) })} value={String(expenseToUpdate?.amount)} keyboardType='numeric' placeholder='00.00' style={{ fontSize: 13, textAlign: 'right', }} />
+                                        <TextInput value={updateExpense.amount} keyboardType='numeric' placeholder='00.00' style={{ fontSize: 13, textAlign: 'right', }} />
                                     </View>
                                 </View>
-                                <View style={{ width: '72.5%' }}>
+                                {/* <View style={{ width: '72.5%' }}>
                                     <Text style={{ fontSize: 10, fontWeight: 'bold', color: '#545454' }}>Category</Text>
                                     <View style={{ borderColor: '#B3B3B3', borderWidth: 1, borderRadius: 5, flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' }}>
-                                        <Dropdown onChange={item =>  handleExpensePropUpdate({ key: 'category', subKey: 'id', value: item.categoryID })} value={expenseToUpdate?.category.id || undefined} data={categories} labelField="name" valueField="categoryID" placeholder="Select Category" 
-                                            style={{ height: 40, width: '100%', paddingHorizontal: 10 }}
+                                        <Dropdown value={updateExpense.expense_category_id || undefined} data={dropdownCategory} labelField="label" valueField="id" placeholder="Select Category" 
+                                            style={{ height: 40, width: '80%', paddingHorizontal: 10 }}
                                             containerStyle={{
                                                 alignSelf: 'flex-start',
-                                                width: '58%',
+                                                width: '53%',
                                             }}
                                             selectedTextStyle={{ fontWeight: '500', fontSize: 12, lineHeight: 35, }}
                                             renderRightIcon={() => (
@@ -257,23 +183,16 @@ export default function Expenses() {
                                             dropdownPosition="bottom"
                                             renderItem={(item) => (
                                                 <View style={{ width: '80%', padding: 8 }}>
-                                                <Text>{item.name}</Text>
+                                                <Text>{item.label}</Text>
                                                 </View>
                                             )}
                                         />
                                     </View>
-                                </View>
+                                </View> */}
                             </View>
                         </View>
-                        <TouchableOpacity disabled={updateLoading} onPress={() => handleSaveExpenseUpdate(expenseToUpdate)} style={{ marginTop: 30, padding: 10, backgroundColor: '#CF2A3A', borderRadius: 5 }}>
-                            {updateLoading == false ? (
-                                <Text style={{ color: '#fff', textAlign: 'center' }}>Update</Text>
-                            ): (
-                                <ActivityIndicator size={'small'} color={'#fff'} />
-                            )}
-                        </TouchableOpacity>
-                        <TouchableOpacity onPress={() => setModalVisible(false)} style={{ marginTop: 10, padding: 10, borderRadius: 5, borderColor: '#cf2a3a', borderWidth: 1 }}>
-                            <Text style={{ color: '#cf2a3a', textAlign: 'center' }}>Cancel</Text>
+                        <TouchableOpacity onPress={() => setModalVisible(false)} style={{ marginTop: 20, padding: 10, backgroundColor: '#CF2A3A', borderRadius: 5 }}>
+                            <Text style={{ color: '#fff', textAlign: 'center' }}>Cancel</Text>
                         </TouchableOpacity>
                     </View>
                 </View>
@@ -315,7 +234,7 @@ export default function Expenses() {
                         {fetchedExpenses.length > 0 ? (
                             <ScrollView refreshControl={ <RefreshControl refreshing={refresh} onRefresh={handleRefresh} colors={['#cf2a3a']} /> }>
                                 {fetchedExpenses.map((e) => (
-                                    <TouchableOpacity onPress={() => handleExpenseToUpdate(e)} key={e.id} style={{ paddingHorizontal: 15, paddingVertical: 15, backgroundColor: '#fff', borderBottomColor: '#FFC1C5', borderBottomWidth: 1, flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' }}>
+                                    <TouchableOpacity onPress={() => handleUpdateExpense(e)} key={e.id} style={{ paddingHorizontal: 15, paddingVertical: 15, backgroundColor: '#fff', borderBottomColor: '#FFC1C5', borderBottomWidth: 1, flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' }}>
                                         <View>
                                             <Text style={{ fontWeight: '900', fontSize: 15 , color: '#cf2a3a' }}>{e.description}</Text>
                                             <View style={{ flexDirection: 'row', alignItems: 'center' }}>

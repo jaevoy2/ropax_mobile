@@ -1,6 +1,5 @@
 import { FetchExpenses } from "@/api/expenses";
 import { FetchCategories } from "@/api/fetchCategories";
-import { UpdateExpense } from "@/api/updateExpense";
 import { useExpense } from "@/context/expense";
 import { Ionicons } from "@expo/vector-icons";
 import { router, useFocusEffect } from "expo-router";
@@ -13,7 +12,7 @@ type ExpenseProps = {
     tripSchedID: number;
     trip: string;
     description: string;
-    amount: number;
+    amount: string;
     date: string;
     category: {
         id: number;
@@ -28,7 +27,7 @@ type EditExpenseProps = {
     tripSchedID: number;
     trip: string;
     description: string;
-    amount: number;
+    amount: string;
     date: string;
     category: {
         id: number;
@@ -60,7 +59,6 @@ export default function Expenses() {
     const [date, setDate] = useState('');
     const [refresh, setRefresh] = useState(false);
     const [modalVisible, setModalVisible] = useState(false);
-    const [updateLoading, setUpdateLoading] = useState(false);
 
     useEffect(() => {
         const getDate = new Date();
@@ -193,33 +191,6 @@ export default function Expenses() {
         })
     }
 
-    const handleSaveExpenseUpdate = async (expense: EditExpenseProps) => {
-        setUpdateLoading(true);
-        if(expenseToUpdate.amount == 0 || expenseToUpdate.category.id == 0 || !expense.description.trim() || expenseToUpdate.tripSchedID == 0) {
-            Alert.alert('Invalid', 'Failed to save update. Please fill out the form.');
-            return;
-        }
-
-        try {
-            const saveUpdate = await UpdateExpense(expenseToUpdate.id, expenseToUpdate.tripSchedID, expenseToUpdate.description, expenseToUpdate.amount, expenseToUpdate.category.id);
-
-            if(!saveUpdate.error) {
-                const getDate = new Date();
-                const monthName = getDate.toLocaleDateString('en-US', { month: 'long', timeZone: 'Asia/Manila' });
-                const year = getDate.getFullYear();
-                
-                Alert.alert('Success', saveUpdate.success, [{
-                    text: 'Ok',
-                    onPress: () => {fetchExpenses(monthName, String(year)), setModalVisible(false)}
-                }])
-            }
-        }catch(error: any) {
-            Alert.alert('Error', error.message);
-        }finally {
-            setUpdateLoading(false);
-        }
-    }
-
     return (
         <View style={{ flex: 1, backgroundColor: '#fff' }}>
             <Modal transparent animationType={'slide'} onRequestClose={() => setModalVisible(false)} visible={modalVisible}>
@@ -238,7 +209,7 @@ export default function Expenses() {
                                     <Text style={{ fontSize: 10, fontWeight: 'bold', color: '#545454' }}>Amount:</Text>
                                     <View style={{ borderColor: '#B3B3B3', borderWidth: 1, borderRadius: 5, flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', paddingHorizontal: 5 }}>
                                         <Text style={{ fontWeight: 'bold', fontSize: 16, marginTop: -5 }}>₱</Text>
-                                        <TextInput onChangeText={(text) => handleExpensePropUpdate({ key: 'amount', value: Number(text) })} value={String(expenseToUpdate?.amount)} keyboardType='numeric' placeholder='00.00' style={{ fontSize: 13, textAlign: 'right', }} />
+                                        <TextInput onChangeText={(text) => handleExpensePropUpdate({ key: 'amount', value: Number(text) })} value={expenseToUpdate?.amount} keyboardType='numeric' placeholder='00.00' style={{ fontSize: 13, textAlign: 'right', }} />
                                     </View>
                                 </View>
                                 <View style={{ width: '72.5%' }}>
@@ -265,12 +236,8 @@ export default function Expenses() {
                                 </View>
                             </View>
                         </View>
-                        <TouchableOpacity disabled={updateLoading} onPress={() => handleSaveExpenseUpdate(expenseToUpdate)} style={{ marginTop: 30, padding: 10, backgroundColor: '#CF2A3A', borderRadius: 5 }}>
-                            {updateLoading == false ? (
-                                <Text style={{ color: '#fff', textAlign: 'center' }}>Update</Text>
-                            ): (
-                                <ActivityIndicator size={'small'} color={'#fff'} />
-                            )}
+                        <TouchableOpacity style={{ marginTop: 30, padding: 10, backgroundColor: '#CF2A3A', borderRadius: 5 }}>
+                            <Text style={{ color: '#fff', textAlign: 'center' }}>Update</Text>
                         </TouchableOpacity>
                         <TouchableOpacity onPress={() => setModalVisible(false)} style={{ marginTop: 10, padding: 10, borderRadius: 5, borderColor: '#cf2a3a', borderWidth: 1 }}>
                             <Text style={{ color: '#cf2a3a', textAlign: 'center' }}>Cancel</Text>

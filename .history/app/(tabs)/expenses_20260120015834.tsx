@@ -201,7 +201,7 @@ export default function Expenses() {
         }
 
         try {
-            const saveUpdate = await UpdateExpense(expenseToUpdate.id, expenseToUpdate.tripSchedID, expenseToUpdate.description, expenseToUpdate.amount, expenseToUpdate.category.id);
+            const saveUpdate = await UpdateExpense(expenseToUpdate.tripSchedID, expenseToUpdate.description, expenseToUpdate.amount, expenseToUpdate.category.id);
 
             if(!saveUpdate.error) {
                 const getDate = new Date();
@@ -210,7 +210,7 @@ export default function Expenses() {
                 
                 Alert.alert('Success', saveUpdate.success, [{
                     text: 'Ok',
-                    onPress: () => {fetchExpenses(monthName, String(year)), setModalVisible(false)}
+                    onPress: () => fetchExpenses(monthName, String(year))
                 }])
             }
         }catch(error: any) {
@@ -269,7 +269,7 @@ export default function Expenses() {
                             {updateLoading == false ? (
                                 <Text style={{ color: '#fff', textAlign: 'center' }}>Update</Text>
                             ): (
-                                <ActivityIndicator size={'small'} color={'#fff'} />
+                                <ActivityIndicator size={'small'} color={'#cf2a3a'} />
                             )}
                         </TouchableOpacity>
                         <TouchableOpacity onPress={() => setModalVisible(false)} style={{ marginTop: 10, padding: 10, borderRadius: 5, borderColor: '#cf2a3a', borderWidth: 1 }}>
