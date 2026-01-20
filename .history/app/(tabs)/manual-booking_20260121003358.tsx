@@ -114,7 +114,7 @@ export default function ManualBooking() {
 
         setFormattedDate(queryDate);
         handleFetchTrips(today);
-
+        console.log(trips.filter(t => t.hasDeparted == false))
         return () => appState.remove();
     }, [])
 
@@ -367,7 +367,7 @@ export default function ManualBooking() {
                         <View style={{ width: '80%', backgroundColor: '#fff', padding: 20, borderRadius: 10, shadowColor: '#000', shadowOffset: { width: 0, height: 2 }, shadowOpacity: 0.25, shadowRadius: 4 }}>
                             <Text style={{ fontSize: 18, fontWeight: 'bold' }}>Select Date</Text>
                             <Calendar
-                            minDate={new Date().toISOString().split('T')[0]}
+                            // minDate={new Date().toISOString().split('T')[0]}
                             onDayPress={(day) => {
                                 setTripDate(day.dateString); setCalendar(false),
                                 handleOnDateSelect(day.dateString)
@@ -419,8 +419,7 @@ export default function ManualBooking() {
                 )}
 
 
-                <ScrollView scrollEnabled={bookingType == 'Walk-In'} refreshControl={ bookingType == 'Cargo' ? undefined : (<RefreshControl refreshing={refresh}
-                    onRefresh={handleRefresh} colors={['#cf2a3a']} progressViewOffset={60} />)} nestedScrollEnabled={true} >
+                <ScrollView scrollEnabled={bookingType == 'Walk-In'} refreshControl={ bookingType == 'Cargo' ? undefined : (<RefreshControl refreshing={refresh} onRefresh={handleRefresh} colors={['#cf2a3a']} progressViewOffset={60} />)} nestedScrollEnabled={true} >
                     {bookingType == 'Walk-In' ? (
                         <View style={{ paddingHorizontal: 20, height }}>
                             {contentLoading == true ? (
@@ -434,8 +433,7 @@ export default function ManualBooking() {
                             ) : (
                                 <>
                                     { trips && trips.filter(t => t.hasDeparted == false).map((trip) => (
-                                        <TouchableOpacity onPress={() => handleSaveTrip(trip.vessel, trip.trip_id, trip.route_id, trip.route_origin, trip.route_destination, trip.mobile_code, trip.code, trip.web_code, trip.departure_time, trip.vessel_id, trip.isCargoable)}
-                                            key={trip.trip_id} style={{ paddingHorizontal: 15, paddingVertical: 20, backgroundColor: '#fff', borderRadius: 10, marginTop: 12, flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' }}>
+                                        <TouchableOpacity onPress={() => handleSaveTrip(trip.vessel, trip.trip_id, trip.route_id, trip.route_origin, trip.route_destination, trip.mobile_code, trip.code, trip.web_code, trip.departure_time, trip.vessel_id, trip.isCargoable)} key={trip.trip_id} style={{ paddingHorizontal: 15, paddingVertical: 20, backgroundColor: '#fff', borderRadius: 10, marginTop: 12, flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' }}>
                                             <View>
                                                 <Text style={{ fontWeight: 'bold', fontSize: 13, color: '#cf2a3a' }}>{`${trip.departure}`}</Text>
                                                 <Text style={{ fontWeight: 'bold', fontSize: 13 }}>{`${trip.route_origin}  >  ${trip.route_destination} [ ${trip.vessel} ]`}</Text>
@@ -478,8 +476,7 @@ export default function ManualBooking() {
                                 <>
                                     <View style={{ flexDirection: 'row', gap: 8, alignItems: 'center', flexWrap: 'wrap', paddingTop: 5 }}>
                                         {trips?.map((trip) => (
-                                            <TouchableOpacity onPress={() => {setTotalSheetLoading(true), setBottomSheetTripID(trip.trip_id), handleFetchTotalBookings(trip.trip_id)}} key={trip.trip_id}
-                                                style={{ paddingHorizontal: 12, paddingVertical: 8, backgroundColor: bottomSheetTripID == trip.trip_id ? '#cf2a3a' : '#fff', borderRadius: 5, flexDirection: 'row', alignItems: 'center', borderColor: '#cf2a3a', borderWidth: 1 }}>
+                                            <TouchableOpacity onPress={() => {setTotalSheetLoading(true), setBottomSheetTripID(trip.trip_id), handleFetchTotalBookings(trip.trip_id)}} key={trip.trip_id} style={{ paddingHorizontal: 12, paddingVertical: 8, backgroundColor: bottomSheetTripID == trip.trip_id ? '#cf2a3a' : '#fff', borderRadius: 5, flexDirection: 'row', alignItems: 'center', borderColor: '#cf2a3a', borderWidth: 1 }}>
                                                 <View style={{ flexDirection: 'row', alignItems: "center", gap: 5 }}>
                                                     <Text style={{ fontWeight: 'bold', fontSize: 12, color:  bottomSheetTripID == trip.trip_id ? '#fff' : '#000' }}>{`${trip.mobile_code} [ ${trip.code} ]`}</Text>
                                                     <Text style={{ fontWeight: 'bold', fontSize: 13, color:  bottomSheetTripID == trip.trip_id ? '#fff' : '#cf2a3a' }}>{`${trip.departure}`}</Text>

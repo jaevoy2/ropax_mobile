@@ -137,7 +137,7 @@ export default function ManageBooking() {
                 </View>
                 <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' }}>
                     <Text style={{ fontSize: 10 }}>{`${paxDatas.vessel}  |  ${paxDatas.route}  |  ${paxDatas.departureTime}`}</Text>
-                    <View style={{ flexDirection: 'row', alignItems: 'center', gap: 3, borderColor: paxDatas.bookingStatus == null ? '#19B87E' : '#FCCA03', backgroundColor: paxDatas.bookingStatus == null ? '#19b87e3d' : '#fcca0342', borderWidth: 1, padding: 3, borderRadius: 5 }}>
+                    <View style={{ flexDirection: 'row', alignItems: 'center', gap: 3, borderColor: paxDatas.bookingStatus == null ? '#19B87E' : '#FCCA03', backgroundColor: paxDatas.bookingStatus == null ? '#19b87e3d' : '#fcca0342', borderWidth: 1, padding: 5, borderRadius: 5 }}>
                         <Text style={{ color: paxDatas.bookingStatus == null ? '#19B87E' : '#FCCA03', fontSize: 10 }}>{paxDatas.bookingStatus == null ? 'Paid' : 'Pending'}</Text>
                         <MaterialCommunityIcons name={paxDatas.bookingStatus == null ? 'check-decagram' : 'clock-time-eight'} size={14} color={paxDatas.bookingStatus == null ? '#19B87E' : '#FCCA03'} />
                     </View>

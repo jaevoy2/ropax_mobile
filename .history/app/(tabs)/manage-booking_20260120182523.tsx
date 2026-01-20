@@ -41,19 +41,11 @@ export default function ManageBooking() {
         setFormattedDate(today.toLocaleDateString('en-US', options));
         fetchBooking(PHTimezoneToday, null);
 
-    }, []);
-
-    useEffect(() => {
-        const currentDate = new Date();
-        const today = currentDate.toLocaleDateString('en-CA', { timeZone: 'Asia/Manila' })
-
-        if(today == date && searchValue.length == 0) {
-            setLoading(true)
-            const requestInterval = setInterval(() => fetchBooking(today, null), 2000);
+        if(PHTimezoneToday == date || searchValue.length == 0) {
+            const requestInterval = setInterval(() => fetchBooking(PHTimezoneToday, null), 2000);
             return () => clearInterval(requestInterval);
         }
-
-    }, [date, searchValue])
+    }, []);
 
     
     const fetchBooking = async (dateString: string, search: string | null) => {
@@ -83,6 +75,7 @@ export default function ManageBooking() {
                 setPassengers(paxData)
             }
         }catch (error: any) {
+            console.log(error)
             Alert.alert('Error', error.message)
         }finally {
             setLoading(false);
@@ -137,9 +130,9 @@ export default function ManageBooking() {
                 </View>
                 <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' }}>
                     <Text style={{ fontSize: 10 }}>{`${paxDatas.vessel}  |  ${paxDatas.route}  |  ${paxDatas.departureTime}`}</Text>
-                    <View style={{ flexDirection: 'row', alignItems: 'center', gap: 3, borderColor: paxDatas.bookingStatus == null ? '#19B87E' : '#FCCA03', backgroundColor: paxDatas.bookingStatus == null ? '#19b87e3d' : '#fcca0342', borderWidth: 1, padding: 3, borderRadius: 5 }}>
+                    <View style={{ flexDirection: 'row', alignItems: 'center', gap: 3 }}>
                         <Text style={{ color: paxDatas.bookingStatus == null ? '#19B87E' : '#FCCA03', fontSize: 10 }}>{paxDatas.bookingStatus == null ? 'Paid' : 'Pending'}</Text>
-                        <MaterialCommunityIcons name={paxDatas.bookingStatus == null ? 'check-decagram' : 'clock-time-eight'} size={14} color={paxDatas.bookingStatus == null ? '#19B87E' : '#FCCA03'} />
+                        <MaterialCommunityIcons name={paxDatas.bookingStatus == null ? 'check-decagram' : 'clock-time-eight'} size={16} color={paxDatas.bookingStatus == null ? '#19B87E' : '#FCCA03'} />
                     </View>
                 </View>
             </TouchableOpacity>

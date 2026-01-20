@@ -228,7 +228,7 @@ export default function AddExpenses() {
                         <Text style={{ fontSize: 12 }}>Date:</Text>
                         <Text style={{ color: '#CF2A3A', fontSize: 15, fontWeight: '900' }}>{date}</Text>
                     </View>
-                    <TouchableOpacity disabled={trips.length == 0} onPress={addExpenseForm} style={{flexDirection: 'row', alignItems: 'center', alignSelf: 'flex-end', paddingHorizontal: 15, paddingVertical: 8, backgroundColor: trips.length == 0 ? '#d8727c' : '#cf2a3a', justifyContent: 'center', marginBottom: 15, borderRadius: 5 }}>
+                    <TouchableOpacity onPress={addExpenseForm} style={{flexDirection: 'row', alignItems: 'center', alignSelf: 'flex-end', paddingHorizontal: 15, paddingVertical: 8, backgroundColor: '#cf2a3a', justifyContent: 'center', marginBottom: 15, borderRadius: 5 }}>
                         <Ionicons name='add' size={20} color={'#fff'} />
                         <Text style={{ fontWeight: 'bold', color: '#fff' }}>Add</Text>
                     </TouchableOpacity>
@@ -294,7 +294,7 @@ export default function AddExpenses() {
                                                                 </View>
                                                             )}
                                                         />
-                                                        <TouchableOpacity onPress={() => setModal(true)} style={{ borderLeftColor: '#B3B3B3', borderLeftWidth: 1, height: '100%', padding: 8 }} >
+                                                        <TouchableOpacity onPress={() => setModal(true)} disabled={trips.length == 0} style={{ borderLeftColor: '#B3B3B3', borderLeftWidth: 1, height: '100%', padding: 8 }} >
                                                             <Ionicons name='add' size={20}/>
                                                         </TouchableOpacity>
                                                     </View>
@@ -309,7 +309,7 @@ export default function AddExpenses() {
                 )}
             </View>
             
-            <TouchableOpacity disabled={saveExpenseSpinner || trips.length == 0} onPress={handleSaveExpense} style={{ width: '95%', paddingVertical: 13, borderRadius: 60, position: 'absolute', bottom: 0, backgroundColor: trips.length == 0 ? '#d8727c' : '#cf2a3a', transform: [{ translateX: '-50%' }], left: '50%' }}>
+            <TouchableOpacity disabled={saveExpenseSpinner} onPress={handleSaveExpense} style={{ width: '95%', paddingVertical: 13, borderRadius: 60, position: 'absolute', bottom: 0, backgroundColor: '#cf2a3a', transform: [{ translateX: '-50%' }], left: '50%' }}>
                 {saveExpenseSpinner == true ? (
                     <ActivityIndicator size="small" color="#fff" style={{ marginRight: 10 }} />
                 ) : (

@@ -10,12 +10,13 @@ export async function FetchExpenses() {
 
     try {
         const res = await fetch(`${API_URL}expenses`, {
-            method: 'GET',
+            method: 'POST',
             headers: {
                 'Accept': 'application/json',
+                'Content-Type': 'application/json',
                 'x-api-key': `${API_KEY}`,
                 'Origin': `${ORIGIN}`
-            }
+            },
         });
     
         const response = await res.json();

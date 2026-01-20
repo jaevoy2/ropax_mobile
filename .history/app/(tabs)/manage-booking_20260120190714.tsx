@@ -44,14 +44,20 @@ export default function ManageBooking() {
     }, []);
 
     useEffect(() => {
-        const currentDate = new Date();
+        const currentDate = new Date;
         const today = currentDate.toLocaleDateString('en-CA', { timeZone: 'Asia/Manila' })
+        
+        let requestInterval: ReturnType<typeof setInterval> | null = null;
 
-        if(today == date && searchValue.length == 0) {
-            setLoading(true)
-            const requestInterval = setInterval(() => fetchBooking(today, null), 2000);
-            return () => clearInterval(requestInterval);
+        console.log(currentDate)
+        console.log(date)
+        if(today != date || searchValue.length === 0) {
+            requestInterval = setInterval(() => {fetchBooking(today, null)}, 2000);
+        }else {
+            return;
         }
+
+        return () => clearInterval(requestInterval);
 
     }, [date, searchValue])
 
@@ -83,6 +89,7 @@ export default function ManageBooking() {
                 setPassengers(paxData)
             }
         }catch (error: any) {
+            console.log(error)
             Alert.alert('Error', error.message)
         }finally {
             setLoading(false);
@@ -137,9 +144,9 @@ export default function ManageBooking() {
                 </View>
                 <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' }}>
                     <Text style={{ fontSize: 10 }}>{`${paxDatas.vessel}  |  ${paxDatas.route}  |  ${paxDatas.departureTime}`}</Text>
-                    <View style={{ flexDirection: 'row', alignItems: 'center', gap: 3, borderColor: paxDatas.bookingStatus == null ? '#19B87E' : '#FCCA03', backgroundColor: paxDatas.bookingStatus == null ? '#19b87e3d' : '#fcca0342', borderWidth: 1, padding: 3, borderRadius: 5 }}>
+                    <View style={{ flexDirection: 'row', alignItems: 'center', gap: 3 }}>
                         <Text style={{ color: paxDatas.bookingStatus == null ? '#19B87E' : '#FCCA03', fontSize: 10 }}>{paxDatas.bookingStatus == null ? 'Paid' : 'Pending'}</Text>
-                        <MaterialCommunityIcons name={paxDatas.bookingStatus == null ? 'check-decagram' : 'clock-time-eight'} size={14} color={paxDatas.bookingStatus == null ? '#19B87E' : '#FCCA03'} />
+                        <MaterialCommunityIcons name={paxDatas.bookingStatus == null ? 'check-decagram' : 'clock-time-eight'} size={16} color={paxDatas.bookingStatus == null ? '#19B87E' : '#FCCA03'} />
                     </View>
                 </View>
             </TouchableOpacity>
@@ -199,7 +206,7 @@ export default function ManageBooking() {
                                     <Text style={{ fontWeight: 'bold', fontSize: 18 }}>Bookings</Text>
                                     <Text style={{ fontSize: 15, fontWeight: 'bold' }}>{formattedDate}</Text>
                                 </View>
-                                <FlatList data={passengers.reverse()} keyExtractor={(passengers) => String(passengers.id)} showsVerticalScrollIndicator={false}
+                                <FlatList data={[...passengers].reverse()} keyExtractor={(passengers) => String(passengers.id)} showsVerticalScrollIndicator={false}
                                     refreshControl={<RefreshControl refreshing={loading} onRefresh={() => handleRefresh()} colors={['#cf2a3a']} />}
                                     renderItem={({ item: passengerDatas }) => <PassengerItem paxDatas={passengerDatas}/>}
                                     getItemLayout={(passengerDatas, index) => ({

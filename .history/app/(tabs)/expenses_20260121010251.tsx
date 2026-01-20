@@ -74,30 +74,36 @@ export default function Expenses() {
         }
 
         const formattedDate = date.toLocaleDateString('en-US', options);
+        const monthName = getDate.toLocaleString('en-US', { month: 'long', timeZone: 'Asia/Manila' });
+        const year = getDate.getFullYear();
         const fulldate = `${formattedDate}`;
 
         setDate(fulldate);
-        fetchExpenses()
+        fetchExpenses(monthName, String(year))
         handleFetchCategories();
     }, []);
 
     useFocusEffect(
         useCallback(() => {
-            fetchExpenses();
+            const getDate = new Date();
+            const monthName = getDate.toLocaleDateString('en-US', { month: 'long', timeZone: 'Asia/Manila' });
+            const year = getDate.getFullYear();
+
+            fetchExpenses(monthName, String(year));
         }, [])
     )
 
-    const fetchExpenses = async () => {
+    const fetchExpenses = async (monthName: string, year: string, fullDate?: string) => {
         try {
             setContentLoading(true);
-            const expensesfetch = await FetchExpenses();
-            console.log(expensesfetch);
+            const expensesfetch = await FetchExpenses(monthName, year, fullDate ?? '');
+            console.log(expensesfetch)
     
-            if(!expensesfetch.error) {
+            if(expensesfetch) {
                 const expense: ExpenseProps[] = expensesfetch.expenses.map((e: any) => ({
                     id: e.id,
-                    tripSchedID: e?.trip_schedule_id,
-                    trip: `${e?.trip_schedule?.trip?.route.mobile_code} ${e?.trip_schedule?.trip?.vessel.name}`,
+                    tripSchedID: e.trip_schedule_id,
+                    trip: `${e.trip_schedule.trip.route.mobile_code} ${e.trip_schedule.trip.vessel.name}`,
                     description: e.description,
                     amount: String(e.amount),
                     date: new Date(e.created_at).toLocaleDateString('en-US', {
@@ -110,7 +116,7 @@ export default function Expenses() {
                 }));
     
                 setTotalAmount(expensesfetch.totalAmount)
-                setFetchedExpenses(expense)
+                setFetchedExpenses(expense);
             }
         }catch(error: any) {
             Alert.alert('Error', error.message)
@@ -151,10 +157,12 @@ export default function Expenses() {
             }
     
             const formattedDate = date.toLocaleDateString('en-US', options);
+            const monthName = getDate.toLocaleString('en-US', { month: 'long', timeZone: 'Asia/Manila' });
+            const year = getDate.getFullYear();
             const fulldate = `${formattedDate}`;
     
             setDate(fulldate);
-            fetchExpenses()
+            fetchExpenses(monthName, String(year))
             setRefresh(false);
         }, 500);
     }
@@ -197,10 +205,13 @@ export default function Expenses() {
             const saveUpdate = await UpdateExpense(expenseToUpdate.id, expenseToUpdate.tripSchedID, expenseToUpdate.description, expenseToUpdate.amount, expenseToUpdate.category.id);
 
             if(!saveUpdate.error) {
+                const getDate = new Date();
+                const monthName = getDate.toLocaleDateString('en-US', { month: 'long', timeZone: 'Asia/Manila' });
+                const year = getDate.getFullYear();
                 
                 Alert.alert('Success', saveUpdate.success, [{
                     text: 'Ok',
-                    onPress: () => {fetchExpenses(), setModalVisible(false)}
+                    onPress: () => {fetchExpenses(monthName, String(year)), setModalVisible(false)}
                 }])
             }
         }catch(error: any) {
@@ -295,7 +306,7 @@ export default function Expenses() {
                             <View style={{ flexDirection: 'row', gap: 3, alignItems: 'center' }}>
                                 <Text style={{ fontWeight: 'bold', fontSize: 14, color: '#cf2a3a', marginTop: -1 }}>₱</Text>
                                 <Text style={{ fontSize: 15, color: '#cf2a3a', fontWeight: '900' }}>
-                                    {totalAmount ?? 0.00}
+                                    {totalAmount ?? '00.00'}
                                 </Text>
                             </View>
                         </View>

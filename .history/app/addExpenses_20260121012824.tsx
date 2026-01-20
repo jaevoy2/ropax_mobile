@@ -228,7 +228,7 @@ export default function AddExpenses() {
                         <Text style={{ fontSize: 12 }}>Date:</Text>
                         <Text style={{ color: '#CF2A3A', fontSize: 15, fontWeight: '900' }}>{date}</Text>
                     </View>
-                    <TouchableOpacity disabled={trips.length == 0} onPress={addExpenseForm} style={{flexDirection: 'row', alignItems: 'center', alignSelf: 'flex-end', paddingHorizontal: 15, paddingVertical: 8, backgroundColor: trips.length == 0 ? '#d8727c' : '#cf2a3a', justifyContent: 'center', marginBottom: 15, borderRadius: 5 }}>
+                    <TouchableOpacity onPress={addExpenseForm} style={{flexDirection: 'row', alignItems: 'center', alignSelf: 'flex-end', paddingHorizontal: 15, paddingVertical: 8, backgroundColor: '#cf2a3a', justifyContent: 'center', marginBottom: 15, borderRadius: 5 }}>
                         <Ionicons name='add' size={20} color={'#fff'} />
                         <Text style={{ fontWeight: 'bold', color: '#fff' }}>Add</Text>
                     </TouchableOpacity>

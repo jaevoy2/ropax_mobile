@@ -91,13 +91,13 @@ export default function Expenses() {
         try {
             setContentLoading(true);
             const expensesfetch = await FetchExpenses();
-            console.log(expensesfetch);
+            
     
-            if(!expensesfetch.error) {
+            if(expensesfetch) {
                 const expense: ExpenseProps[] = expensesfetch.expenses.map((e: any) => ({
                     id: e.id,
-                    tripSchedID: e?.trip_schedule_id,
-                    trip: `${e?.trip_schedule?.trip?.route.mobile_code} ${e?.trip_schedule?.trip?.vessel.name}`,
+                    tripSchedID: e.trip_schedule_id,
+                    trip: `${e.trip_schedule.trip.route.mobile_code} ${e.trip_schedule.trip.vessel.name}`,
                     description: e.description,
                     amount: String(e.amount),
                     date: new Date(e.created_at).toLocaleDateString('en-US', {
@@ -110,7 +110,9 @@ export default function Expenses() {
                 }));
     
                 setTotalAmount(expensesfetch.totalAmount)
-                setFetchedExpenses(expense)
+                setFetchedExpenses(expense);
+
+                console.log(expense)
             }
         }catch(error: any) {
             Alert.alert('Error', error.message)
@@ -295,7 +297,7 @@ export default function Expenses() {
                             <View style={{ flexDirection: 'row', gap: 3, alignItems: 'center' }}>
                                 <Text style={{ fontWeight: 'bold', fontSize: 14, color: '#cf2a3a', marginTop: -1 }}>₱</Text>
                                 <Text style={{ fontSize: 15, color: '#cf2a3a', fontWeight: '900' }}>
-                                    {totalAmount ?? 0.00}
+                                    {totalAmount ?? '00.00'}
                                 </Text>
                             </View>
                         </View>

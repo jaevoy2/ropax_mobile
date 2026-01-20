@@ -295,7 +295,7 @@ export default function Expenses() {
                             <View style={{ flexDirection: 'row', gap: 3, alignItems: 'center' }}>
                                 <Text style={{ fontWeight: 'bold', fontSize: 14, color: '#cf2a3a', marginTop: -1 }}>₱</Text>
                                 <Text style={{ fontSize: 15, color: '#cf2a3a', fontWeight: '900' }}>
-                                    {totalAmount ?? 0.00}
+                                    {totalAmount ?? '0.00'}
                                 </Text>
                             </View>
                         </View>
