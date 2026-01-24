@@ -236,7 +236,7 @@ export default function AddExpenses() {
 
                 {trips && trips.length == 0 ? (
                     <View style={{ height: height / 2, justifyContent: 'center' }}>
-                        <Text style={{ color: '#7A7A85', textAlign: 'center' }}>No Trip Available To Add Expense</Text>
+                        <Text style={{ color: '#7A7A85', textAlign: 'center' }}>No Expense Record</Text>
                     </View>
                 ) : (
                     <>

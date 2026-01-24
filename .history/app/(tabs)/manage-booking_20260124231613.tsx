@@ -193,7 +193,7 @@ export default function ManageBooking() {
                 </Modal>
             )}
             {itemSelected && (
-                <Modal visible={itemSelected && requestType == 'Cancellation'} transparent animationType="fade">
+                <Modal visible={itemSelected && requestType == 'Cancellation'} transparent animationType="slide">
                     <View style={{ backgroundColor: '#00000048', flex: 1, justifyContent: 'center', alignItems: 'center' }}>
                         <View style={{ width: width - 40, backgroundColor: '#fff', borderRadius: 10, justifyContent: 'space-between', padding: 15 }}>
                             <Text style={{ fontSize: 16, fontWeight: 'bold' }}>Request Cancellation</Text>
@@ -208,18 +208,9 @@ export default function ManageBooking() {
                                         <Text style={{ fontSize: 12 }}>{itemSelected.departureDate}</Text>
                                     </View>
                                 </View>
-                                <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' }}>
-                                    <View>
-                                        <Text style={{ fontSize: 10, color: '#888888', marginTop: 10 }}>Passenger Name:</Text>
-                                        <Text style={{ fontWeight: 'bold', fontSize: 18 }}>{itemSelected.name}</Text>
-                                    </View>
-                                    <View style={{ alignItems: 'flex-end' }}>
-                                        <Text style={{ fontSize: 10, color: '#888888', marginTop: 10 }}>Status:</Text>
-                                        <View style={{ flexDirection: 'row', alignItems: 'center', gap: 3, borderColor: itemSelected.bookingStatus == null ? '#19B87E' : '#FCCA03', backgroundColor: itemSelected.bookingStatus == null ? '#19b87e3d' : '#fcca0342', borderWidth: 1, padding: 3, borderRadius: 5 }}>
-                                            <Text style={{ color: itemSelected.bookingStatus == null ? '#19B87E' : '#FCCA03', fontSize: 10 }}>{itemSelected.bookingStatus == null ? 'Paid' : 'Pending'}</Text>
-                                            <MaterialCommunityIcons name={itemSelected.bookingStatus == null ? 'check-decagram' : 'clock-time-eight'} size={14} color={itemSelected.bookingStatus == null ? '#19B87E' : '#FCCA03'} />
-                                        </View>
-                                    </View>
+                                <View>
+                                    <Text style={{ fontSize: 10, color: '#888888', marginTop: 10 }}>Passenger Name:</Text>
+                                    <Text style={{ fontWeight: 'bold', fontSize: 18 }}>{itemSelected.name}</Text>
                                 </View>
                                 <View>
                                     <Text style={{ fontSize: 10, color: '#888888', marginTop: 10 }}>Trip:</Text>

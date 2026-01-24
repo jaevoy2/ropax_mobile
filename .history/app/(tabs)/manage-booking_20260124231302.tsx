@@ -208,18 +208,9 @@ export default function ManageBooking() {
                                         <Text style={{ fontSize: 12 }}>{itemSelected.departureDate}</Text>
                                     </View>
                                 </View>
-                                <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' }}>
-                                    <View>
-                                        <Text style={{ fontSize: 10, color: '#888888', marginTop: 10 }}>Passenger Name:</Text>
-                                        <Text style={{ fontWeight: 'bold', fontSize: 18 }}>{itemSelected.name}</Text>
-                                    </View>
-                                    <View style={{ alignItems: 'flex-end' }}>
-                                        <Text style={{ fontSize: 10, color: '#888888', marginTop: 10 }}>Status:</Text>
-                                        <View style={{ flexDirection: 'row', alignItems: 'center', gap: 3, borderColor: itemSelected.bookingStatus == null ? '#19B87E' : '#FCCA03', backgroundColor: itemSelected.bookingStatus == null ? '#19b87e3d' : '#fcca0342', borderWidth: 1, padding: 3, borderRadius: 5 }}>
-                                            <Text style={{ color: itemSelected.bookingStatus == null ? '#19B87E' : '#FCCA03', fontSize: 10 }}>{itemSelected.bookingStatus == null ? 'Paid' : 'Pending'}</Text>
-                                            <MaterialCommunityIcons name={itemSelected.bookingStatus == null ? 'check-decagram' : 'clock-time-eight'} size={14} color={itemSelected.bookingStatus == null ? '#19B87E' : '#FCCA03'} />
-                                        </View>
-                                    </View>
+                                <View>
+                                    <Text style={{ fontSize: 10, color: '#888888', marginTop: 10 }}>Passenger Name:</Text>
+                                    <Text style={{ fontWeight: 'bold', fontSize: 18 }}>{itemSelected.name}</Text>
                                 </View>
                                 <View>
                                     <Text style={{ fontSize: 10, color: '#888888', marginTop: 10 }}>Trip:</Text>
@@ -270,7 +261,7 @@ export default function ManageBooking() {
             </View>
             <View style={{ flexDirection: 'row', alignItems: 'center', margin: 10, borderRadius: 100,  backgroundColor: '#ffc10736', }}>
                 {paxRequestTypes.map((r, index) => (
-                    <TouchableOpacity onPress={() => {setItemSelected(null), setRequestType(r.name)}} key={index} style={{ flexDirection: 'row', justifyContent: 'center', width: '33.33%', alignItems: 'center', gap: 5, paddingVertical: 10,
+                    <TouchableOpacity onPress={() => setRequestType(r.name)} key={index} style={{ flexDirection: 'row', justifyContent: 'center', width: '33.33%', alignItems: 'center', gap: 5, paddingVertical: 10,
                         borderRadius: requestType == r.name ? 100 : 'none', backgroundColor: requestType == r.name ? '#FFC107' : 'transparent' }}>
                         <MaterialCommunityIcons name={r.icon as any} size={18} />
                         <Text style={{ fontWeight: 'bold', fontSize: 13 }}>{r.name}</Text>

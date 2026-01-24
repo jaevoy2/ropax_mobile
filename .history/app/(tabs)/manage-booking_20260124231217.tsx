@@ -95,7 +95,7 @@ export default function ManageBooking() {
                     }),
                     route: passenger.bookings.find((t: any) => t.trip_schedule)?.trip_schedule.trip.route.mobile_code,
                     vessel: passenger.bookings.find((t: any) => t.trip_schedule)?.trip_schedule.trip.vessel.name,
-                    referenceNumber: passenger.bookings.find((r: any) => r.reference_no).reference_no,
+                    referenceNumber: passenger?.bookings.find((r: any) => r.reference_no).reference_no,
                     bookingStatus: passenger.bookings.find((s: any) => s.status_id)?.status_id
                 }))
                 setPassengers(paxData)
@@ -192,60 +192,49 @@ export default function ManageBooking() {
                     </View>
                 </Modal>
             )}
-            {itemSelected && (
-                <Modal visible={itemSelected && requestType == 'Cancellation'} transparent animationType="fade">
-                    <View style={{ backgroundColor: '#00000048', flex: 1, justifyContent: 'center', alignItems: 'center' }}>
-                        <View style={{ width: width - 40, backgroundColor: '#fff', borderRadius: 10, justifyContent: 'space-between', padding: 15 }}>
-                            <Text style={{ fontSize: 16, fontWeight: 'bold' }}>Request Cancellation</Text>
-                            <View style={{ marginTop: 15 }}>
-                                <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' }}>
-                                    <View>
-                                        <Text style={{ fontSize: 10, color: '#888888' }}>Reference#:</Text>
-                                        <Text style={{ fontSize: 14, color: '#cf2a3a', fontWeight: 'bold' }}>{itemSelected.referenceNumber}</Text>
-                                    </View>
-                                    <View style={{ alignItems: 'flex-end' }}>
-                                        <Text style={{ fontSize: 10, color: '#888888' }}>Departure Date:</Text>
-                                        <Text style={{ fontSize: 12 }}>{itemSelected.departureDate}</Text>
-                                    </View>
-                                </View>
-                                <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' }}>
-                                    <View>
-                                        <Text style={{ fontSize: 10, color: '#888888', marginTop: 10 }}>Passenger Name:</Text>
-                                        <Text style={{ fontWeight: 'bold', fontSize: 18 }}>{itemSelected.name}</Text>
-                                    </View>
-                                    <View style={{ alignItems: 'flex-end' }}>
-                                        <Text style={{ fontSize: 10, color: '#888888', marginTop: 10 }}>Status:</Text>
-                                        <View style={{ flexDirection: 'row', alignItems: 'center', gap: 3, borderColor: itemSelected.bookingStatus == null ? '#19B87E' : '#FCCA03', backgroundColor: itemSelected.bookingStatus == null ? '#19b87e3d' : '#fcca0342', borderWidth: 1, padding: 3, borderRadius: 5 }}>
-                                            <Text style={{ color: itemSelected.bookingStatus == null ? '#19B87E' : '#FCCA03', fontSize: 10 }}>{itemSelected.bookingStatus == null ? 'Paid' : 'Pending'}</Text>
-                                            <MaterialCommunityIcons name={itemSelected.bookingStatus == null ? 'check-decagram' : 'clock-time-eight'} size={14} color={itemSelected.bookingStatus == null ? '#19B87E' : '#FCCA03'} />
-                                        </View>
-                                    </View>
-                                </View>
+            <Modal visible={itemSelected && requestType == 'Cancellation'} transparent animationType="fade">
+                <View style={{ backgroundColor: '#00000048', flex: 1, justifyContent: 'center', alignItems: 'center' }}>
+                    <View style={{ width: width - 40, backgroundColor: '#fff', borderRadius: 10, justifyContent: 'space-between', padding: 15 }}>
+                        <Text style={{ fontSize: 16, fontWeight: 'bold' }}>Request Cancellation</Text>
+                        <View style={{ marginTop: 15 }}>
+                            <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' }}>
                                 <View>
-                                    <Text style={{ fontSize: 10, color: '#888888', marginTop: 10 }}>Trip:</Text>
-                                    <Text style={{ fontSize: 12 }}>{`${itemSelected.vessel}  |  ${itemSelected.route}  |  ${itemSelected.departureTime}`}</Text>
+                                    <Text style={{ fontSize: 10, color: '#888888' }}>Reference#:</Text>
+                                    <Text style={{ fontSize: 14, color: '#cf2a3a', fontWeight: 'bold' }}>{itemSelected.referenceNumber}</Text>
+                                </View>
+                                <View style={{ alignItems: 'flex-end' }}>
+                                    <Text style={{ fontSize: 10, color: '#888888' }}>Departure Date:</Text>
+                                    <Text style={{ fontSize: 12 }}>{itemSelected.departureDate}</Text>
                                 </View>
                             </View>
-
-                            <View style={{ marginTop: 10 }}>
-                                <Text style={{ fontSize: 10, color: '#888888' }}>Cancellation Reason:</Text>
-                                <View style={{ borderColor: '#B3B3B3', borderWidth: 1, borderRadius: 5 }}>
-                                    <TextInput placeholder='Reason' style={{ fontSize: 13 }} />
-                                </View>
+                            <View>
+                                <Text style={{ fontSize: 10, color: '#888888', marginTop: 10 }}>Passenger Name:</Text>
+                                <Text style={{ fontWeight: 'bold', fontSize: 18 }}>{itemSelected.name}</Text>
                             </View>
-
-                            <View style={{ alignSelf: 'flex-end', flexDirection: 'row', marginTop: 20, gap: 10 }}>
-                                <TouchableOpacity onPress={() => setItemSelected(null)}>
-                                    <Text>Cancel</Text>
-                                </TouchableOpacity>
-                                <TouchableOpacity >
-                                    <Text style={{ color: '#cf2a3a', fontWeight: 'bold' }}>Save</Text>
-                                </TouchableOpacity>
+                            <View>
+                                <Text style={{ fontSize: 10, color: '#888888', marginTop: 10 }}>Trip:</Text>
+                                <Text style={{ fontSize: 12 }}>{`${itemSelected.vessel}  |  ${itemSelected.route}  |  ${itemSelected.departureTime}`}</Text>
                             </View>
                         </View>
+
+                        <View style={{ marginTop: 10 }}>
+                            <Text style={{ fontSize: 10, color: '#888888' }}>Cancellation Reason:</Text>
+                            <View style={{ borderColor: '#B3B3B3', borderWidth: 1, borderRadius: 5 }}>
+                                <TextInput placeholder='Reason' style={{ fontSize: 13 }} />
+                            </View>
+                        </View>
+
+                        <View style={{ alignSelf: 'flex-end', flexDirection: 'row', marginTop: 20, gap: 10 }}>
+                            <TouchableOpacity onPress={() => setItemSelected(null)}>
+                                <Text>Cancel</Text>
+                            </TouchableOpacity>
+                            <TouchableOpacity >
+                                <Text style={{ color: '#cf2a3a', fontWeight: 'bold' }}>Save</Text>
+                            </TouchableOpacity>
+                        </View>
                     </View>
-                </Modal>
-            )}
+                </View>
+            </Modal>
 
             <View style={{ paddingTop: 50, height: 145, backgroundColor: '#cf2a3a', paddingHorizontal: 20, gap: 15 }}>
                 <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' }}>
@@ -270,7 +259,7 @@ export default function ManageBooking() {
             </View>
             <View style={{ flexDirection: 'row', alignItems: 'center', margin: 10, borderRadius: 100,  backgroundColor: '#ffc10736', }}>
                 {paxRequestTypes.map((r, index) => (
-                    <TouchableOpacity onPress={() => {setItemSelected(null), setRequestType(r.name)}} key={index} style={{ flexDirection: 'row', justifyContent: 'center', width: '33.33%', alignItems: 'center', gap: 5, paddingVertical: 10,
+                    <TouchableOpacity onPress={() => setRequestType(r.name)} key={index} style={{ flexDirection: 'row', justifyContent: 'center', width: '33.33%', alignItems: 'center', gap: 5, paddingVertical: 10,
                         borderRadius: requestType == r.name ? 100 : 'none', backgroundColor: requestType == r.name ? '#FFC107' : 'transparent' }}>
                         <MaterialCommunityIcons name={r.icon as any} size={18} />
                         <Text style={{ fontWeight: 'bold', fontSize: 13 }}>{r.name}</Text>

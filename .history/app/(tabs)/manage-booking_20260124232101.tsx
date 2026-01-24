@@ -193,7 +193,7 @@ export default function ManageBooking() {
                 </Modal>
             )}
             {itemSelected && (
-                <Modal visible={itemSelected && requestType == 'Cancellation'} transparent animationType="fade">
+                <Modal visible={itemSelected && requestType == 'Cancellation'} transparent animationType="slide">
                     <View style={{ backgroundColor: '#00000048', flex: 1, justifyContent: 'center', alignItems: 'center' }}>
                         <View style={{ width: width - 40, backgroundColor: '#fff', borderRadius: 10, justifyContent: 'space-between', padding: 15 }}>
                             <Text style={{ fontSize: 16, fontWeight: 'bold' }}>Request Cancellation</Text>
