@@ -5,7 +5,8 @@ export type ExpenseProps = {
     trip_schedule_id: number;
     description: string;
     amount: number;
-    category_id: number;
+    expense_category_id: number;
+    expense_image?: string
 }
 
 type ExpenseContextType = {

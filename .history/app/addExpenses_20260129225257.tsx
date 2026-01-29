@@ -45,32 +45,31 @@ export default function AddExpenses() {
     const [saveCategotySpinner, setCategorySpinner] = useState(false);
     const [cameraType, setCameraType] = useState<CameraType>('back');
     const cameraRef = useRef<CameraView>(null)
-    const [onCapture, setOnCapture] = useState(false)
 
 
-    const handleOnCapture = async () => {
-        if(!permission.granted) {
-            return (
-                <SafeAreaView style={{ flex: 1, justifyContent: 'center', alignItems: 'center', backgroundColor: '#F8FAFC', padding: 20 }}>
-                    <Text>
-                        We need access to your camera.
-                    </Text>
-                    <TouchableOpacity style={{ backgroundColor: '#3B82F6',
-                        paddingHorizontal: 32,
-                        paddingVertical: 16,
-                        borderRadius: 12,
-                        shadowColor: '#3B82F6',
-                        shadowOffset: { width: 0, height: 4 },
-                        shadowOpacity: 0.3,
-                        shadowRadius: 8,
-                        elevation: 4, }} onPress={requestPermission}>
-                        <Text style={{ color: '#FFFFFF',
-                            fontSize: 16,
-                            fontWeight: '600', }}>Grant Permission</Text>
-                    </TouchableOpacity>
-                </SafeAreaView>
-            )
-        }
+    const handleOnCapture = () => {
+        if(!permission) return;
+
+        return (
+            <SafeAreaView style={{ flex: 1, justifyContent: 'center', alignItems: 'center', backgroundColor: '#F8FAFC', padding: 20 }}>
+                <Text>
+                    We need access to your camera.
+                </Text>
+                <TouchableOpacity style={{ backgroundColor: '#3B82F6',
+                    paddingHorizontal: 32,
+                    paddingVertical: 16,
+                    borderRadius: 12,
+                    shadowColor: '#3B82F6',
+                    shadowOffset: { width: 0, height: 4 },
+                    shadowOpacity: 0.3,
+                    shadowRadius: 8,
+                    elevation: 4, }} onPress={requestPermission}>
+                    <Text style={{ color: '#FFFFFF',
+                        fontSize: 16,
+                        fontWeight: '600', }}>Grant Permission</Text>
+                </TouchableOpacity>
+            </SafeAreaView>
+        )
     }
 
     useEffect(() => {
@@ -220,8 +219,6 @@ export default function AddExpenses() {
             }))
         )
     }
-
-    {onCapture }
 
     return (
         <View style={{ backgroundColor: '#f1f1f1', position: 'relative', height: height, }}>

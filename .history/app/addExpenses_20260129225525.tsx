@@ -45,10 +45,9 @@ export default function AddExpenses() {
     const [saveCategotySpinner, setCategorySpinner] = useState(false);
     const [cameraType, setCameraType] = useState<CameraType>('back');
     const cameraRef = useRef<CameraView>(null)
-    const [onCapture, setOnCapture] = useState(false)
 
 
-    const handleOnCapture = async () => {
+    const handleOnCapture = () => {
         if(!permission.granted) {
             return (
                 <SafeAreaView style={{ flex: 1, justifyContent: 'center', alignItems: 'center', backgroundColor: '#F8FAFC', padding: 20 }}>
@@ -220,8 +219,6 @@ export default function AddExpenses() {
             }))
         )
     }
-
-    {onCapture }
 
     return (
         <View style={{ backgroundColor: '#f1f1f1', position: 'relative', height: height, }}>
