@@ -5,8 +5,6 @@ import { FetchTrips } from '@/api/trips';
 import { useExpense } from '@/context/expense';
 import { Ionicons } from '@expo/vector-icons';
 import { CameraType, CameraView, useCameraPermissions } from 'expo-camera';
-import * as FileSystem from 'expo-file-system';
-import { LinearGradient } from 'expo-linear-gradient';
 import { router } from 'expo-router';
 import { useEffect, useMemo, useRef, useState } from 'react';
 import { ActivityIndicator, Alert, Dimensions, Image, Modal, ScrollView, StyleSheet, Text, TextInput, TouchableOpacity, View } from 'react-native';
@@ -14,7 +12,6 @@ import { Dropdown } from 'react-native-element-dropdown';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
 const { height, width } = Dimensions.get('window');
-const TEMP_DIR = FileSystem.cacheDirectory + 'expensesImages/';
 
 type TripProps = {
     trip_id: number;
@@ -50,15 +47,13 @@ export default function AddExpenses() {
     const [capturedImage, setCapturedImage] = useState<string | null>(null)
     const cameraRef = useRef<CameraView>(null)
     const [onCapture, setOnCapture] = useState(false)
-    const [expenseID, setExpenseID] = useState(0);
 
 
-    const handleOnCapture = async (expenseId: number) => {
+    const handleOnCapture = async () => {
         if(!permission.granted) {
             permissionView()
         }
 
-        setExpenseID(expenseId)
         setOnCapture(true);
     }
     
@@ -104,11 +99,11 @@ export default function AddExpenses() {
                 <View style={{ backgroundColor: 'rgba(0, 0, 0, 0.6)', height: 160, width: '100%', position: 'absolute', bottom: 0, zIndex: 5, justifyContent: 'center' }}>
                     {capturedImage != null ? (
                         <View style={{ flexDirection: 'row', justifyContent: 'space-around', alignItems: 'center' }}>
-                            <TouchableOpacity onPress={() => setCapturedImage(null)} style={{ backgroundColor: '#cf2a3a', padding: 12, borderRadius: 50 }}>
+                            <TouchableOpacity style={{ backgroundColor: '#cf2a3a', padding: 10, borderRadius: 50 }}>
                                 <Ionicons name={'trash'} size={28} color={'#fff'} />
                             </TouchableOpacity>
-                            <TouchableOpacity onPress={() => {handleOnSaveImage(), setOnCapture(false)}} style={{ backgroundColor: '#fff', padding: 12, borderRadius: 50 }}>
-                                <Ionicons name={'checkmark'} size={28} />
+                            <TouchableOpacity style={{ backgroundColor: '#fff', padding: 8 }}>
+                                <Ionicons name={'save'} size={28} />
                             </TouchableOpacity>
                         </View>
                     ) : (
@@ -121,48 +116,8 @@ export default function AddExpenses() {
         )
     }
 
-    const handleCaptureImage = async () => {
-        if(cameraRef.current) {
-            try {
-                const photo = await cameraRef.current.takePictureAsync({
-                    quality: 0.8,
-                    skipProcessing: true,
-                    base64: false
-                });
-
-                setCapturedImage(photo.uri)
-            }catch (error) {
-                Alert.alert('Error', 'Failed to capture image.');
-            }
-        }
-    }
-
-    const handleOnSaveImage = async () => {
-        if (!capturedImage) return;
-
-        const filename = `expense_${expenseID}-${Date.now()}.jpg`;
-        const path = TEMP_DIR + filename;
-
-        await FileSystem.moveAsync({
-            from: capturedImage,
-            to: path
-        });
-
-        updateExpense(expenseID, 'image_uri', path);
-        setCapturedImage(null)
-    }
-
-    const expenseImgTempDir = async () => {
-        const dir = await FileSystem.getInfoAsync(TEMP_DIR);
-
-        if(!dir.exists) {
-            await FileSystem.makeDirectoryAsync(TEMP_DIR, { intermediates: true })
-        }
-    }
-
     useEffect(() => {
         handleFetchCategories();
-        expenseImgTempDir();
 
         const getDate = new Date();
         const today = getDate.toLocaleDateString("en-CA", { timeZone: "Asia/Manila" });
@@ -179,6 +134,20 @@ export default function AddExpenses() {
         setDate(formattedDate);
     }, []);
 
+    const handleCaptureImage = async () => {
+        if(cameraRef.current) {
+            try {
+                const photo = await cameraRef.current.takePictureAsync({
+                    quality: 0.8,
+                    base64: false,
+                });
+
+                setCapturedImage(photo.uri)
+            }catch (error) {
+                Alert.alert('Error', 'Failed to capture image.');
+            }
+        }
+    }
 
     const handleFetchTrips = async (queryDate: string) => {
         try {
@@ -284,7 +253,7 @@ export default function AddExpenses() {
     const handleSaveExpense = async () => {
         setSaveExpenseSpinner(true);
         const hasEmpty = expenses.find((e) => 
-            !e.amount || !e.description.trim() || !e.expense_category_id || !e.trip_schedule_id || !e.image_uri.trim()
+            !e.amount || !e.description.trim() || !e.expense_category_id || !e.trip_schedule_id
         )
         
         if(hasEmpty) {
@@ -396,7 +365,7 @@ export default function AddExpenses() {
                                 />
                             </View>
                         </View>
-                        <View style={{ flex: 1, flexGrow: 1, marginTop: 10 }}>
+                        <View style={{ flex: 1, flexGrow: 1 }}>
                             <View style={{ minHeight: height - 350, maxHeight: height - 300 }}>
                                 <ScrollView style={{ maxHeight: height - 300 }} contentContainerStyle={{ minHeight: height - 350 }}>
                                     {expenses.map((e) => (
@@ -409,7 +378,7 @@ export default function AddExpenses() {
                                             <View>
                                                 <Text style={{ fontSize: 10, fontWeight: 'bold', color: '#545454' }}>Description</Text>
                                                 <View style={{ borderColor: '#B3B3B3', borderWidth: 1, borderRadius: 5 }}>
-                                                    <TextInput value={e.description} onChangeText={(text) => updateExpense(e.id, 'description', text)} placeholder='e.g. Vessel Oil' style={{ fontSize: 13 }} />
+                                                    <TextInput onChangeText={(text) => updateExpense(e.id, 'description', text)} placeholder='e.g. Vessel Oil' style={{ fontSize: 13 }} />
                                                 </View>
                                             </View>
                                             <View style={{ marginTop: 5, flexDirection: 'row', gap: 8, alignItems: 'flex-end' }}>
@@ -417,7 +386,7 @@ export default function AddExpenses() {
                                                     <Text style={{ fontSize: 10, fontWeight: 'bold', color: '#545454' }}>Amount:</Text>
                                                     <View style={{ borderColor: '#B3B3B3', borderWidth: 1, borderRadius: 5, flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', paddingHorizontal: 5 }}>
                                                         <Text style={{ fontWeight: 'bold', fontSize: 16, marginTop: -5 }}>₱</Text>
-                                                        <TextInput value={String(e.amount)} onChangeText={(text) => updateExpense(e.id, 'amount', Number(text))} keyboardType='numeric' placeholder='00.00' style={{ fontSize: 13, textAlign: 'right', }} />
+                                                        <TextInput onChangeText={(text) => updateExpense(e.id, 'amount', Number(text))} keyboardType='numeric' placeholder='00.00' style={{ fontSize: 13, textAlign: 'right', }} />
                                                     </View>
                                                 </View>
                                                 <View style={{ width: '72.5%' }}>
@@ -448,25 +417,13 @@ export default function AddExpenses() {
                                             </View>
                                             <View style={{ marginTop: 5 }}>
                                                 <Text style={{ fontSize: 10, fontWeight: 'bold', color: '#545454' }}>Image</Text>
-                                                <TouchableOpacity onPress={() => handleOnCapture(e.id)} style={{ borderColor: '#b3b3b3', borderWidth: 1, borderRadius: 5, height: 60, justifyContent: 'center', position: 'relative' }}>
-                                                    {e.image_uri == null ? (
+                                                <TouchableOpacity onPress={() => handleOnCapture()} style={{ borderColor: '#b3b3b3', borderWidth: 1, borderRadius: 5, height: 60 }}>
+                                                    {e.expense_image == null ? (
                                                         <View style={{ backgroundColor: '#f8f8f8', borderRadius: 5, height: '100%', justifyContent: 'center' }}>
                                                             <Text style={{ textAlign: 'center', color: '#a3a3a3' }}>Tap to capture image.</Text>
                                                         </View>
                                                     ) : (
-                                                        <>
-                                                            <Image source={{ uri: e.image_uri }} resizeMode={'cover'} style={{ width: '95%', height: '90%', alignSelf: 'center' }} />
-                                                            <View style={{ position: 'absolute', bottom: 0, width: '100%', height: 10 }} />
-                                                            <LinearGradient
-                                                                colors={[
-                                                                'rgba(0, 200, 83, 0)',
-                                                                'rgba(2, 224, 95, 0.15)',
-                                                                'rgba(1, 226, 95, 0.4)',
-                                                                'rgba(3, 226, 96, 0.8)',
-                                                                ]}
-                                                                style={{ flex: 1, height: 40, position: 'absolute', width: '100%', bottom: 0, zIndex: 2 }}
-                                                            />
-                                                        </>
+                                                        <View />
                                                     )}
                                                 </TouchableOpacity>
                                             </View>

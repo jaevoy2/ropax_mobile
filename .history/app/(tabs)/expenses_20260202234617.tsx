@@ -162,7 +162,7 @@ export default function Expenses() {
     const addExpenses = () => {
         setAddDisable(true);
         setExpenses([]);
-        setExpenses(prev => [...prev, { id: 1, trip_schedule_id: 0, description: '', amount: 0, expense_category_id: 0, image_uri: null }]);
+        setExpenses(prev => [...prev, { id: 1, trip_schedule_id: 0, description: '', amount: 0, expense_category_id: 0, image_uri: '' }]);
         router.push('/addExpenses');
     }
 

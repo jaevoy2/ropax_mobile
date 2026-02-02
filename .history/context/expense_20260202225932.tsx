@@ -6,7 +6,7 @@ export type ExpenseProps = {
     description: string;
     amount: number;
     expense_category_id: number;
-    image_uri?: string;
+    image_uri?: string | null
 }
 
 type ExpenseContextType = {

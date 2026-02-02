@@ -292,7 +292,7 @@ export default function AddExpenses() {
             Alert.alert('Invalid', 'Failed to save expense. Please fill out all required fields.');
             return;
         }
-        
+        console.log(expenses)
         try {
             const response = await SaveExpenses(expenses);
 

@@ -284,7 +284,7 @@ export default function AddExpenses() {
     const handleSaveExpense = async () => {
         setSaveExpenseSpinner(true);
         const hasEmpty = expenses.find((e) => 
-            !e.amount || !e.description.trim() || !e.expense_category_id || !e.trip_schedule_id || !e.image_uri.trim()
+            !e.amount || !e.description.trim() || !e.expense_category_id || !e.trip_schedule_id
         )
         
         if(hasEmpty) {
@@ -409,7 +409,7 @@ export default function AddExpenses() {
                                             <View>
                                                 <Text style={{ fontSize: 10, fontWeight: 'bold', color: '#545454' }}>Description</Text>
                                                 <View style={{ borderColor: '#B3B3B3', borderWidth: 1, borderRadius: 5 }}>
-                                                    <TextInput value={e.description} onChangeText={(text) => updateExpense(e.id, 'description', text)} placeholder='e.g. Vessel Oil' style={{ fontSize: 13 }} />
+                                                    <TextInput onChangeText={(text) => updateExpense(e.id, 'description', text)} placeholder='e.g. Vessel Oil' style={{ fontSize: 13 }} />
                                                 </View>
                                             </View>
                                             <View style={{ marginTop: 5, flexDirection: 'row', gap: 8, alignItems: 'flex-end' }}>
@@ -417,7 +417,7 @@ export default function AddExpenses() {
                                                     <Text style={{ fontSize: 10, fontWeight: 'bold', color: '#545454' }}>Amount:</Text>
                                                     <View style={{ borderColor: '#B3B3B3', borderWidth: 1, borderRadius: 5, flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', paddingHorizontal: 5 }}>
                                                         <Text style={{ fontWeight: 'bold', fontSize: 16, marginTop: -5 }}>₱</Text>
-                                                        <TextInput value={String(e.amount)} onChangeText={(text) => updateExpense(e.id, 'amount', Number(text))} keyboardType='numeric' placeholder='00.00' style={{ fontSize: 13, textAlign: 'right', }} />
+                                                        <TextInput onChangeText={(text) => updateExpense(e.id, 'amount', Number(text))} keyboardType='numeric' placeholder='00.00' style={{ fontSize: 13, textAlign: 'right', }} />
                                                     </View>
                                                 </View>
                                                 <View style={{ width: '72.5%' }}>
@@ -455,16 +455,16 @@ export default function AddExpenses() {
                                                         </View>
                                                     ) : (
                                                         <>
-                                                            <Image source={{ uri: e.image_uri }} resizeMode={'cover'} style={{ width: '95%', height: '90%', alignSelf: 'center' }} />
+                                                            <Image source={{ uri: e.image_uri }} resizeMode={'cover'} style={{ width: '90%', height: '90%', alignSelf: 'center' }} />
                                                             <View style={{ position: 'absolute', bottom: 0, width: '100%', height: 10 }} />
                                                             <LinearGradient
                                                                 colors={[
                                                                 'rgba(0, 200, 83, 0)',
-                                                                'rgba(2, 224, 95, 0.15)',
-                                                                'rgba(1, 226, 95, 0.4)',
-                                                                'rgba(3, 226, 96, 0.8)',
+                                                                'rgba(0, 200, 83, 0.15)',
+                                                                'rgba(0, 200, 83, 0.4)',
+                                                                'rgba(0, 200, 83, 0.8)',
                                                                 ]}
-                                                                style={{ flex: 1, height: 40, position: 'absolute', width: '100%', bottom: 0, zIndex: 2 }}
+                                                                style={{ flex: 1, height: 20, position: 'absolute', width: '100%', bottom: 0, zIndex: 2 }}
                                                             />
                                                         </>
                                                     )}

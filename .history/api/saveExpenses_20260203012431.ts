@@ -1,10 +1,10 @@
 import { ExpenseProps } from '@/context/expense';
 import Constants from 'expo-constants';
 
+const formData = new FormData();
 
 
 export async function SaveExpenses(expenses: ExpenseProps[]) {
-    const formData = new FormData();
     const extras = Constants.expoConfig?.extra ?? {};
     const API_KEY = extras.API_KEY as string;
     const API_URL = extras.API_URL as string;
