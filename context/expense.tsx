@@ -2,7 +2,7 @@ import React, { createContext, useContext, useState } from "react";
 
 export type ExpenseProps = {
     id:number;
-    trip_schedule_id: number;
+    trip_schedule_id: number | null;
     description: string;
     amount: number;
     expense_category_id: number;

@@ -120,7 +120,7 @@ export default function PaymentSummary() {
                                         <Text style={{ fontSize: 12, fontWeight: '400' }}>{`${p.name?.split(',')[1]?.trim().charAt(0)}. ${p.name?.split(',')[0]} `}</Text>
                                         <Text style={{ fontSize: 12, fontWeight: '400', color: '#4b4b4bff' }}>{`(${p.passType})`}</Text>
                                     </View>
-                                    <Text style={{ fontSize: 12, fontWeight: 'bold' }}>₱ {p.fare ? p.fare.toLocaleString('en-PH', { minimumFractionDigits: 2,  maximumFractionDigits: 2 }) : '0.00'}</Text>
+                                    <Text style={{ fontSize: 12, fontWeight: 'bold' }}>₱ {p.fare ? p.fare?.toLocaleString('en-PH', { minimumFractionDigits: 2,  maximumFractionDigits: 2 }) : '0.00'}</Text>
                                 </View>
                             ))}
                         </View>
@@ -158,10 +158,10 @@ export default function PaymentSummary() {
                                             </View>
                                             <View style={{ flexDirection: 'row', alignItems: 'center', gap: 2 }}>
                                                 <Text style={{ fontSize: 12, fontWeight: 'bold' }}>₱ </Text>
-                                                <Text style={{ fontSize: 12, fontWeight: 'bold'}}>{cargo?.cargoAmount.toLocaleString('en-PH', { minimumFractionDigits: 2,  maximumFractionDigits: 2 })}</Text>
+                                                <Text style={{ fontSize: 12, fontWeight: 'bold'}}>{(Number(cargo?.cargoAmount || 0)).toLocaleString('en-PH', { minimumFractionDigits: 2,  maximumFractionDigits: 2 })}</Text>
                                             </View>
                                         </View>
-                                    ))}
+                                    ))} 
                                 </>
                             ) : (
                                 <>

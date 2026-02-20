@@ -53,6 +53,19 @@ export default function AddExpenses() {
     const [expenseID, setExpenseID] = useState(0);
 
 
+    // Only update trip_schedule_id when selectedTrip changes
+    useEffect(() => {
+        if (selectedTrip != null && expenses.length > 0) {
+            setExpenses((prev) =>
+                prev.map(expense => ({
+                    ...expense,
+                    trip_schedule_id: selectedTrip
+                }))
+            );
+        }
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [selectedTrip]);
+
     const handleOnCapture = async (expenseId: number) => {
         if(!permission.granted) {
             permissionView()
@@ -292,7 +305,7 @@ export default function AddExpenses() {
 
         const hasEmpty = expenses.find((e) => 
             !e.amount || !e.description.trim() || !e.expense_category_id || !e.trip_schedule_id || !e.image_uri
-        )
+        );
 
         if(hasEmpty) {
             setSaveExpenseSpinner(false);
@@ -310,21 +323,12 @@ export default function AddExpenses() {
             }
         }catch(error: any) {
             Alert.alert('Error', error.message);
-            console.log(error.message)
+            console.log(error)
         }finally{
             setSaveExpenseSpinner(false);
         }
     }
 
-    const handleTripSelect = (tripID: number) => {
-        setSelectedTrip(tripID);
-
-        setExpenses(prev => 
-            prev.map(e => ({
-                ...e, trip_schedule_id: tripID
-            }))
-        )
-    }
 
     if(onCapture == true) {
         return renderCameraCaptureView();
@@ -384,7 +388,7 @@ export default function AddExpenses() {
                         <View>
                             <Text style={{ fontSize: 10, fontWeight: 'bold', color: '#545454' }}>Trip Schedules:</Text>
                             <View style={{ borderColor: '#B3B3B3', borderWidth: 1, borderRadius: 5, flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', backgroundColor: '#fff' }}>
-                                <Dropdown onChange={item => handleTripSelect(item.id)} value={selectedTrip || undefined} data={tripDropdown} labelField="label" valueField="id" placeholder="Select Trip Schedule" 
+                                <Dropdown onChange={item => setSelectedTrip(item.id)} value={selectedTrip || undefined} data={tripDropdown} labelField="label" valueField="id" placeholder="Select Trip Schedule" 
                                     style={{ height: 40, width: '100%', paddingHorizontal: 10 }}
                                     containerStyle={{
                                         alignSelf: 'flex-start',

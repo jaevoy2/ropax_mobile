@@ -12,6 +12,7 @@ type CargoPivotProps = {
     cargo_specification_id?: number;
     parcel_category_id?: number;
     price?: number;
+    specification: string;
     route_id?: number;
 }
 

@@ -186,6 +186,7 @@ export default function ManualBooking() {
 
         if(cargoPropsResponse) {
             setCargoProperties(cargoPropsResponse as CargoProperties)
+            console.log(cargoPropsResponse.data)
         }
     }
 

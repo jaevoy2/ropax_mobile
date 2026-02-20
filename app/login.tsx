@@ -31,7 +31,7 @@ export default function Login() {
         try {
             const response = await UserLogin(email, password);
             if(response) {
-
+                console.log(response)
                 AsyncStorage.setItem('token', response.token);
                 AsyncStorage.setItem('userID', String(response.user.id));
                 AsyncStorage.setItem('name', response.user.name);

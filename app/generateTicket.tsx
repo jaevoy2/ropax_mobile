@@ -274,7 +274,7 @@ export default function TicketGenerator() {
                         </View>
                         {note &&(
                             <View style={{ paddingVertical: 10, borderColor: '#9B9B9B', borderWidth: 1, marginTop: 5 }}>
-                                <Text style={{ textAlign: 'center' }}>Handle with care.</Text>
+                                <Text style={{ textAlign: 'center' }}>{note}</Text>
                             </View>
                         )}
                     </View>

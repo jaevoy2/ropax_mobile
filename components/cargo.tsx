@@ -271,7 +271,7 @@ export default function CargoComponent({ dateChange }: {dateChange: string} ) {
                 c => 
                     c.cargo_type_id == cargo.cargoTypeID &&
                     c.cargo_brand_id == cargo.cargoBrandID &&
-                    c.cargo_specification_id == cargo.cargoSpecificationID &&
+                    c.specification == cargo.cargoSpecification &&
                     c.route_id == routeID
             );
 
@@ -456,7 +456,8 @@ export default function CargoComponent({ dateChange }: {dateChange: string} ) {
                                         <View style={{ marginTop: 10 }}>
                                             <Text style={{ fontSize: 9, fontWeight: 'bold', color: '#545454' }}>Cargo Type:</Text>
                                             <View style={{ borderColor: '#B3B3B3', borderWidth: 1, borderRadius: 5 }}>
-                                                <Dropdown onChange={(item) => {updatePaxCargoProperty(c.id, 'cargoType', item.label), updatePaxCargoProperty(c.id, 'cargoTypeID', item.value)}} value={c.cargoTypeID} data={cargoProperties?.data.cargo_types?.map((type: any) => ({ label: type.name, value: type.id }))} labelField="label" valueField="value" placeholder="Select Cargo Type" style={{ height: 40, width: '100%', paddingHorizontal: 10 }}
+                                                <Dropdown onChange={(item) => {updatePaxCargoProperty(c.id, 'cargoType', item.label), updatePaxCargoProperty(c.id, 'cargoTypeID', item.value)}} 
+                                                    value={c.cargoTypeID} data={cargoProperties?.data.cargo_types?.map((type: any) => ({ label: type.name, value: type.id }))} labelField="label" valueField="value" placeholder="Select Cargo Type" style={{ height: 40, width: '100%', paddingHorizontal: 10 }}
                                                     containerStyle={{
                                                         alignSelf: 'flex-start',
                                                         width: '85%',
@@ -481,7 +482,8 @@ export default function CargoComponent({ dateChange }: {dateChange: string} ) {
                                                         <View style={{ marginTop: 10 }}>
                                                             <Text style={{ fontSize: 9, fontWeight: 'bold', color: '#545454' }}>Brand:</Text>
                                                             <View style={{ borderColor: '#B3B3B3', borderWidth: 1, borderRadius: 5 }}>
-                                                                <Dropdown onChange={(item) => {updatePaxCargoProperty(c.id, 'cargoBrand', item.label), updatePaxCargoProperty(c.id, 'cargoBrandID', item.value)}} value={c.cargoBrandID} data={cargoProperties?.data.brands.map((b: any) => ({ label: b.name, value: b.id }))} labelField="label" valueField="value" placeholder="Select Brand" style={{ height: 40, width: '100%', paddingHorizontal: 10 }}
+                                                                <Dropdown onChange={(item) => {updatePaxCargoProperty(c.id, 'cargoBrand', item.label), updatePaxCargoProperty(c.id, 'cargoBrandID', item.value)}} 
+                                                                    value={c.cargoBrandID} data={cargoProperties?.data.brands.map((b: any) => ({ label: b.name, value: b.id }))} labelField="label" valueField="value" placeholder="Select Brand" style={{ height: 40, width: '100%', paddingHorizontal: 10 }}
                                                                     containerStyle={{
                                                                         alignSelf: 'flex-start',
                                                                         width: '85%',
@@ -503,7 +505,8 @@ export default function CargoComponent({ dateChange }: {dateChange: string} ) {
                                                             <View style={{ width: '48%' }}>
                                                                 <Text style={{ fontSize: 9, fontWeight: 'bold', color: '#545454' }}>Specification:</Text>
                                                                 <View style={{ borderColor: '#B3B3B3', borderWidth: 1, borderRadius: 5 }}>
-                                                                    <Dropdown onChange={(item) => {updatePaxCargoProperty(c.id, 'cargoSpecification', item.label), updatePaxCargoProperty(c.id, 'cargoSpecificationID', item.value)}} value={c.cargoSpecificationID} data={cargoProperties?.data.specifications.map((specs: any) => ({ label: specs.cc, value: specs.id }))} labelField="label" valueField="value" placeholder="Select CC" style={{ height: 40, width: '100%', paddingHorizontal: 10 }}
+                                                                    <Dropdown onChange={(item) => {updatePaxCargoProperty(c.id, 'cargoSpecification', String(item.label)), updatePaxCargoProperty(c.id, 'cargoSpecificationID', item.value)}} 
+                                                                        value={c.cargoSpecificationID} data={cargoProperties.data.cargo_options?.filter(opt => opt.specification).map((s: any) => ({ label: String(s.specification), value: s.id }))} labelField="label" valueField="value" placeholder="Select CC" style={{ height: 40, width: '100%', paddingHorizontal: 10 }}
                                                                         containerStyle={{
                                                                             alignSelf: 'flex-start',
                                                                             width: '40%',

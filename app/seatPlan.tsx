@@ -33,6 +33,7 @@ export default function SeatPlan() {
     const [saveloading, setSaveLoading] = useState(false);
     const [errorForm, setErrorForm] = useState<(string | number)[]>([]);
     const [currentSheetIndex, setCurrentSheetIndex] = useState(null);
+    const [passesIsHidden, setPassesIsHidden] = useState(false);
 
     const seatSheetRef = useRef<BottomSheet>(null);
     const passesSheetRef = useRef<BottomSheet>(null);
@@ -44,6 +45,14 @@ export default function SeatPlan() {
         const date = new Date();
         setYear(date.getFullYear().toString().slice(-2));
     }, []);
+
+    useEffect(() => {
+        if(passengers && passengers.some(p => p.seatNumber != null)) {
+            setPassesIsHidden(true)
+        }else {
+            setPassesIsHidden(false);
+        }
+    }, [passengers.length]);
 
     useEffect(() => {
         let totalFare;
@@ -302,7 +311,7 @@ export default function SeatPlan() {
                 <TouchableOpacity onPress={() => {router.back(), handleForceSeatRemoval()}} style={{ position: 'absolute', left: 20, top: 50, zIndex: 1 }}>
                     <Ionicons name={'chevron-back'} size={30} color={'#fff'} />
                 </TouchableOpacity>
-                <TouchableOpacity disabled={passengers.length > 0 && passengers.some(p => p.hasCargo == false)} onPress={() => handlePassesForm()} style={{ position: 'absolute', right: 20, top: 50, zIndex: 1, opacity: currentSheetIndex != 6 ? 0 : 1 }}>
+                <TouchableOpacity disabled={passengers.length > 0 && passengers.some(p => p.hasCargo == false)} onPress={() => handlePassesForm()} style={{ position: 'absolute', right: 20, top: 50, zIndex: 1, opacity: passesIsHidden == true ?0 : 1 }}>
                     <MaterialCommunityIcons name={'account-arrow-right'} size={30} color={'#fff'} />
                 </TouchableOpacity>
 

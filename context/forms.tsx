@@ -38,6 +38,7 @@ export default function Forms({ errorForm }: FormProps) {
     const [paxFares, setPaxFares] = useState<PaxFareProps[] | null>(null)
 
     useEffect(() => {
+        console.log(passengers)
         const departureTime = new Date(`1970-01-01T${departure_time}`).toLocaleTimeString(
             'en-US', {
                 hour: 'numeric',
@@ -225,7 +226,7 @@ export default function Forms({ errorForm }: FormProps) {
                 c => 
                     c.cargo_type_id == cargo.cargoTypeID &&
                     c.cargo_brand_id == cargo.cargoBrandID &&
-                    c.cargo_specification_id == cargo.cargoSpecificationID &&
+                    c.specification == cargo.cargoSpecification &&
                     c.route_id == routeID
             );
 
@@ -314,7 +315,7 @@ export default function Forms({ errorForm }: FormProps) {
                             </TouchableOpacity>
                         )}
                         <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' }}>
-                            {!passengers.some((p) => p.passType == 'Passes') && (
+                            {passengers.some((p) => p.passType != 'Passes') && (
                                 <View style={{ flexDirection: 'column', alignItems: 'flex-start' }}>
                                     <Text style={{ color: '#cf2a3a', fontSize: 11, fontWeight: '900' }}>{p.accommodation} Seat#</Text>
                                     <Text style={{ textAlign: 'center', fontWeight: 'bold', fontSize: 18, color: '#cf2a3a', borderColor: '#cf2a3a', backgroundColor: '#cf2a3b1a', borderWidth: 1, paddingVertical: 5, paddingHorizontal: 25, borderRadius: 5 }}>
@@ -515,7 +516,8 @@ export default function Forms({ errorForm }: FormProps) {
                                                     <View style={{ width: '50%' }}>
                                                         <Text style={{ fontSize: 9, fontWeight: 'bold', color: '#545454' }}>Specifications:</Text>
                                                         <View style={{ borderColor: '#B3B3B3', borderWidth: 1, borderRadius: 5 }}>
-                                                            <Dropdown onChange={(item) => {updateCargo(p.seatNumber ?? null, index, cargoIndex, 'cargoSpecification', item.label),  updateCargo(p.seatNumber ?? null, index, cargoIndex, 'cargoSpecificationID', item.value)}} value={c.cargoSpecificationID} data={cargoProperties.data.specifications.map((specs: any) => ({ label: specs.cc, value: specs.id }))} labelField="label" valueField="value" placeholder="Select CC" style={{ height: 40, width: '100%', paddingHorizontal: 10 }}
+                                                            <Dropdown onChange={(item) => {updateCargo(p.seatNumber ?? null, index, cargoIndex, 'cargoSpecification', String(item.label)),  updateCargo(p.seatNumber ?? null, index, cargoIndex, 'cargoSpecificationID', item.value)}} 
+                                                                value={c.cargoSpecificationID} data={cargoProperties.data.cargo_options.filter(opt => opt.specification).map((s: any) => ({ label: String(s.specification), value: s.id }))} labelField="label" valueField="value" placeholder="Select CC" style={{ height: 40, width: '100%', paddingHorizontal: 10 }}
                                                                 containerStyle={{
                                                                     alignSelf: 'flex-start',
                                                                     width: '42%',
