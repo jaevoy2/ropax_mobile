@@ -50,9 +50,9 @@ export default function GenSettings() {
                 station: userStation ?? '',
                 role: userRole ?? ''
             }
-
             setSelectedStation(Number(userStationID) ?? 0)
             setUser(userData);
+            console.log(userData)
         }
 
         loadUserData()
@@ -87,11 +87,11 @@ export default function GenSettings() {
         try {
             const saveStation = await SaveStation(user!.id, selectedStation);
             if(saveStation) {
-                AsyncStorage.setItem('stationID', String(saveStation.station.id));
+                console.log(AsyncStorage.setItem('stationID', String(saveStation.station.id)));
                 AsyncStorage.setItem('station', saveStation.station.name);
 
                 const setSaveStation: UserProp = {
-                    id: user!.id,
+                    id: user?.id,
                     name: user?.name,
                     image: user?.image,
                     stationID: saveStation.station.id,
@@ -193,7 +193,7 @@ export default function GenSettings() {
                 <View style={{ paddingHorizontal: 15, paddingVertical: 20, backgroundColor: '#fff', borderColor: '#cf2a3a', borderWidth: 1, borderRadius: 10, marginTop: 5, flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' }}>
                     <View style={{ flexDirection: 'row', gap: 10, alignItems: 'center' }}>
                         {user?.image ? (
-                            <Image source={{ uri: user.image }} style={{ borderRadius: 60, height: 50, width: 50 }} />
+                            <Image source={{ uri: `https://lmbs-staging.creativedevlabs.com/storage/${user.image}` }} style={{ borderRadius: 60, height: 50, width: 50 }} />
                         ) : (
                             <Image source={defaultImg} style={{ borderRadius: 60, height: 50, width: 50 }} />
                         )}

@@ -186,7 +186,6 @@ export default function ManualBooking() {
 
         if(cargoPropsResponse) {
             setCargoProperties(cargoPropsResponse as CargoProperties)
-            console.log(cargoPropsResponse.data)
         }
     }
 
@@ -228,7 +227,10 @@ export default function ManualBooking() {
                 const tripTime = new Date(currentTime);
                 tripTime.setHours(hours, minutes, 0, 0);
                 
-                return tripStatus = currentTime > tripTime ? 'departed' : 'scheduled'
+                const departureAllowance = new Date(tripTime);
+                departureAllowance.setHours(departureAllowance.getHours() + 1);
+
+                return tripStatus = currentTime > departureAllowance ? 'departed' : 'scheduled'
             }
 
             if(tripsFetch) {
@@ -455,7 +457,7 @@ export default function ManualBooking() {
                                             <Ionicons name="chevron-forward" size={18} />
                                         </TouchableOpacity>
                                     ))}
-                                    {trips.some(t => t.hasDeparted == true) && (
+                                    {trips && trips.some(t => t.hasDeparted == true) && (
                                         <>
                                             <Text style={{ color: '#7A7A85', marginTop: 25, fontWeight: 'bold' }}>Departed</Text>
                                             {trips && trips.filter(t => t.hasDeparted == true).map((trip) => (

@@ -18,7 +18,7 @@ export async function SaveBooking(trip: TripContextProps, passengers: PassengerP
                 'Origin': `${ORIGIN}`
             },
             body: JSON.stringify({
-                station_id: stationID,
+                station_id: 1,
                 trip_schedule_id: trip.id,
                 web_code: trip.webCode,
                 passengers: passengers.map((p) => ({

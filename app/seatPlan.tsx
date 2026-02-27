@@ -1,3 +1,4 @@
+import { FetchTotalBookings } from "@/api/totalBookings";
 import L2Vessel from "@/components/L2Vessel";
 import SRVessel from "@/components/srVessel";
 import { useCargo } from "@/context/cargoProps";
@@ -42,6 +43,7 @@ export default function SeatPlan() {
     const passesSnapPoints = useMemo(() => ["90%"], []);
 
     useEffect(() => {
+        handleFetchTotalBookings(id)
         const date = new Date();
         setYear(date.getFullYear().toString().slice(-2));
     }, []);
@@ -296,6 +298,19 @@ export default function SeatPlan() {
             <BottomSheetBackdrop {...props} appearsOnIndex={6} disappearsOnIndex={0} pressBehavior={'none'} opacity={0.5} />
         ), []
     )
+
+    const handleFetchTotalBookings = async (trip_id: number | null) => {
+            try {
+                if(!trip_id) return;
+                const totalBookingFetch = await FetchTotalBookings(trip_id);
+    
+                if(!totalBookingFetch.error) {
+                    setTotalBookings(totalBookingFetch.total_paying);
+                }
+            }catch(error: any) {
+                Alert.alert('Error', error.message);
+            }
+        }
 
     return (
         <GestureHandlerRootView style={{ flex: 1 }}>

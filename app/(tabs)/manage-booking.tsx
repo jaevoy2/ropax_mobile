@@ -1,5 +1,6 @@
 import { FetchManageBookingList } from "@/api/manageBookingList";
 import { Ionicons, MaterialCommunityIcons } from "@expo/vector-icons";
+import { router } from "expo-router";
 import React, { useEffect, useState } from "react";
 import { ActivityIndicator, Alert, Dimensions, FlatList, Modal, RefreshControl, Text, TextInput, TouchableOpacity, View } from "react-native";
 import { Calendar } from "react-native-calendars";
@@ -14,25 +15,11 @@ type PaxBookingProps = {
     vessel: string;
     referenceNumber: string;
     bookingStatus?: number;
+    bookingId?: number;
 }
 
-type PaxToUpdate = {
-    id: number;
-    name: string;
-    departureDate: string;
-    departureTime: string;
-    route: string;
-    vessel: string;
-    referenceNumber: string;
-    bookingStatus?: number;
-}
 
 const { height, width } = Dimensions.get('window')
-const paxRequestTypes = [
-    {name: 'Cancellation', icon: 'book-cancel-outline'},
-    {name: 'Reschedule', icon: 'book-edit-outline'},
-    {name: 'Cargo', icon: 'truck'}
-]
 
 export default function ManageBooking() {
     const [passengers, setPassengers] = useState<PaxBookingProps[] | []>([])
@@ -41,9 +28,6 @@ export default function ManageBooking() {
     const [date, setDate] = useState('');
     const [formattedDate, setFormattedDate] = useState('');
     const [searchValue, setSearchValue] = useState('');
-    const [requestType, setRequestType] = useState('Cancellation');
-    const [itemSelected, setItemSelected] = useState<PaxToUpdate | null>(null);
-    const [reason, setReason] = useState('');
 
     useEffect(() => {
         const today = new Date;
@@ -56,9 +40,10 @@ export default function ManageBooking() {
         
         const PHTimezoneToday = today.toLocaleDateString('en-CA', { timeZone: 'Asia/Manila' })
 
-        setDate(PHTimezoneToday)
-        setFormattedDate(today.toLocaleDateString('en-US', options));
+        setDate(PHTimezoneToday);
+        setLoading(true)
         fetchBooking(PHTimezoneToday, null);
+        setFormattedDate(today.toLocaleDateString('en-US', options));
 
     }, []);
 
@@ -97,14 +82,17 @@ export default function ManageBooking() {
                     route: passenger.bookings.find((t: any) => t.trip_schedule)?.trip_schedule.trip.route.mobile_code,
                     vessel: passenger.bookings.find((t: any) => t.trip_schedule)?.trip_schedule.trip.vessel.name,
                     referenceNumber: passenger.bookings.find((r: any) => r.reference_no).reference_no,
-                    bookingStatus: passenger.bookings.find((s: any) => s.status_id)?.status_id
+                    bookingStatus: passenger.bookings.find((s: any) => s.status_id)?.status_id,
+                    bookingId: passenger.bookings.find((booking: any) => booking.id)?.id
                 }))
                 setPassengers(paxData)
             }
         }catch (error: any) {
             Alert.alert('Error', error.message)
         }finally {
-            setLoading(false);
+            setTimeout(() => {
+                setLoading(false);
+            }, 300);
         }
     }
 
@@ -140,20 +128,16 @@ export default function ManageBooking() {
 
         const PHTimezone = today.toLocaleDateString('en-CA', { timeZone: 'Asia/Manila' })
 
-        setRequestType(paxRequestTypes[0].name)
         setLoading(true)
         fetchBooking(PHTimezone, null)
         setDate(PHTimezone),
         setFormattedDate(today.toLocaleDateString('en-US', options))
     }
 
-    const handleOnPaxSelect = (props: PaxToUpdate) => {
-        setItemSelected(props)
-    }
-
     const PassengerItem = React.memo(({ paxDatas }: { paxDatas: PaxBookingProps }) => {
         return (
-            <TouchableOpacity onPress={() => handleOnPaxSelect(paxDatas)} style={{ height: 90, borderColor: '#B3B3B3', borderWidth: 1, backgroundColor: '#fff', borderRadius: 8, padding: 8, marginBottom: 10 }}>
+            <TouchableOpacity onPress={() => router.push( `/bookingInfo?bookingId=${paxDatas.bookingId}&paxId=${paxDatas.id}` )} 
+                style={{ height: 90, borderColor: '#B3B3B3', borderWidth: 1, backgroundColor: '#fff', borderRadius: 8, padding: 8, marginBottom: 10 }}>
                 <Text style={{ alignSelf: 'flex-end', fontSize: 10 }}>{paxDatas.departureDate}</Text>
                 <View style={{ borderBottomColor: '#dadadaff', borderBottomWidth: 1, flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', marginBottom: 5, paddingBottom: 8 }}>
                     <Text style={{ fontWeight: 'bold', fontSize: 18 }}>{paxDatas.name}</Text>
@@ -161,9 +145,9 @@ export default function ManageBooking() {
                 </View>
                 <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' }}>
                     <Text style={{ fontSize: 10 }}>{`${paxDatas.vessel}  |  ${paxDatas.route}  |  ${paxDatas.departureTime}`}</Text>
-                    <View style={{ flexDirection: 'row', alignItems: 'center', gap: 3, borderColor: paxDatas.bookingStatus == null ? '#19B87E' : '#FCCA03', backgroundColor: paxDatas.bookingStatus == null ? '#19b87e3d' : '#fcca0342', borderWidth: 1, padding: 3, borderRadius: 5 }}>
-                        <Text style={{ color: paxDatas.bookingStatus == null ? '#19B87E' : '#FCCA03', fontSize: 10 }}>{paxDatas.bookingStatus == null ? 'Paid' : 'Pending'}</Text>
-                        <MaterialCommunityIcons name={paxDatas.bookingStatus == null ? 'check-decagram' : 'clock-time-eight'} size={14} color={paxDatas.bookingStatus == null ? '#19B87E' : '#FCCA03'} />
+                    <View style={{ flexDirection: 'row', alignItems: 'center', gap: 3, borderColor: paxDatas.bookingStatus != null ? '#19B87E' : '#FCCA03', backgroundColor: paxDatas.bookingStatus != null ? '#19b87e3d' : '#fcca0342', borderWidth: 1, padding: 3, borderRadius: 5 }}>
+                        <Text style={{ color: paxDatas.bookingStatus != null ? '#19B87E' : '#FCCA03', fontSize: 10 }}>{paxDatas.bookingStatus != null ? 'Paid' : 'Pending'}</Text>
+                        <MaterialCommunityIcons name={paxDatas.bookingStatus != null ? 'check-decagram' : 'clock-time-eight'} size={14} color={paxDatas.bookingStatus != null ? '#19B87E' : '#FCCA03'} />
                     </View>
                 </View>
             </TouchableOpacity>
@@ -193,62 +177,6 @@ export default function ManageBooking() {
                     </View>
                 </Modal>
             )}
-            {itemSelected && (
-                <Modal visible={itemSelected && requestType == 'Cancellation'} transparent animationType="fade">
-                    <View style={{ backgroundColor: '#00000048', flex: 1, justifyContent: 'center', alignItems: 'center' }}>
-                        <View style={{ width: width - 40, backgroundColor: '#fff', borderRadius: 10, justifyContent: 'space-between' }}>
-                            <Text style={{ fontSize: 16, fontWeight: 'bold', borderBottomWidth: 1, borderBottomColor: '#e0e0e0', paddingHorizontal: 15, paddingVertical: 10 }}>Request Cancellation</Text>
-                            <View style={{ padding: 15 }}>
-                                <View>
-                                    <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' }}>
-                                        <View>
-                                            <Text style={{ fontSize: 10, color: '#888888' }}>Reference#:</Text>
-                                            <Text style={{ fontSize: 14, color: '#cf2a3a', fontWeight: 'bold' }}>{itemSelected.referenceNumber}</Text>
-                                        </View>
-                                        <View style={{ alignItems: 'flex-end' }}>
-                                            <Text style={{ fontSize: 10, color: '#888888' }}>Departure Date:</Text>
-                                            <Text style={{ fontSize: 12 }}>{itemSelected.departureDate}</Text>
-                                        </View>
-                                    </View>
-                                    <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' }}>
-                                        <View>
-                                            <Text style={{ fontSize: 10, color: '#888888', marginTop: 10 }}>Passenger Name:</Text>
-                                            <Text style={{ fontWeight: 'bold', fontSize: 18 }}>{itemSelected.name}</Text>
-                                        </View>
-                                        <View style={{ alignItems: 'flex-end' }}>
-                                            <Text style={{ fontSize: 10, color: '#888888', marginTop: 10 }}>Status:</Text>
-                                            <View style={{ flexDirection: 'row', alignItems: 'center', gap: 3, borderColor: itemSelected.bookingStatus == null ? '#19B87E' : '#FCCA03', backgroundColor: itemSelected.bookingStatus == null ? '#19b87e3d' : '#fcca0342', borderWidth: 1, padding: 3, borderRadius: 5 }}>
-                                                <Text style={{ color: itemSelected.bookingStatus == null ? '#19B87E' : '#FCCA03', fontSize: 10 }}>{itemSelected.bookingStatus == null ? 'Paid' : 'Pending'}</Text>
-                                                <MaterialCommunityIcons name={itemSelected.bookingStatus == null ? 'check-decagram' : 'clock-time-eight'} size={14} color={itemSelected.bookingStatus == null ? '#19B87E' : '#FCCA03'} />
-                                            </View>
-                                        </View>
-                                    </View>
-                                    <View>
-                                        <Text style={{ fontSize: 10, color: '#888888', marginTop: 10 }}>Trip:</Text>
-                                        <Text style={{ fontSize: 12 }}>{`${itemSelected.vessel}  |  ${itemSelected.route}  |  ${itemSelected.departureTime}`}</Text>
-                                    </View>
-                                </View>
-
-                                <View style={{ marginTop: 10 }}>
-                                    <Text style={{ fontSize: 10, color: '#888888' }}>Cancellation Reason:</Text>
-                                    <View style={{ borderColor: '#B3B3B3', borderWidth: 1, borderRadius: 5 }}>
-                                        <TextInput onChangeText={(text) => setReason(text)} placeholder='Reason' style={{ fontSize: 13 }} />
-                                    </View>
-                                </View>
-
-                                <View style={{ alignSelf: 'flex-end', flexDirection: 'row', marginTop: 20, gap: 10 }}>
-                                    <TouchableOpacity onPress={() => setItemSelected(null)}>
-                                        <Text>Cancel</Text>
-                                    </TouchableOpacity>
-                                    <TouchableOpacity disabled={reason.length == 0}>
-                                        <Text style={{ color: reason.length > 0 ? '#cf2a3a' : '#dabfbf', fontWeight: 'bold' }}>Save</Text>
-                                    </TouchableOpacity>
-                                </View>
-                            </View>
-                        </View>
-                    </View>
-                 </Modal>
-            )}
 
             <View style={{ paddingTop: 50, height: 145, backgroundColor: '#cf2a3a', paddingHorizontal: 20, gap: 15 }}>
                 <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' }}>
@@ -259,7 +187,7 @@ export default function ManageBooking() {
                 </View>
                 <View style={{ flexDirection: 'row', alignItems: 'center', gap: 10 }}>
                     <View style={{ position: 'relative', borderColor: '#cfcfcf73', backgroundColor: '#d4abab73', borderWidth: 1, borderRadius: 50, flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', paddingHorizontal: 10 }}>
-                        <TextInput onChangeText={(text) => {handleFilter(text), setSearchValue(text)}} value={searchValue} placeholder='Search' placeholderTextColor='#fff' style={{ fontSize: 13, fontWeight: '600', width: '80%', color: '#fff' }} />
+                        <TextInput onChangeText={(text) => {handleFilter(text), setSearchValue(text)}} value={searchValue} placeholder='Search' placeholderTextColor='#fff' style={{ fontSize: 13, fontWeight: '600', width: '90%', color: '#fff' }} />
                         <TouchableOpacity disabled={searchValue.length == 0} onPress={() => {setSearchValue(''), fetchBooking(date, null)}} style={{ borderLeftWidth: 1, borderLeftColor: '#cfcfcfd0', paddingLeft: 10 }}>
                             {searchValue.length > 0 ? (
                                 <Ionicons name={'close'} size={20} color={'#fff'} />
@@ -268,17 +196,7 @@ export default function ManageBooking() {
                             )}
                         </TouchableOpacity>
                     </View>
-                    <Ionicons name="funnel" size={22} color={'#fff'} />
                 </View>
-            </View>
-            <View style={{ flexDirection: 'row', alignItems: 'center', margin: 10, borderRadius: 100,  backgroundColor: '#ffc10736', }}>
-                {paxRequestTypes.map((r, index) => (
-                    <TouchableOpacity onPress={() => {setItemSelected(null), setRequestType(r.name)}} key={index} style={{ flexDirection: 'row', justifyContent: 'center', width: '33.33%', alignItems: 'center', gap: 5, paddingVertical: 10,
-                        borderRadius: requestType == r.name ? 100 : 'none', backgroundColor: requestType == r.name ? '#FFC107' : 'transparent' }}>
-                        <MaterialCommunityIcons name={r.icon as any} size={18} />
-                        <Text style={{ fontWeight: 'bold', fontSize: 13 }}>{r.name}</Text>
-                    </TouchableOpacity>
-                ))}
             </View>
 
             <View style={{ justifyContent: 'center', paddingTop: 20, paddingHorizontal: 20, flex: 1 }}>
