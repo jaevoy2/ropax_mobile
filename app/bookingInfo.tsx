@@ -18,6 +18,13 @@ type PaxInfo = {
     vessel?: string;
     referenceNumber?: string;
     bookingStatus?: number;
+    passengers: {
+        id: number;
+        name?: string;
+        seatNumber: string;
+        passenger_type: string;
+        accommodation: string
+    }
 }
 
 const tabs = [
@@ -62,6 +69,13 @@ export default function BookingInfo() {
                     vessel: response.data.bookings.find((t: any) => t.trip_schedule)?.trip_schedule.trip.vessel.name,
                     referenceNumber: response.data.bookings.find((r: any) => r.reference_no).reference_no,
                     bookingStatus: response.data.bookings.find((s: any) => s.status_id)?.status_id,
+                    passengers: {
+                        id: response.data.id,
+                        name: `${response.data.first_name} ${response.data.last_name}`,
+                        seatNumber: response.data.bookings.find((r: any) => r.pivot).pivot.seat_no,
+                        passenger_type: response.data.passenger_type.name,
+                        accommodation: response.data.accommodation_type.name
+                    }
                 });
 
                 setPaxInfo(paxData)
@@ -175,6 +189,7 @@ export default function BookingInfo() {
                         {formTab == 'Passengers' ? (
                             <View style={[styles.card,  { marginTop: 10 }]}>
                                 <Text style={{ padding: 10, borderBottomColor: '#dadada', borderBottomWidth: 1, fontWeight: 'bold' }}>Passenger</Text>
+                                {}
                                 <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', padding: 10 }}>
                                     <View style={{ flexDirection: 'row', alignItems: 'center' }}>
                                         <Ionicons name={'person'} color={'#fff'} size={18} style={{ padding: 10, backgroundColor: '#cf2a3a', borderRadius: 50, marginRight: 10 }} />
@@ -194,26 +209,7 @@ export default function BookingInfo() {
                                         <Text style={{ fontSize: 14, fontWeight: '800', color: '#cf2a3a' }}>₱ 800.00</Text>
                                     </View>
                                 </View>
-                                <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', padding: 10 }}>
-                                    <View style={{ flexDirection: 'row', alignItems: 'center' }}>
-                                        <Ionicons name={'person'} color={'#fff'} size={18} style={{ padding: 10, backgroundColor: '#cf2a3a', borderRadius: 50, marginRight: 10 }} />
-                                        <View style={{ flexDirection: 'column' }}>
-                                            <Text style={{ fontSize: 16, fontWeight: '700' }}>Boyet Calape</Text>
-                                            <View style={{ flexDirection: 'row', alignItems: 'center', gap: 10 }}>
-                                                <Text style={{ fontSize: 10, color: '#646464' }}>Seat# P32</Text>
-                                                <Text style={{ fontSize: 10, color: '#646464' }}>|</Text>
-                                                <Text style={{ fontSize: 10, color: '#646464' }}>Adult</Text>
-                                                <Text style={{ fontSize: 10, color: '#646464' }}>|</Text>
-                                                <Text style={{ fontSize: 10, color: '#646464' }}>Tourist</Text>
-                                                
-                                            </View>
-                                        </View>
-                                    </View>
-                                    <View style={{ flexDirection: 'column', alignItems: 'flex-end' }}>
-                                        <Text style={{ color: '#646464', fontSize: 12, }}>Fare</Text>
-                                        <Text style={{ fontSize: 14, fontWeight: '800', color: '#cf2a3a' }}>₱ 800.00</Text>
-                                    </View>
-                                </View>
+
                             </View>
                         ) : (
                             <View style={[styles.card, { marginTop: 10 }]}>
