@@ -1,7 +1,7 @@
 import { FetchManageBookingList } from "@/api/manageBookingList";
 import { Ionicons, MaterialCommunityIcons } from "@expo/vector-icons";
-import { router } from "expo-router";
-import React, { useEffect, useState } from "react";
+import { router, useFocusEffect } from "expo-router";
+import React, { useCallback, useState } from "react";
 import { ActivityIndicator, Alert, Dimensions, FlatList, Modal, RefreshControl, Text, TextInput, TouchableOpacity, View } from "react-native";
 import { Calendar } from "react-native-calendars";
 import { GestureHandlerRootView } from 'react-native-gesture-handler';
@@ -29,35 +29,39 @@ export default function ManageBooking() {
     const [formattedDate, setFormattedDate] = useState('');
     const [searchValue, setSearchValue] = useState('');
 
-    useEffect(() => {
-        const today = new Date;
-        const options: Intl.DateTimeFormatOptions = {
-            year: 'numeric',
-            month: 'long',
-            day: 'numeric',
-            timeZone: 'Asia/Manila'
-        }
-        
-        const PHTimezoneToday = today.toLocaleDateString('en-CA', { timeZone: 'Asia/Manila' })
-
-        setDate(PHTimezoneToday);
-        setLoading(true)
-        fetchBooking(PHTimezoneToday, null);
-        setFormattedDate(today.toLocaleDateString('en-US', options));
-
-    }, []);
-
-    useEffect(() => {
-        const currentDate = new Date();
-        const today = currentDate.toLocaleDateString('en-CA', { timeZone: 'Asia/Manila' })
-
-        if(today == date && searchValue.length == 0) {
+    useFocusEffect(
+        useCallback(() => {
+            const today = new Date;
+            const options: Intl.DateTimeFormatOptions = {
+                year: 'numeric',
+                month: 'long',
+                day: 'numeric',
+                timeZone: 'Asia/Manila'
+            }
+            
+            const PHTimezoneToday = today.toLocaleDateString('en-CA', { timeZone: 'Asia/Manila' })
+    
+            setDate(PHTimezoneToday);
             setLoading(true)
-            const requestInterval = setInterval(() => fetchBooking(today, null), 3000);
-            return () => clearInterval(requestInterval);
-        }
+            fetchBooking(PHTimezoneToday, null);
+            setFormattedDate(today.toLocaleDateString('en-US', options));
+    
+        }, [])
+    )
 
-    }, [date, searchValue])
+    useFocusEffect(
+        useCallback(() => {
+            const currentDate = new Date();
+            const today = currentDate.toLocaleDateString('en-CA', { timeZone: 'Asia/Manila' })
+    
+            if(today == date && searchValue.length == 0) {
+                setLoading(true)
+                const requestInterval = setInterval(() => fetchBooking(today, null), 3000);
+                return () => clearInterval(requestInterval);
+            }
+    
+        }, [date, searchValue])
+    )
 
     
     const fetchBooking = async (dateString: string, search: string | null) => {
@@ -68,7 +72,7 @@ export default function ManageBooking() {
                 const paxData: PaxBookingProps[] = response.data.map((passenger: any) => ({
                     id: passenger.id,
                     name: `${passenger.first_name} ${passenger.last_name}`,
-                    departureDate: new Date(passenger.bookings.find((c: any) => c.created_at).created_at).toLocaleDateString('en-US', {
+                    departureDate: new Date(passenger.bookings.find((c: any) => c.trip_schedule).trip_schedule.specific_days).toLocaleDateString('en-US', {
                         year: 'numeric',
                         month: 'long',
                         day: 'numeric'
@@ -136,7 +140,7 @@ export default function ManageBooking() {
 
     const PassengerItem = React.memo(({ paxDatas }: { paxDatas: PaxBookingProps }) => {
         return (
-            <TouchableOpacity onPress={() => router.push( `/bookingInfo?bookingId=${paxDatas.bookingId}&paxId=${paxDatas.id}` )} 
+            <TouchableOpacity onPress={() => router.push( `/bookingInfo?bookingId=${paxDatas.bookingId}&paxId=${paxDatas.id}&refNum=${paxDatas.referenceNumber}` )} 
                 style={{ height: 90, borderColor: '#B3B3B3', borderWidth: 1, backgroundColor: '#fff', borderRadius: 8, padding: 8, marginBottom: 10 }}>
                 <Text style={{ alignSelf: 'flex-end', fontSize: 10 }}>{paxDatas.departureDate}</Text>
                 <View style={{ borderBottomColor: '#dadadaff', borderBottomWidth: 1, flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', marginBottom: 5, paddingBottom: 8 }}>
@@ -155,7 +159,7 @@ export default function ManageBooking() {
     })
 
     return (
-        <GestureHandlerRootView style={{ flex: 1, backgroundColor: '#f1f1f1' }}>
+        <GestureHandlerRootView style={{ flex: 1, backgroundColor: '#f7f7f7' }}>
             {calendarVisible && (
                 <Modal transparent animationType="slide" onRequestClose={() => setCalendarVisible(false)} >
                     <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center', backgroundColor: 'rgba(0, 0, 0, 0.5)' }}>

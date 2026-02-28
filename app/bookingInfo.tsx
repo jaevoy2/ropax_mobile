@@ -1,8 +1,10 @@
 import { FetchPaxBookingInfo } from '@/api/paxBookingInfo';
+import { useCargo } from '@/context/cargoProps';
 import { Ionicons, MaterialCommunityIcons } from '@expo/vector-icons';
 import { router, useLocalSearchParams } from 'expo-router';
 import { useEffect, useState } from 'react';
 import { ActivityIndicator, Alert, Dimensions, KeyboardAvoidingView, Platform, Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
+import { Dropdown } from 'react-native-element-dropdown';
 
 
 const { height, width } = Dimensions.get('screen');
@@ -19,15 +21,19 @@ type PaxInfo = {
 }
 
 const tabs = [
-    { id: 1, name: 'Passenger' },
+    { id: 1, name: 'Passengers' },
     { id: 2, name: 'Cargo' }
 ]
 
+
 export default function BookingInfo() {
-    const { bookingId, paxId } = useLocalSearchParams();
+    const { cargoProperties, paxCargoProperty } = useCargo();
+    const { bookingId, paxId, refNumber } = useLocalSearchParams();
     const [ loading, setLoading ] = useState(true);
     const [ paxInfo, setPaxInfo ] = useState<PaxInfo | null>(null);
-    const [formTab, setFormTab] = useState('Passenger');
+    const [formTab, setFormTab] = useState('Passengers');
+    const [toggleOption, setToggleOption] = useState(false);
+    const [type, setType] = useState('')
 
     useEffect(() => {
         handleFetchInfo();
@@ -35,7 +41,7 @@ export default function BookingInfo() {
 
     const handleFetchInfo = async () => {
         try {
-            const response = await FetchPaxBookingInfo(Number(bookingId), Number(paxId));
+            const response = await FetchPaxBookingInfo(Number(bookingId), Number(paxId), String(refNumber));
 
             if(!response.error) {
                 const paxData: PaxInfo = ({
@@ -52,7 +58,7 @@ export default function BookingInfo() {
                         minute: '2-digit',
                         hour12: true
                     }),
-                    route: response.data.bookings.find((t: any) => t.trip_schedule)?.trip_schedule.trip.route.mobile_code,
+                    route: `${response.data.bookings.find((t: any) => t.trip_schedule.trip)?.trip_schedule.trip.route.origin} - ${response.data.bookings.find((t: any) => t.trip_schedule.trip)?.trip_schedule.trip.route.destination}`,
                     vessel: response.data.bookings.find((t: any) => t.trip_schedule)?.trip_schedule.trip.vessel.name,
                     referenceNumber: response.data.bookings.find((r: any) => r.reference_no).reference_no,
                     bookingStatus: response.data.bookings.find((s: any) => s.status_id)?.status_id,
@@ -87,7 +93,7 @@ export default function BookingInfo() {
                 </View>
             ) : (
                 <KeyboardAvoidingView behavior={Platform.OS === 'ios' ? 'padding' : 'height'} style={{ flex: 1, padding: 20 }}>
-                    <ScrollView style={{ flex: 1 }}>
+                    <ScrollView style={{ flex: 1 }} showsVerticalScrollIndicator={false}>
                         <View style={[styles.card, { padding: 10, gap: 12 }]}>
                             <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' }}>
                                 <View style={{ flexDirection: 'row', alignItems: 'center', gap: 10 }}>
@@ -98,7 +104,7 @@ export default function BookingInfo() {
                                     </View>
                                 </View>
                                 <View style={{ flexDirection: 'column', alignItems: 'flex-end', gap: 3 }}>
-                                    <Text style={{ color: '#646464', fontSize: 10, fontWeight: '700' }}>Status</Text>
+                                    <Text style={{ color: '#646464', fontSize: 9, fontWeight: '700' }}>Payment status</Text>
                                     <View style={{ flexDirection: 'row', alignItems: 'center', gap: 3, borderColor: paxInfo.bookingStatus != null ? '#19B87E' : '#FCCA03', backgroundColor: paxInfo.bookingStatus != null ? '#19b87e3d' : '#fcca032a', borderWidth: 1, padding: 3, borderRadius: 5 }}>
                                         <Text style={{ color: paxInfo.bookingStatus != null ? '#19B87E' : '#FCCA03', fontSize: 10 }}>{paxInfo.bookingStatus != null ? 'Paid' : 'Pending'}</Text>
                                         <MaterialCommunityIcons name={paxInfo.bookingStatus != null ? 'check-decagram' : 'clock-time-eight'} size={14} color={paxInfo.bookingStatus != null ? '#19B87E' : '#FCCA03'} />
@@ -106,34 +112,34 @@ export default function BookingInfo() {
                                 </View>
                             </View>
                             <View style={styles.fareContainer}>
-                                <View style={{ flexDirection: 'column' }}>
-                                    <Text style={{ color: '#646464', fontSize: 10 }}>Accommodation</Text>
-                                    <Text style={{ fontWeight: '700', fontSize: 16 }}>Tourist</Text>
+                                <View style={{ flexDirection: 'row', alignItems: 'center', gap: 10 }}>
+                                    <View style={{ flexDirection: 'column' }}>
+                                        <Text style={{ color: '#646464', fontSize: 8 }}>Seat#</Text>
+                                        <Text style={{ fontWeight: '700', fontSize: 12 }}>D32</Text>
+                                    </View>
+                                    <Text style={{ fontSize: 22, color: '#b6b6b6' }}>|</Text>
+                                    <View style={{ flexDirection: 'column' }}>
+                                        <Text style={{ color: '#646464', fontSize: 8 }}>Type</Text>
+                                        <Text style={{ fontWeight: '700', fontSize: 12 }}>Adult</Text>
+                                    </View>
+                                    <Text style={{ fontSize: 22, color: '#b6b6b6' }}>|</Text>
+                                    <View style={{ flexDirection: 'column' }}>
+                                        <Text style={{ color: '#646464', fontSize: 8 }}>Accommodation</Text>
+                                        <Text style={{ fontWeight: '700', fontSize: 12 }}>Tourist</Text>
+                                    </View>
                                 </View>
                                 <View style={{ flexDirection: 'column', alignItems: 'flex-end' }}>
-                                    <Text style={{ color: '#646464', fontSize: 10 }}>Total Fare</Text>
+                                    <Text style={{ color: '#646464', fontSize: 10 }}>Fare</Text>
                                     <Text style={{ color: '#cf2a3a', fontWeight: '800', fontSize: 16 }}>₱ 800.00</Text>
                                 </View>
                             </View>
                         </View>
                         <View style={styles.card}>
-                            <Text style={{ padding: 10, borderBottomColor: '#dadada', borderBottomWidth: 1, fontWeight: 'bold' }}>Booking Information</Text>
+                            <Text style={{ fontWeight: 'bold', padding: 10, borderBottomColor: '#dadada', borderBottomWidth: 1, }}>Booking Information</Text>
                             <View style={{ paddingHorizontal: 10, paddingBottom: 10 }}>
                                 <View style={styles.bookingContainer}>
                                     <Text style={{ color: '#646464', fontSize: 13, }}>Booking Type</Text>
                                     <Text style={{ fontSize: 13, fontWeight: '700' }}>Walk In</Text>
-                                </View>
-                                <View style={styles.bookingContainer}>
-                                    <Text style={{ color: '#646464', fontSize: 13, }}>Passenger Type</Text>
-                                    <Text style={{ fontSize: 13, fontWeight: '700' }}>Adult</Text>
-                                </View>
-                                <View style={styles.bookingContainer}>
-                                    <Text style={{ color: '#646464', fontSize: 13, }}>Accommodation</Text>
-                                    <Text style={{ fontSize: 13, fontWeight: '700' }}>Tourist</Text>
-                                </View>
-                                <View style={styles.bookingContainer}>
-                                    <Text style={{ color: '#646464', fontSize: 13, }}>Seat#</Text>
-                                    <Text style={{ fontSize: 13, fontWeight: '700' }}>P5</Text>
                                 </View>
                                 <View style={styles.bookingContainer}>
                                     <Text style={{ color: '#646464', fontSize: 13, }}>Vessel</Text>
@@ -153,8 +159,8 @@ export default function BookingInfo() {
                                 </View>
                             </View>
                             <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', paddingHorizontal: 10, paddingVertical: 12, backgroundColor: '#cf2a3b27', borderBottomRightRadius: 6, borderBottomLeftRadius: 6 }}>
-                                <Text style={{ color: '#cf2a3a', fontSize: 13, fontWeight: '800' }}>Fare</Text>
-                                <Text style={{ fontSize: 16, fontWeight: '800', color: '#cf2a3a' }}>₱ 800.00</Text>
+                                <Text style={{ color: '#cf2a3a', fontSize: 13, fontWeight: '800' }}>Total Fare</Text>
+                                <Text style={{ fontSize: 16, fontWeight: '800', color: '#cf2a3a' }}>₱ 2,400.00</Text>
                             </View>
                         </View>
                         <View>
@@ -166,7 +172,7 @@ export default function BookingInfo() {
                                 ))}
                             </View>
                         </View>
-                        {formTab == 'Passenger' ? (
+                        {formTab == 'Passengers' ? (
                             <View style={[styles.card,  { marginTop: 10 }]}>
                                 <Text style={{ padding: 10, borderBottomColor: '#dadada', borderBottomWidth: 1, fontWeight: 'bold' }}>Passenger</Text>
                                 <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', padding: 10 }}>
@@ -174,10 +180,12 @@ export default function BookingInfo() {
                                         <Ionicons name={'person'} color={'#fff'} size={18} style={{ padding: 10, backgroundColor: '#cf2a3a', borderRadius: 50, marginRight: 10 }} />
                                         <View style={{ flexDirection: 'column' }}>
                                             <Text style={{ fontSize: 16, fontWeight: '700' }}>Ronilo Calape</Text>
-                                            <View style={{ flexDirection: 'row', alignItems: 'center', gap: 10 }}>
+                                            <View style={{ flexDirection: 'row', alignItems: 'center', gap: 5 }}>
+                                                <Text style={{ fontSize: 10, color: '#646464' }}>Seat# P32</Text>
+                                                <Text style={{ fontSize: 10, color: '#646464' }}>|</Text>
                                                 <Text style={{ fontSize: 10, color: '#646464' }}>Adult</Text>
                                                 <Text style={{ fontSize: 10, color: '#646464' }}>|</Text>
-                                                <Text style={{ fontSize: 10, color: '#646464' }}>Seat# P32</Text>
+                                                <Text style={{ fontSize: 10, color: '#646464' }}>Tourist</Text>
                                             </View>
                                         </View>
                                     </View>
@@ -192,9 +200,12 @@ export default function BookingInfo() {
                                         <View style={{ flexDirection: 'column' }}>
                                             <Text style={{ fontSize: 16, fontWeight: '700' }}>Boyet Calape</Text>
                                             <View style={{ flexDirection: 'row', alignItems: 'center', gap: 10 }}>
+                                                <Text style={{ fontSize: 10, color: '#646464' }}>Seat# P32</Text>
+                                                <Text style={{ fontSize: 10, color: '#646464' }}>|</Text>
                                                 <Text style={{ fontSize: 10, color: '#646464' }}>Adult</Text>
                                                 <Text style={{ fontSize: 10, color: '#646464' }}>|</Text>
-                                                <Text style={{ fontSize: 10, color: '#646464' }}>Seat# P32</Text>
+                                                <Text style={{ fontSize: 10, color: '#646464' }}>Tourist</Text>
+                                                
                                             </View>
                                         </View>
                                     </View>
@@ -205,8 +216,49 @@ export default function BookingInfo() {
                                 </View>
                             </View>
                         ) : (
-                            <View>
-                                
+                            <View style={[styles.card, { marginTop: 10 }]}>
+                                <View style={{ position: 'relative', paddingHorizontal: 10, paddingVertical: 8, borderBottomColor: '#dadada', borderBottomWidth: 1, flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' }}>
+                                    <Text style={{ fontWeight: 'bold' }}>Cargo</Text>
+                                    <Pressable style={{ flexDirection: 'row', alignItems: 'center' }} onPress={() => setToggleOption(!toggleOption)}>
+                                        <Ionicons name={'add'} color={'#cf2a3a'} size={20} />
+                                        <Text style={{ color: '#cf2a3a', fontWeight: '600' }}>Add</Text>
+                                    </Pressable>
+                                </View>
+                                {paxCargoProperty.length > 0 ? (
+                                    <>
+                                        <View style={{ paddingVertical: 10 }}>
+                                            {paxCargoProperty.map((c: any) => (
+                                                <View key={c.id} style={{ width: '90%', alignSelf: 'center' }}>
+                                                    <Text style={{ fontSize: 9, fontWeight: 'bold', color: '#545454' }}>Brand:</Text>
+                                                    <View style={{ borderColor: '#B3B3B3', borderWidth: 1, borderRadius: 5 }}>
+                                                        <Dropdown onChange={(item) => setType(item)} value={c.cargoBrandID} data={cargoProperties?.data.brands.map((b: any) => ({ label: b.name, value: b.id }))}
+                                                            labelField="label" valueField="value" placeholder="Select Brand" style={{ height: 40, width: '100%', paddingHorizontal: 10 }}
+                                                            containerStyle={{
+                                                                alignSelf: 'flex-start',
+                                                                width: '79%',
+                                                            }}
+                                                            selectedTextStyle={{ fontSize: 14, lineHeight: 35, }}
+                                                            renderRightIcon={() => (
+                                                                <Ionicons name="chevron-down" size={15} />
+                                                            )}
+                                                            dropdownPosition="bottom"
+                                                            renderItem={(item) => (
+                                                                <View style={{ width: '80%', padding: 8 }}>
+                                                                    <Text>{item.label}</Text>
+                                                                </View>
+                                                            )}
+                                                        />
+                                                    </View>
+                                                </View>
+                                            ))}
+                                        </View>
+                                    </>
+                                ) : (
+                                    <View style={{ flexDirection: 'column', paddingVertical: 10, justifyContent: 'center', alignItems: 'center' }}>
+                                        <Ionicons name={'close-circle'} size={30} color={'#c7c7c7'} />
+                                        <Text style={{ fontSize: 10, color: '#646464' }}>No cargo record</Text>
+                                    </View>
+                                )}
                             </View>
                         )}
                     </ScrollView>
@@ -261,4 +313,17 @@ const styles = StyleSheet.create({
         borderColor: "#dadada",
         borderWidth: 1,
     },
+    optionContainer: {
+        position: 'absolute',
+        backgroundColor: '#fff',
+        padding: 10,
+        width: 150,
+        flexDirection: 'column',
+        gap: 5,
+        elevation: 2,
+        right: 10,
+        top: 30,
+        zIndex: 10,
+        borderRadius: 5
+    }
 })

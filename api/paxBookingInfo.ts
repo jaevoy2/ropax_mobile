@@ -1,7 +1,7 @@
 import Constants from "expo-constants";
 
 
-export async function FetchPaxBookingInfo(bookingId: number, paxId: number) {
+export async function FetchPaxBookingInfo(bookingId: number, paxId: number, refNum: string) {
     try {
         const extras = Constants.expoConfig.extra ?? {};
         const API_URL = extras.API_URL as string;
@@ -16,7 +16,7 @@ export async function FetchPaxBookingInfo(bookingId: number, paxId: number) {
                 'x-api-key': `${API_KEY}`,
                 'Origin': `${ORIGIN}`
             },
-            body: JSON.stringify({ bookingId, paxId })
+            body: JSON.stringify({ bookingId, paxId, refNum })
         });
     
         const response = await res.json();

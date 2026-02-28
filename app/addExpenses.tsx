@@ -304,7 +304,7 @@ export default function AddExpenses() {
         }
 
         const hasEmpty = expenses.find((e) => 
-            !e.amount || !e.description.trim() || !e.expense_category_id || !e.trip_schedule_id || !e.image_uri
+            !e.amount || !e.description.trim() || !e.expense_category_id || !e.trip_schedule_id
         );
 
         if(hasEmpty) {

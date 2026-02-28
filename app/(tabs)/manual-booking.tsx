@@ -11,7 +11,7 @@ import { router } from 'expo-router';
 import { useEffect, useRef, useState } from "react";
 import { ActivityIndicator, Alert, Animated, AppState, Dimensions, Modal, RefreshControl, ScrollView, Text, TouchableOpacity, View } from "react-native";
 import { Calendar } from 'react-native-calendars';
-import { GestureHandlerRootView } from 'react-native-gesture-handler';
+import { GestureHandlerRootView, Pressable } from 'react-native-gesture-handler';
 
 
 const { height, width } = Dimensions.get('window');
@@ -330,7 +330,6 @@ export default function ManualBooking() {
 
     const handleFetchTotalBookings = async (trip_id: number | null) => {
         try {
-            if(!trip_id) return;
             const totalBookingFetch = await FetchTotalBookings(trip_id);
 
             if(!totalBookingFetch.error) {
@@ -497,7 +496,11 @@ export default function ManualBooking() {
                     ) : (
                         <>
                             <View style={{ flexDirection: 'row', alignItems: 'flex-end', justifyContent: 'space-between' }}>
-                                <Text style={{ fontSize: 18, fontWeight: 'bold' }}>Available Trips</Text>
+                                <View>
+                                    {trips && trips.length > 0 && (
+                                        <Text style={{ fontSize: 18, fontWeight: 'bold' }}>Available Trips</Text>
+                                    )}
+                                </View>
                                 <TouchableOpacity onPress={() => closeToggle()} style={{ alignSelf:'flex-end' }}>
                                     <Ionicons name={'chevron-down'} size={30} color={'#cf2a3a'} />
                                 </TouchableOpacity>
@@ -574,6 +577,9 @@ export default function ManualBooking() {
                     )}
                 </View>
             </Animated.View>
+            <Pressable onPress={() => router.push('/scanner')} style={{ position: 'absolute', bottom: 80, right: 20, padding: 18, backgroundColor: '#cf2a3a', borderRadius: 50, elevation: 3 }}>
+                <MaterialCommunityIcons name={'qrcode-scan'} size={28} color={'#fff'} />
+            </Pressable>
         </GestureHandlerRootView>
     )
 }
