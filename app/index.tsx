@@ -12,6 +12,7 @@ const redWave = require('@/assets/images/red_wave.png');
 const yellowWave = require('@/assets/images/yellow_wave.png');
 
 export default function Login() {
+    const [loading, setLoading] = useState(true);
     const [email, setEmail] = useState('');
     const [password, setPassword] = useState('');
     const [emailFocused, setEmailFocused] = useState(false);
@@ -28,8 +29,8 @@ export default function Login() {
             router.replace('/(tabs)/manual-booking');
             }
 
-            
-        }, 500)
+            setLoading(false);
+        }, 600)
         } 
 
         checkToken();
@@ -69,63 +70,73 @@ export default function Login() {
     }
 
     return (
-        <KeyboardAvoidingView behavior={Platform.OS === 'ios' ? 'padding' : 'height'} style={{ flex: 1, backgroundColor: '#fff' }} >
-            <StatusBar barStyle={'dark-content'} backgroundColor={'transparent'} translucent />
-            <ScrollView style={{ flex: 1 }}>
-                <View style={{ justifyContent: 'center', height, paddingHorizontal: 20 }}>
-                    <View style={{ flexDirection: 'column', alignItems: 'center', marginBottom: 60, gap: 10, marginTop: -120 }}>
-                        <Image source={logo_icon} style={{ width: 50, height: 49 }} />
-                        <Image source={logo_text} style={{ height: 25, width: 105 }} />
-                    </View>
-                    <View>
-                        <Text style={{ fontSize: 13, fontWeight: 'bold' }}>Email</Text>
-                        <TextInput
-                            placeholder="Email"
-                            value={email}
-                            onChangeText={setEmail}
-                            keyboardType="email-address"
-                            autoCapitalize="none"
-                            onFocus={() => setEmailFocused(true)}
-                            onBlur={() => setEmailFocused(false)}
-                            style={[styles.input, emailFocused && styles.inputFocused, { color: '#000' }]}
-                        />
-                    </View>
-                    <View>
-                        <Text style={{ fontSize: 13, fontWeight: 'bold' }}>Password</Text>
-                        <View style={[styles.passwordInput, passwordFocused && styles.inputFocused]}>
-                            <TextInput
-                                placeholder="Password"
-                                value={password}
-                                onChangeText={setPassword}
-                                autoCapitalize="none"
-                                secureTextEntry={!isPasswordVissible}
-                                onFocus={() => setPasswordFocused(true)}
-                                onBlur={() => setPasswordFocused(false)}
-                                style={{ width: '90%', color: '#000' }}
-                            />
-                            <TouchableOpacity onPress={() => setPasswordVissible(!isPasswordVissible)} style={{ paddingRight: 10 }}>
-                                {isPasswordVissible == true ? (
-                                <Ionicons name="lock-open" color={'#cf2a3a'} size={20} />
-                                ) : (
-                                <Ionicons name="lock-closed" color={'#6C6C6C'} size={20} />
-                                )}
-                            </TouchableOpacity>
-                        </View>
-                    </View>
-                    <TouchableOpacity disabled={loginSpinner} onPress={() => handleLogin()} style={[{backgroundColor: loginSpinner == true ? '#eb606eff' : '#cf2a3a'}, styles.button]} >
-                        {loginSpinner == true ? (
-                        <ActivityIndicator size={'small'} color={'#FFC107'} style={{ alignSelf: 'center' }} />
-                        ) : (
-                        <Text style={{ color: '#fff', fontWeight: 'bold' }}>Login</Text>
-                        )}
-                    </TouchableOpacity>
+        <View style={{ flex: 1, backgroundColor: '#fff' }}>
+            {loading == true ? (
+                <View style={{ alignItems: 'center', paddingTop: 400, height }}>
+                    <ActivityIndicator size={'large'} color={'#cf2a3a'} />
                 </View>
-                <View>
-                    <Image source={redWave} style={{ height: 100, width: width, position: 'absolute', bottom: 0, zIndex: 2  }} /> 
-                    <Image source={yellowWave} style={{ height: 100, width: width + 50, position: 'absolute', bottom: 0, right: -50, zIndex: 1 }} /> 
-                </View>
-            </ScrollView>
-        </KeyboardAvoidingView>
+            ) : (
+                <>
+                    <StatusBar barStyle={'dark-content'} backgroundColor={'transparent'} translucent />
+                    <KeyboardAvoidingView behavior={Platform.OS === 'ios' ? 'padding' : 'height'} style={{ flex: 1 }} >
+                        <ScrollView style={{ flex: 1 }}>
+                            <View style={{ justifyContent: 'center', paddingTop: 300, paddingHorizontal: 20 }}>
+                                <View style={{ flexDirection: 'column', alignItems: 'center', marginBottom: 60, gap: 10, marginTop: -120 }}>
+                                    <Image source={logo_icon} style={{ width: 50, height: 49 }} />
+                                    <Image source={logo_text} style={{ height: 25, width: 105 }} />
+                                </View>
+                                <View>
+                                    <Text style={{ fontSize: 13, fontWeight: 'bold' }}>Email</Text>
+                                    <TextInput
+                                        placeholder="Email"
+                                        value={email}
+                                        onChangeText={(text) => setEmail(text)}
+                                        keyboardType="email-address"
+                                        autoCapitalize="none"
+                                        onFocus={() => setEmailFocused(true)}
+                                        onBlur={() => setEmailFocused(false)}
+                                        style={[styles.input, emailFocused && styles.inputFocused, { color: '#000' }]}
+                                    />
+                                </View>
+                                <View>
+                                    <Text style={{ fontSize: 13, fontWeight: 'bold' }}>Password</Text>
+                                    <View style={[styles.passwordInput, passwordFocused && styles.inputFocused]}>
+                                        <TextInput
+                                            placeholder="Password"
+                                            value={password}
+                                            onChangeText={(text) => setPassword(text)}
+                                            autoCapitalize="none"
+                                            secureTextEntry={!isPasswordVissible}
+                                            onFocus={() => setPasswordFocused(true)}
+                                            onBlur={() => setPasswordFocused(false)}
+                                            style={{ width: '90%', color: '#000' }}
+                                        />
+                                        <TouchableOpacity onPress={() => setPasswordVissible(!isPasswordVissible)} style={{ paddingRight: 10 }}>
+                                            {isPasswordVissible == true ? (
+                                            <Ionicons name="lock-open" color={'#cf2a3a'} size={20} />
+                                            ) : (
+                                            <Ionicons name="lock-closed" color={'#6C6C6C'} size={20} />
+                                            )}
+                                        </TouchableOpacity>
+                                    </View>
+                                </View>
+                                <TouchableOpacity disabled={loginSpinner} onPress={() => handleLogin()} style={[{backgroundColor: loginSpinner == true ? '#eb606eff' : '#cf2a3a'}, styles.button]} >
+                                    {loginSpinner == true ? (
+                                    <ActivityIndicator size={'small'} color={'#FFC107'} style={{ alignSelf: 'center' }} />
+                                    ) : (
+                                    <Text style={{ color: '#fff', fontWeight: 'bold' }}>Login</Text>
+                                    )}
+                                </TouchableOpacity>
+                            </View>
+                        </ScrollView>
+                    </KeyboardAvoidingView>
+                    <View style={{ position: 'absolute', bottom: 0 }}>
+                        <Image source={redWave} style={{ height: 100, width: width, position: 'absolute', bottom: 0, zIndex: 2  }} /> 
+                        <Image source={yellowWave} style={{ height: 100, width: width + 50, zIndex: 1 }} /> 
+                    </View>
+                </>
+            )}
+        </View>
     )
 }
 

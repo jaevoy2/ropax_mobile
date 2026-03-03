@@ -16,6 +16,7 @@ type PaxBookingProps = {
     referenceNumber: string;
     bookingStatus?: number;
     bookingId?: number;
+    paxType: string;
 }
 
 
@@ -28,6 +29,8 @@ export default function ManageBooking() {
     const [date, setDate] = useState('');
     const [formattedDate, setFormattedDate] = useState('');
     const [searchValue, setSearchValue] = useState('');
+    
+    const PassengerLists = passengers.filter((p: any) => p.paxType != 'Infant');
 
     useFocusEffect(
         useCallback(() => {
@@ -87,7 +90,8 @@ export default function ManageBooking() {
                     vessel: passenger.bookings.find((t: any) => t.trip_schedule)?.trip_schedule.trip.vessel.name,
                     referenceNumber: passenger.bookings.find((r: any) => r.reference_no).reference_no,
                     bookingStatus: passenger.bookings.find((s: any) => s.status_id)?.status_id,
-                    bookingId: passenger.bookings.find((booking: any) => booking.id)?.id
+                    bookingId: passenger.bookings.find((booking: any) => booking.id)?.id,
+                    paxType: passenger.passenger_type.name
                 }))
                 setPassengers(paxData)
             }
@@ -96,7 +100,7 @@ export default function ManageBooking() {
         }finally {
             setTimeout(() => {
                 setLoading(false);
-            }, 300);
+            }, 500);
         }
     }
 
@@ -214,7 +218,7 @@ export default function ManageBooking() {
                                     <Text style={{ fontWeight: 'bold', fontSize: 18 }}>Bookings</Text>
                                     <Text style={{ fontSize: 15, fontWeight: 'bold' }}>{formattedDate}</Text>
                                 </View>
-                                <FlatList data={passengers.reverse()} keyExtractor={(passengers) => String(passengers.id)} showsVerticalScrollIndicator={false}
+                                <FlatList data={PassengerLists.reverse()} keyExtractor={(passengers) => String(passengers.id)} showsVerticalScrollIndicator={false}
                                     refreshControl={<RefreshControl refreshing={loading} onRefresh={() => handleRefresh()} colors={['#cf2a3a']} />}
                                     renderItem={({ item: passengerDatas }) => <PassengerItem paxDatas={passengerDatas}/>}
                                     getItemLayout={(passengerDatas, index) => ({
