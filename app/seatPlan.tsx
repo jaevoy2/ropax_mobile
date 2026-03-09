@@ -424,11 +424,11 @@ export default function SeatPlan() {
                                 </View>
                             )}
                             {isFormVisible == false ? (
-                                <TouchableOpacity onPress={() => onFormView()} disabled={passengers.length == 0} style={{ backgroundColor: passengers.length == 0 ? '#df5a68ff' : '#cf2a3a', width: '100%', alignSelf: 'center', borderRadius: 30, paddingVertical: 15, marginTop: 15 }}>
+                                <TouchableOpacity onPress={() => onFormView()} disabled={passengers.length == 0} style={{ backgroundColor: passengers.length == 0 ? '#df5a68ff' : '#cf2a3a', width: '100%', alignSelf: 'center', borderRadius: 8, paddingVertical: 15, marginTop: 15 }}>
                                     <Text style={{ fontSize: 16, fontWeight: 'bold', textAlign: 'center', color: '#fff' }}>Continue</Text>
                                 </TouchableOpacity>
                             ) : (
-                                <TouchableOpacity onPress={() => handleSave()} style={{ backgroundColor: '#cf2a3a', width: '100%', alignSelf: 'center', borderRadius: 30, paddingVertical: 15 }}>
+                                <TouchableOpacity onPress={() => handleSave()} style={{ backgroundColor: '#cf2a3a', width: '100%', alignSelf: 'center', borderRadius: 8, paddingVertical: 15 }}>
                                     {saveloading == true ? (
                                         <ActivityIndicator size='small' color={'#fff'} />
                                     ) : (
@@ -482,7 +482,7 @@ export default function SeatPlan() {
                                 </View>
                             )}
                         </View>
-                        <TouchableOpacity onPress={() => handleSave()} style={{ backgroundColor: '#cf2a3a', width: '100%', alignSelf: 'center', borderRadius: 30, paddingVertical: 15 }}>
+                        <TouchableOpacity onPress={() => handleSave()} style={{ backgroundColor: '#cf2a3a', width: '100%', alignSelf: 'center', borderRadius: 8, paddingVertical: 15 }}>
                             {saveloading == true ? (
                                 <ActivityIndicator size='small' color={'#fff'} />
                             ) : (

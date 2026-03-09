@@ -227,3 +227,31 @@ export default function PaymentSummary() {
         </View>
     )
 }
+
+
+
+
+// {paxInfo.find((p: any) => p.id == Number(paxId) )?.bookingStatus == null && (
+//     <View style={styles.card}>
+//         <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', gap: 3, backgroundColor: '#cf2a3b27', borderTopRightRadius: 6, borderTopLeftRadius: 6, padding: 10  }}>
+//             <View>
+//                 <Text style={{ fontWeight: 'bold', color: '#cf2a3a' }}>Payment</Text>
+//                 <Text style={{ fontSize: 9, fontWeight: '600', color: '#cf2a3a' }}>Payment must be settled before departure.</Text>
+//             </View>
+//             <Ionicons name={'alert-circle'} color={'#cf2a3a'} size={24} />
+//         </View>
+//         <View style={{ paddingHorizontal: 10, paddingBottom: 10 }}>
+//             <View style={styles.bookingContainer}>
+//                 <Text style={{ color: '#646464', fontSize: 13, }}>Cash Tendered</Text>
+//                 <View style={{ flexDirection: 'row', alignItems: 'center', gap: 5 }}>
+//                     <Text style={{ fontSize: 20, fontWeight: '600' }}>₱</Text>
+//                     <TextInput onChangeText={(text) => setCash(Number(text))} keyboardType={'numeric'} placeholder='0.00' style={styles.input} />
+//                 </View>
+//             </View>
+//             <View style={styles.bookingContainer}>
+//                 <Text style={{ color: '#646464', fontSize: 13, }}>Change</Text>
+//                 <Text style={{ fontSize: 16, fontWeight: '700' }}>₱ 0.00</Text>
+//             </View>
+//         </View>
+//     </View>
+// )}

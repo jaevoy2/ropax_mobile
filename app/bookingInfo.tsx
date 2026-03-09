@@ -1,11 +1,12 @@
 import { FetchPaxBookingInfo } from '@/api/paxBookingInfo';
 import { useCargo } from '@/context/cargoProps';
+import { usePassengers } from '@/context/passenger';
+import { useTrip } from '@/context/trip';
 import { Ionicons, MaterialCommunityIcons } from '@expo/vector-icons';
 import { router, useLocalSearchParams } from 'expo-router';
 import { useEffect, useState } from 'react';
 import { ActivityIndicator, Alert, Dimensions, KeyboardAvoidingView, Platform, Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
 import { Dropdown } from 'react-native-element-dropdown';
-import { TextInput } from 'react-native-paper';
 
 
 const { height, width } = Dimensions.get('screen');
@@ -16,14 +17,18 @@ type PaxInfo = {
     departureDate?: string;
     departureTime?: string;
     route?: string;
+    routeId: number;
     vessel?: string;
+    vesselId: number;
     referenceNumber?: string;
     bookingStatus?: number;
     seatNumber: string;
+    passengerTypeId: number;
     passenger_type: string;
-    accommodation: string
+    accommodation: string;
+    accommodationTypeId: number;
     fare?: number;
-    // bookingType: 
+    bookingType: string;
 }
 
 const tabs = [
@@ -34,6 +39,8 @@ const tabs = [
 
 export default function BookingInfo() {
     const { cargoProperties, paxCargoProperty } = useCargo();
+    const { setPassengers } = usePassengers();
+    const { id, vessel, routeID, setRouteID, setVessel, setID, setOrigin, setDestination, setVesselID, setCode, setWebCode, setDepartureTime, setMobileCode, setIsCargoable } = useTrip();
     const { bookingId, paxId, refNum } = useLocalSearchParams();
     const [ loading, setLoading ] = useState(true);
     const [ paxInfo, setPaxInfo ] = useState<PaxInfo[] | []>([]);
@@ -41,7 +48,7 @@ export default function BookingInfo() {
     const [toggleOption, setToggleOption] = useState(false);
     const [type, setType] = useState('');
     const [totalFare, setTotalFare] = useState(0);
-    const [cash,  setCash] = useState(0);
+    const [proceedLoading,  setProceedLoading] = useState(false);
 
 
     useEffect(() => {
@@ -74,7 +81,8 @@ export default function BookingInfo() {
                     seatNumber: pax.bookings.find((r: any) => r.pivot).pivot.seat_no,
                     passenger_type: pax.passenger_type.name,
                     accommodation: pax.accommodation_type[0].name,
-                    fare: pax.fares[0]?.fare ? pax.fares[0]?.fare : pax.bookings.find((r: any) => r.pivot)?.pivot?.fare
+                    fare: pax.fares[0]?.fare ? pax.fares[0]?.fare : pax.bookings.find((r: any) => r.pivot)?.pivot?.fare,
+                    bookingType: pax.bookings[0].type_id
                 })) 
 
 
@@ -92,6 +100,34 @@ export default function BookingInfo() {
         }
     }
 
+    const handleProceedBooking = () => {
+        setProceedLoading(true);
+
+        // setVessel(vesselName);
+        // setID(trip_id);
+        // setVesselID(vesselID);
+        // setRouteID(routeId)
+        // setOrigin(origin);
+        // setDestination(destination);
+        // setMobileCode(mobileCode);
+        // setCode(code);
+        // setWebCode(web_code);
+        // setLoading(false);
+        // setDepartureTime(departureTime);
+        // setIsCargoable(cargoable);
+
+        setTimeout(() => {
+            for(const pax of paxInfo) {
+                setPassengers(prev => [...prev, {
+                    seatNumber: '', accommodation: pax.accommodation, accommodationID: pax.accommodationTypeId, passType: pax.passenger_type, passType_id: pax.passengerTypeId  
+                }])
+            }
+
+            setProceedLoading(false);
+            router.push('/seatPlan')
+        }, 600);
+        
+    }
 
 
     return (
@@ -109,13 +145,13 @@ export default function BookingInfo() {
                     <ActivityIndicator size={'large'} color={'#cf2a3a'} />
                 </View>
             ) : (
-                <KeyboardAvoidingView behavior={Platform.OS === 'ios' ? 'padding' : 'height'} style={{ flex: 1, padding: 20 }}>
+                <KeyboardAvoidingView behavior={Platform.OS === 'ios' ? 'padding' : 'height'} style={{ flex: 1, padding: 20, gap: 15 }}>
                     <ScrollView style={{ flex: 1 }} showsVerticalScrollIndicator={false}>
                         <View style={[styles.card, { padding: 10, gap: 12 }]}>
                             <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' }}>
                                 <View style={{ flexDirection: 'row', alignItems: 'center', gap: 10 }}>
                                     <Ionicons name={'person'} color={'#fff'} size={22} style={{ padding: 10, backgroundColor: '#cf2a3a', borderRadius: 50 }} />
-                                    <View style={{ width: '60%' }}>
+                                    <View style={{ width: '55%' }}>
                                         <Text style={{ fontWeight: '600', fontSize: 16 }}>{paxInfo.find((p: any) => p.id == Number(paxId))?.name}</Text>
                                         <Text style={{ color: '#cf2a3a', fontSize: 10, fontWeight: '900' }}>{paxInfo.find((p: any) => p.id == Number(paxId))?.referenceNumber}</Text>
                                     </View>
@@ -124,8 +160,8 @@ export default function BookingInfo() {
                                     <Text style={{ color: '#646464', fontSize: 9, fontWeight: '700' }}>Payment status</Text>
                                     <View style={{ flexDirection: 'row', alignItems: 'center', gap: 3, borderColor: paxInfo.find((p: any) => p.id == Number(paxId))?.bookingStatus != null ? '#19B87E' : '#FCCA03',
                                             backgroundColor: paxInfo.find((p: any) => p.id == Number(paxId) )?.bookingStatus != null ? '#19b87e3d' : '#fcca032a', borderWidth: 1, padding: 3, borderRadius: 5 }}>
-                                        <Text style={{ fontWeight: '800', color: paxInfo.find((p: any) => p.id == Number(paxId))?.bookingStatus != null ? '#19B87E' : '#FCCA03', fontSize: 10 }}>{paxInfo.find((p: any) => p.id == Number(paxId))?.bookingStatus != null ? 'Paid' : 'Pending'}</Text>
                                         <MaterialCommunityIcons name={paxInfo.find((p: any) => p.id == Number(paxId))?.bookingStatus != null ? 'check-decagram' : 'clock-time-eight'} size={14} color={paxInfo.find((p: any) => p.id == Number(paxId))?.bookingStatus != null ? '#19B87E' : '#FCCA03'} />
+                                        <Text style={{ fontWeight: '800', color: paxInfo.find((p: any) => p.id == Number(paxId))?.bookingStatus != null ? '#19B87E' : '#FCCA03', fontSize: 10 }}>{paxInfo.find((p: any) => p.id == Number(paxId))?.bookingStatus != null ? 'Completed' : 'Pending'}</Text>
                                     </View>
                                 </View>
                             </View>
@@ -133,7 +169,7 @@ export default function BookingInfo() {
                                 <View style={{ flexDirection: 'row', alignItems: 'center', gap: 10 }}>
                                     <View style={{ flexDirection: 'column' }}>
                                         <Text style={{ color: '#646464', fontSize: 8 }}>Seat#</Text>
-                                        <Text style={{ fontWeight: '700', fontSize: 12 }}>{paxInfo.find((p: any) => p.id == Number(paxId))?.seatNumber}</Text>
+                                        <Text style={{ fontWeight: '700', fontSize: 12 }}>{paxInfo.find((p: any) => p.id == Number(paxId))?.seatNumber ?? '--'}</Text>
                                     </View>
                                     <Text style={{ fontSize: 22, color: '#b6b6b6' }}>|</Text>
                                     <View style={{ flexDirection: 'column' }}>
@@ -157,7 +193,7 @@ export default function BookingInfo() {
                             <View style={{ paddingHorizontal: 10, paddingBottom: 10 }}>
                                 <View style={styles.bookingContainer}>
                                     <Text style={{ color: '#646464', fontSize: 13, }}>Booking Type</Text>
-                                    <Text style={{ fontSize: 13, fontWeight: '700' }}>---</Text>
+                                    <Text style={{ fontSize: 13, fontWeight: '700' }}>{paxInfo.find((p: any) => p.id == Number(paxId))?.bookingType}</Text>
                                 </View>
                                 <View style={styles.bookingContainer}>
                                     <Text style={{ color: '#646464', fontSize: 13, }}>Vessel</Text>
@@ -177,35 +213,11 @@ export default function BookingInfo() {
                                 </View>
                             </View>
                             <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', paddingHorizontal: 10, paddingVertical: 12, backgroundColor: '#cf2a3b27', borderBottomRightRadius: 6, borderBottomLeftRadius: 6 }}>
-                                <Text style={{ color: '#cf2a3a', fontSize: 13, fontWeight: '800' }}>Total Fare</Text>
+                                <Text style={{ color: '#cf2a3a', fontSize: 13, fontWeight: '800' }}>Total Amount</Text>
                                 <Text style={{ fontSize: 16, fontWeight: '800', color: '#cf2a3a' }}>₱ {totalFare.toFixed(2)}</Text>
                             </View>
                         </View>
 
-                        {paxInfo.find((p: any) => p.id == Number(paxId) )?.bookingStatus == null && (
-                            <View style={styles.card}>
-                                <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', gap: 3, backgroundColor: '#cf2a3b27', borderTopRightRadius: 6, borderTopLeftRadius: 6, padding: 10  }}>
-                                    <View>
-                                        <Text style={{ fontWeight: 'bold', color: '#cf2a3a' }}>Payment</Text>
-                                        <Text style={{ fontSize: 9, fontWeight: '600', color: '#cf2a3a' }}>Payment must be settled before departure.</Text>
-                                    </View>
-                                    <Ionicons name={'alert-circle'} color={'#cf2a3a'} size={24} />
-                                </View>
-                                <View style={{ paddingHorizontal: 10, paddingBottom: 10 }}>
-                                    <View style={styles.bookingContainer}>
-                                        <Text style={{ color: '#646464', fontSize: 13, }}>Cash Tendered</Text>
-                                        <View style={{ flexDirection: 'row', alignItems: 'center', gap: 5 }}>
-                                            <Text style={{ fontSize: 20, fontWeight: '600' }}>₱</Text>
-                                            <TextInput onChangeText={(text) => setCash(Number(text))} keyboardType={'numeric'} placeholder='0.00' style={styles.input} />
-                                        </View>
-                                    </View>
-                                    <View style={styles.bookingContainer}>
-                                        <Text style={{ color: '#646464', fontSize: 13, }}>Change</Text>
-                                        <Text style={{ fontSize: 16, fontWeight: '700' }}>₱ 0.00</Text>
-                                    </View>
-                                </View>
-                            </View>
-                        )}
 
                         <View>
                             <View style={styles.tabs}>
@@ -226,7 +238,7 @@ export default function BookingInfo() {
                                             <View style={{ flexDirection: 'column' }}>
                                                 <Text style={{ fontSize: 16, fontWeight: '700' }}>{pax.name}</Text>
                                                 <View style={{ flexDirection: 'row', alignItems: 'center', gap: 5 }}>
-                                                    <Text style={{ fontSize: 10, color: '#646464', fontWeight: '600' }}>{pax?.seatNumber}</Text>
+                                                    <Text style={{ fontSize: 10, color: '#646464', fontWeight: '600' }}>{pax?.seatNumber != 'N/A' ? `Seat# ${pax?.seatNumber}` : '---'}</Text>
                                                     <Text style={{ fontSize: 10, color: '#646464' }}>|</Text>
                                                     <Text style={{ fontSize: 10, color: '#646464', fontWeight: '600' }}>{pax?.passenger_type}</Text>
                                                     <Text style={{ fontSize: 10, color: '#646464' }}>|</Text>
@@ -243,63 +255,77 @@ export default function BookingInfo() {
 
                             </View>
                         ) : (
-                            <View style={[styles.card, { marginTop: 10 }]}>
-                                <View style={{ position: 'relative', paddingHorizontal: 10, paddingVertical: 8, borderBottomColor: '#dadada', borderBottomWidth: 1, flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' }}>
-                                    <Text style={{ fontWeight: 'bold' }}>Cargo</Text>
-                                    <Pressable style={{ flexDirection: 'row', alignItems: 'center' }} onPress={() => setToggleOption(!toggleOption)}>
-                                        <Ionicons name={'add'} color={'#cf2a3a'} size={20} />
-                                        <Text style={{ color: '#cf2a3a', fontWeight: '600' }}>Add</Text>
-                                    </Pressable>
-                                </View>
-                                {paxCargoProperty.length > 0 ? (
-                                    <>
-                                        <View style={{ paddingVertical: 10 }}>
-                                            {paxCargoProperty.map((c: any) => (
-                                                <View key={c.id} style={{ width: '90%', alignSelf: 'center' }}>
-                                                    <Text style={{ fontSize: 9, fontWeight: 'bold', color: '#545454' }}>Brand:</Text>
-                                                    <View style={{ borderColor: '#B3B3B3', borderWidth: 1, borderRadius: 5 }}>
-                                                        <Dropdown onChange={(item) => setType(item)} value={c.cargoBrandID} data={cargoProperties?.data.brands.map((b: any) => ({ label: b?.name, value: b.id }))}
-                                                            labelField="label" valueField="value" placeholder="Select Brand" style={{ height: 40, width: '100%', paddingHorizontal: 10 }}
-                                                            containerStyle={{
-                                                                alignSelf: 'flex-start',
-                                                                width: '79%',
-                                                            }}
-                                                            selectedTextStyle={{ fontSize: 14, lineHeight: 35, }}
-                                                            renderRightIcon={() => (
-                                                                <Ionicons name="chevron-down" size={15} />
-                                                            )}
-                                                            dropdownPosition="bottom"
-                                                            renderItem={(item) => (
-                                                                <View style={{ width: '80%', padding: 8 }}>
-                                                                    <Text>{item.label}</Text>
-                                                                </View>
-                                                            )}
-                                                        />
-                                                    </View>
-                                                </View>
-                                            ))}
-                                        </View>
-                                    </>
-                                ) : (
-                                    <View style={{ flexDirection: 'column', paddingVertical: 10, justifyContent: 'center', alignItems: 'center' }}>
-                                        <Ionicons name={'close-circle'} size={30} color={'#c7c7c7'} />
-                                        <Text style={{ fontSize: 10, color: '#646464' }}>No cargo record</Text>
+                            <View style={{ marginBottom: 15 }}>
+                                <View style={[styles.card, { marginTop: 10 }]}>
+                                    <View style={{ position: 'relative', paddingHorizontal: 10, paddingVertical: 8, borderBottomColor: '#dadada', borderBottomWidth: 1 }}>
+                                        <Text style={{ fontWeight: 'bold' }}>Cargo</Text>
                                     </View>
-                                )}
+                                    {paxCargoProperty.length > 0 ? (
+                                        <>
+                                            <View style={{ paddingVertical: 10 }}>
+                                                {paxCargoProperty.map((c: any) => (
+                                                    <View key={c.id} style={{ width: '90%', alignSelf: 'center' }}>
+                                                        <Text style={{ fontSize: 9, fontWeight: 'bold', color: '#545454' }}>Brand:</Text>
+                                                        <View style={{ borderColor: '#B3B3B3', borderWidth: 1, borderRadius: 5 }}>
+                                                            <Dropdown onChange={(item) => setType(item)} value={c.cargoBrandID} data={cargoProperties?.data.brands.map((b: any) => ({ label: b?.name, value: b.id }))}
+                                                                labelField="label" valueField="value" placeholder="Select Brand" style={{ height: 40, width: '100%', paddingHorizontal: 10 }}
+                                                                containerStyle={{
+                                                                    alignSelf: 'flex-start',
+                                                                    width: '79%',
+                                                                }}
+                                                                selectedTextStyle={{ fontSize: 14, lineHeight: 35, }}
+                                                                renderRightIcon={() => (
+                                                                    <Ionicons name="chevron-down" size={15} />
+                                                                )}
+                                                                dropdownPosition="bottom"
+                                                                renderItem={(item) => (
+                                                                    <View style={{ width: '80%', padding: 8 }}>
+                                                                        <Text>{item.label}</Text>
+                                                                    </View>
+                                                                )}
+                                                            />
+                                                        </View>
+                                                    </View>
+                                                ))}
+                                            </View>
+                                        </>
+                                    ) : (
+                                        <View style={{ flexDirection: 'column', paddingVertical: 10, justifyContent: 'center', alignItems: 'center' }}>
+                                            <Ionicons name={'close-circle'} size={30} color={'#c7c7c7'} />
+                                            <Text style={{ fontSize: 10, color: '#646464' }}>No cargo record</Text>
+                                        </View>
+                                    )}
+                                </View>
+                                <Pressable style={{ flexDirection: 'row', alignItems: 'center', alignSelf: 'center', paddingVertical: 10, paddingHorizontal: 15, borderRadius: 8, backgroundColor: '#fff', elevation: 2 }}
+                                    onPress={() => setToggleOption(!toggleOption)}>
+                                    <Ionicons name={'add'} color={'#cf2a3a'} size={20} />
+                                    <Text style={{ color: '#cf2a3a', fontWeight: '600' }}>Add Cargo</Text>
+                                </Pressable>
                             </View>
                         )}
 
-                        <View style={styles.requestsContainer}>
-                            <Pressable style={[styles.requestsBtn, { backgroundColor: '#FCCA03' }]}>
-                                <Ionicons name={'reload'} size={16} />
-                                <Text style={{ fontWeight: '800', fontSize: 13 }}>Reschedule Booking</Text>
-                            </Pressable>
-                            <Pressable style={[styles.requestsBtn, { backgroundColor: '#cf2a3a' }]}>
-                                <MaterialCommunityIcons name={'cancel'} color={'#fff'} size={16} />
-                                <Text style={{ color: '#fff', fontWeight: '800', fontSize: 13 }}>Cancel Booking</Text>
-                            </Pressable>
-                        </View>
+                        {paxInfo.find((p: any) => p.id == paxId)?.bookingStatus != null && (
+                            <View style={styles.requestsContainer}>
+                                <Pressable style={[styles.requestsBtn, { backgroundColor: '#FCCA03' }]}>
+                                    <Ionicons name={'reload'} size={16} />
+                                    <Text style={{ fontWeight: '800', fontSize: 13 }}>Reschedule Booking</Text>
+                                </Pressable>
+                                <Pressable style={[styles.requestsBtn, { backgroundColor: '#cf2a3a' }]}>
+                                    <MaterialCommunityIcons name={'cancel'} color={'#fff'} size={16} />
+                                    <Text style={{ color: '#fff', fontWeight: '800', fontSize: 13 }}>Cancel Booking</Text>
+                                </Pressable>
+                            </View>
+                        )}
                     </ScrollView>
+                    {paxInfo.find((p: any) => p.id == paxId)?.bookingStatus == null && (
+                        <Pressable onPress={() => handleProceedBooking()} disabled={proceedLoading} style={[styles.requestsBtn, { backgroundColor: '#cf2a3a' }]}>
+                            {proceedLoading == true ? (
+                                <ActivityIndicator size={'small'} color={'#fff'} style={{ alignSelf: 'center' }} />
+                            ) : (
+                                <Text style={{ color: '#fff', fontWeight: '800' }}>Select Seat</Text>
+                            )}
+                        </Pressable>
+                    )}
                 </KeyboardAvoidingView>
             )}
         </View>
