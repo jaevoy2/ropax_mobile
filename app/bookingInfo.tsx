@@ -3,25 +3,35 @@ import { useCargo } from '@/context/cargoProps';
 import { usePassengers } from '@/context/passenger';
 import { useTrip } from '@/context/trip';
 import { Ionicons, MaterialCommunityIcons } from '@expo/vector-icons';
-import { router, useLocalSearchParams } from 'expo-router';
-import { useEffect, useState } from 'react';
+import { router, useFocusEffect, useLocalSearchParams } from 'expo-router';
+import { useCallback, useState } from 'react';
 import { ActivityIndicator, Alert, Dimensions, KeyboardAvoidingView, Platform, Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
 import { Dropdown } from 'react-native-element-dropdown';
+import { bookingStatuses } from './(tabs)/manage-booking';
+
 
 
 const { height, width } = Dimensions.get('screen');
 
+
 type PaxInfo = {
     id?: number;
     name?: string;
+    tripId: number;
     departureDate?: string;
     departureTime?: string;
     route?: string;
+    mobileCode: string;
+    webCode: string;
     routeId: number;
+    origin: string;
+    desitination: string;
     vessel?: string;
     vesselId: number;
+    vesselCode: string;
     referenceNumber?: string;
     bookingStatus?: number;
+    tripStatus: string;
     seatNumber: string;
     passengerTypeId: number;
     passenger_type: string;
@@ -29,6 +39,7 @@ type PaxInfo = {
     accommodationTypeId: number;
     fare?: number;
     bookingType: string;
+    isCargoable: number;
 }
 
 const tabs = [
@@ -39,8 +50,8 @@ const tabs = [
 
 export default function BookingInfo() {
     const { cargoProperties, paxCargoProperty } = useCargo();
-    const { setPassengers } = usePassengers();
-    const { id, vessel, routeID, setRouteID, setVessel, setID, setOrigin, setDestination, setVesselID, setCode, setWebCode, setDepartureTime, setMobileCode, setIsCargoable } = useTrip();
+    const { setPassengers, clearPassengers } = usePassengers();
+    const { setRouteID, setVessel, setID, setOrigin, setDestination, setVesselID, setCode, setWebCode, setDepartureTime, setMobileCode, setIsCargoable } = useTrip();
     const { bookingId, paxId, refNum } = useLocalSearchParams();
     const [ loading, setLoading ] = useState(true);
     const [ paxInfo, setPaxInfo ] = useState<PaxInfo[] | []>([]);
@@ -49,11 +60,15 @@ export default function BookingInfo() {
     const [type, setType] = useState('');
     const [totalFare, setTotalFare] = useState(0);
     const [proceedLoading,  setProceedLoading] = useState(false);
+    const [isRedirecting, setIsRedirecting] = useState(false);
 
 
-    useEffect(() => {
-        handleFetchInfo();
-    }, []);
+    useFocusEffect(
+        useCallback(() => {
+            clearPassengers()
+            handleFetchInfo();
+        }, [])
+    )
 
     const handleFetchInfo = async () => {
         try {
@@ -63,6 +78,7 @@ export default function BookingInfo() {
                 const paxData: PaxInfo[] = response.data.map((pax: any) => ({
                     id: pax.id,
                     name: `${pax.first_name} ${pax.last_name}`,
+                    tripId: pax.bookings[0].trip_schedule_id,
                     departureDate: new Date(pax.bookings.find((c: any) => c.created_at).created_at).toLocaleDateString('en-US', {
                         year: 'numeric',
                         month: 'long',
@@ -74,15 +90,24 @@ export default function BookingInfo() {
                         minute: '2-digit',
                         hour12: true
                     }),
-                    route: `${pax.bookings.find((t: any) => t.trip_schedule.trip)?.trip_schedule.trip.route.origin} - ${pax.bookings.find((t: any) => t.trip_schedule.trip)?.trip_schedule.trip.route.destination}`,
-                    vessel: pax.bookings.find((t: any) => t.trip_schedule)?.trip_schedule.trip.vessel.name,
-                    referenceNumber: pax.bookings.find((r: any) => r.reference_no).reference_no,
-                    bookingStatus: pax.bookings.find((s: any) => s.status_id)?.status_id,
-                    seatNumber: pax.bookings.find((r: any) => r.pivot).pivot.seat_no,
+                    routeId: pax.bookings[0].trip_schedule.trip.route_id,
+                    origin: pax.bookings[0].trip_schedule.trip.route.origin,
+                    destination: pax.bookings[0].trip_schedule.trip.route.destination,
+                    route: `${pax.bookings[0].trip_schedule.trip.route.origin} - ${pax.bookings[0].trip_schedule.trip.route.destination}`,
+                    mobileCode: pax.bookings[0].trip_schedule.trip.route.mobile_code,
+                    webCode: pax.bookings[0].trip_schedule.trip.route.web_code,
+                    vessel: pax.bookings[0].trip_schedule.trip.vessel.name,
+                    vesselId: pax.bookings[0].trip_schedule.trip.vessel.id,
+                    vesselCode: pax.bookings[0].trip_schedule.trip.vessel.code,
+                    referenceNumber: pax.bookings[0].reference_no,
+                    bookingStatus: pax.bookings[0]?.status_id ?? 0,
+                    tripStatus: pax.bookings[0].trip_schedule.status,
+                    seatNumber: pax.bookings[0].pivot.seat_no,
                     passenger_type: pax.passenger_type.name,
-                    accommodation: pax.accommodation_type[0].name,
+                    accommodation: pax.accommodation_type[0]?.name,
                     fare: pax.fares[0]?.fare ? pax.fares[0]?.fare : pax.bookings.find((r: any) => r.pivot)?.pivot?.fare,
-                    bookingType: pax.bookings[0].type_id
+                    bookingType: pax.bookings[0].type_id,
+                    isCargoable: pax.bookings[0].trip_schedule.trip.vessel.is_cargoable
                 })) 
 
 
@@ -103,23 +128,23 @@ export default function BookingInfo() {
     const handleProceedBooking = () => {
         setProceedLoading(true);
 
-        // setVessel(vesselName);
-        // setID(trip_id);
-        // setVesselID(vesselID);
-        // setRouteID(routeId)
-        // setOrigin(origin);
-        // setDestination(destination);
-        // setMobileCode(mobileCode);
-        // setCode(code);
-        // setWebCode(web_code);
+        setID(paxInfo[0].tripId);
+        setVessel(paxInfo[0].vessel);
+        setVesselID(paxInfo[0].vesselId);
+        setRouteID(paxInfo[0].routeId);
+        setOrigin(paxInfo[0].origin);
+        setDestination(paxInfo[0].desitination);
+        setMobileCode(paxInfo[0].mobileCode);
+        setWebCode(paxInfo[0].webCode);
+        setCode(paxInfo[0].vesselCode);
+        setDepartureTime(paxInfo[0].departureTime);
+        setIsCargoable(paxInfo[0].isCargoable);
         // setLoading(false);
-        // setDepartureTime(departureTime);
-        // setIsCargoable(cargoable);
 
         setTimeout(() => {
             for(const pax of paxInfo) {
                 setPassengers(prev => [...prev, {
-                    seatNumber: '', accommodation: pax.accommodation, accommodationID: pax.accommodationTypeId, passType: pax.passenger_type, passType_id: pax.passengerTypeId  
+                    id: String(paxId), seatNumber: '', accommodation: pax.accommodation, accommodationID: pax.accommodationTypeId, passType: pax.passenger_type, passType_id: pax.passengerTypeId  
                 }])
             }
 
@@ -145,8 +170,8 @@ export default function BookingInfo() {
                     <ActivityIndicator size={'large'} color={'#cf2a3a'} />
                 </View>
             ) : (
-                <KeyboardAvoidingView behavior={Platform.OS === 'ios' ? 'padding' : 'height'} style={{ flex: 1, padding: 20, gap: 15 }}>
-                    <ScrollView style={{ flex: 1 }} showsVerticalScrollIndicator={false}>
+                <KeyboardAvoidingView behavior={Platform.OS === 'ios' ? 'padding' : 'height'} style={{ flex: 1, paddingVertical: 20, gap: 15 }}>
+                    <ScrollView style={{ flex: 1, paddingHorizontal: 20 }} showsVerticalScrollIndicator={false}>
                         <View style={[styles.card, { padding: 10, gap: 12 }]}>
                             <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' }}>
                                 <View style={{ flexDirection: 'row', alignItems: 'center', gap: 10 }}>
@@ -157,11 +182,11 @@ export default function BookingInfo() {
                                     </View>
                                 </View>
                                 <View style={{ flexDirection: 'column', alignItems: 'flex-end', gap: 3 }}>
-                                    <Text style={{ color: '#646464', fontSize: 9, fontWeight: '700' }}>Payment status</Text>
-                                    <View style={{ flexDirection: 'row', alignItems: 'center', gap: 3, borderColor: paxInfo.find((p: any) => p.id == Number(paxId))?.bookingStatus != null ? '#19B87E' : '#FCCA03',
-                                            backgroundColor: paxInfo.find((p: any) => p.id == Number(paxId) )?.bookingStatus != null ? '#19b87e3d' : '#fcca032a', borderWidth: 1, padding: 3, borderRadius: 5 }}>
-                                        <MaterialCommunityIcons name={paxInfo.find((p: any) => p.id == Number(paxId))?.bookingStatus != null ? 'check-decagram' : 'clock-time-eight'} size={14} color={paxInfo.find((p: any) => p.id == Number(paxId))?.bookingStatus != null ? '#19B87E' : '#FCCA03'} />
-                                        <Text style={{ fontWeight: '800', color: paxInfo.find((p: any) => p.id == Number(paxId))?.bookingStatus != null ? '#19B87E' : '#FCCA03', fontSize: 10 }}>{paxInfo.find((p: any) => p.id == Number(paxId))?.bookingStatus != null ? 'Completed' : 'Pending'}</Text>
+                                    <Text style={{ color: '#646464', fontSize: 9, fontWeight: '700' }}>Booking status</Text>
+                                    <View style={{ flexDirection: 'row', alignItems: 'center', gap: 3, borderColor: bookingStatuses?.find(s => s.id == paxInfo[0]?.bookingStatus)?.color ?? 'transparent',
+                                            backgroundColor: bookingStatuses?.find(s => s.id == paxInfo[0]?.bookingStatus)?.bgColor ?? 'transparent', borderWidth: 1, padding: 3, borderRadius: 5 }}>
+                                        <MaterialCommunityIcons name={bookingStatuses?.find(s => s.id == paxInfo[0]?.bookingStatus)?.icon as any ?? ''} size={14} color={bookingStatuses.find(s => s.id == paxInfo[0]?.bookingStatus)?.color ?? 'transparent'} />
+                                        <Text style={{ fontWeight: '800', color: bookingStatuses?.find(s => s.id == paxInfo[0]?.bookingStatus)?.color ?? 'transparent', fontSize: 10 }}>{bookingStatuses?.find(s => s.id == paxInfo[0]?.bookingStatus)?.label ?? ''}</Text>
                                     </View>
                                 </View>
                             </View>
@@ -184,7 +209,7 @@ export default function BookingInfo() {
                                 </View>
                                 <View style={{ flexDirection: 'column', alignItems: 'flex-end' }}>
                                     <Text style={{ color: '#646464', fontSize: 10 }}>Fare</Text>
-                                    <Text style={{ color: '#cf2a3a', fontWeight: '800', fontSize: 16 }}>₱ {Number(paxInfo.find((p: any) => p.id == Number(paxId)).fare).toFixed(2)}</Text>
+                                    <Text style={{ color: '#cf2a3a', fontWeight: '800', fontSize: 16 }}>₱ {Number(paxInfo.find((p: any) => p.id == Number(paxId))?.fare).toFixed(2)}</Text>
                                 </View>
                             </View>
                         </View>
@@ -222,8 +247,8 @@ export default function BookingInfo() {
                         <View>
                             <View style={styles.tabs}>
                                 {tabs.map((t: any) => (
-                                    <Pressable onPress={() => setFormTab(t.name)} key={t.id} style={{ backgroundColor: formTab == t.name ? '#f1f1f1' : 'transparent', padding: 9, borderRadius: 5  }}>
-                                        <Text style={{ color: formTab == t.name ? '#cf2a3a' : '#646464' }}>{t.name}</Text>
+                                    <Pressable onPress={() => setFormTab(t?.name)} key={t.id} style={{ backgroundColor: formTab == t?.name ? '#f1f1f1' : 'transparent', padding: 9, borderRadius: 5  }}>
+                                        <Text style={{ color: formTab == t?.name ? '#cf2a3a' : '#646464' }}>{t?.name}</Text>
                                     </Pressable>
                                 ))}
                             </View>
@@ -236,7 +261,7 @@ export default function BookingInfo() {
                                         <View style={{ flexDirection: 'row', alignItems: 'center' }}>
                                             <Ionicons name={'person'} color={'#fff'} size={18} style={{ padding: 10, backgroundColor: '#cf2a3a', borderRadius: 50, marginRight: 10 }} />
                                             <View style={{ flexDirection: 'column' }}>
-                                                <Text style={{ fontSize: 16, fontWeight: '700' }}>{pax.name}</Text>
+                                                <Text style={{ fontSize: 16, fontWeight: '700' }}>{pax?.name}</Text>
                                                 <View style={{ flexDirection: 'row', alignItems: 'center', gap: 5 }}>
                                                     <Text style={{ fontSize: 10, color: '#646464', fontWeight: '600' }}>{pax?.seatNumber != 'N/A' ? `Seat# ${pax?.seatNumber}` : '---'}</Text>
                                                     <Text style={{ fontSize: 10, color: '#646464' }}>|</Text>
@@ -248,7 +273,7 @@ export default function BookingInfo() {
                                         </View>
                                         <View style={{ flexDirection: 'column', alignItems: 'flex-end' }}>
                                             <Text style={{ color: '#646464', fontSize: 12, }}>Fare</Text>
-                                            <Text style={{ fontSize: 14, fontWeight: '800', color: '#cf2a3a' }}>₱ {Number(pax.fare).toFixed(2)}</Text>
+                                            <Text style={{ fontSize: 14, fontWeight: '800', color: '#cf2a3a' }}>₱ {Number(pax?.fare).toFixed(2)}</Text>
                                         </View>
                                     </View>
                                 ))}
@@ -303,8 +328,9 @@ export default function BookingInfo() {
                                 </Pressable>
                             </View>
                         )}
-
-                        {paxInfo.find((p: any) => p.id == paxId)?.bookingStatus != null && (
+                    </ScrollView>
+                    <View style={{ paddingVertical: 10, borderTopColor: '#dadada', borderTopWidth: 1 }}>
+                        {bookingStatuses?.find(s => s.id == paxInfo[0]?.bookingStatus)?.label.toLowerCase() != 'pending' && (
                             <View style={styles.requestsContainer}>
                                 <Pressable style={[styles.requestsBtn, { backgroundColor: '#FCCA03' }]}>
                                     <Ionicons name={'reload'} size={16} />
@@ -316,16 +342,16 @@ export default function BookingInfo() {
                                 </Pressable>
                             </View>
                         )}
-                    </ScrollView>
-                    {paxInfo.find((p: any) => p.id == paxId)?.bookingStatus == null && (
-                        <Pressable onPress={() => handleProceedBooking()} disabled={proceedLoading} style={[styles.requestsBtn, { backgroundColor: '#cf2a3a' }]}>
-                            {proceedLoading == true ? (
-                                <ActivityIndicator size={'small'} color={'#fff'} style={{ alignSelf: 'center' }} />
-                            ) : (
-                                <Text style={{ color: '#fff', fontWeight: '800' }}>Select Seat</Text>
-                            )}
-                        </Pressable>
-                    )}
+                        {bookingStatuses?.find(s => s.id == paxInfo[0]?.bookingStatus)?.label.toLowerCase() == 'pending' && (
+                            <Pressable  onPress={() => handleProceedBooking()} disabled={proceedLoading} style={[styles.requestsBtn, { backgroundColor: '#cf2a3a', width: '90%', alignSelf: 'center' }]}>
+                                {proceedLoading == true ? (
+                                    <ActivityIndicator size={'small'} color={'#fff'} style={{ alignSelf: 'center' }} />
+                                ) : (
+                                    <Text style={{ color: '#fff', fontWeight: '800' }}>Select Seat</Text>
+                                )}
+                            </Pressable>
+                        )}
+                    </View>
                 </KeyboardAvoidingView>
             )}
         </View>
@@ -395,7 +421,6 @@ const styles = StyleSheet.create({
         alignItems: 'center',
         justifyContent: 'center',
         gap: 10,
-        marginVertical: 10
     },
     requestsBtn: {
         paddingHorizontal: 10,

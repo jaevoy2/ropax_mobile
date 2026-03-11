@@ -6,6 +6,7 @@ import { seatSelection } from '@/utils/channel';
 import { supabase } from '@/utils/supabase';
 import React, { useCallback, useEffect, useMemo, useState } from 'react';
 import { Alert, Dimensions, Text, TouchableOpacity, View } from 'react-native';
+import { v4 as uuid } from 'uuid';
 
 const { height, width } = Dimensions.get('window');
 
@@ -121,10 +122,11 @@ export default function SRVessel({ onSeatSelect }: SRVesselProps) {
 
         try {
             const { error } = await seatSelection(seat, id);
+            const tempId = uuid()
 
             if(!error) {
                 if(!paxHasCargo || (paxHasCargo && paxHasCargo.seatNumber != null)){
-                    setPassengers(prev => [...prev, { seatNumber: seat, accommodation: type, accommodationID: accomm_id }]);
+                    setPassengers(prev => [...prev, { id: tempId, seatNumber: seat, accommodation: type, accommodationID: accomm_id }]);
                 }else{
                     setPassengers(prev => 
                         prev.map((p) => p.hasCargo ? { ...p, seatNumber: seat, accommodation: type, accommodationID: accomm_id }: p)
@@ -190,7 +192,7 @@ export default function SRVessel({ onSeatSelect }: SRVesselProps) {
         const selectedSeats = data?.map((d: any) => d.seat_number);
         setSeatSelectionChannel(selectedSeats || []);
 
-        const listen = supabase.channel('seats_changes_channels').on('postgres_changes', { event: '*', schema: 'public', table: 'seats_selections' }, (payload) => {
+        const listen = supabase.channel('custom-insert-channel').on('postgres_changes', { event: '*', schema: 'public', table: 'seats_selections' }, (payload) => {
 6
             if(payload.eventType == "INSERT") {
                 const newData: any = payload.new;

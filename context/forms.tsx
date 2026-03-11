@@ -24,7 +24,7 @@ type PaxFareProps = {
     id: number;
     fare: number;
     routes_id: number;
-    passenger_type_id: number;
+    passenger_type_id?: number;
     vessel_id: number;
     accommodation_type_id: number;
 }
@@ -51,10 +51,11 @@ export default function Forms({ errorForm }: FormProps) {
                 const passTypesAndFares = await FetchPassengerType();
 
                 if(!passTypesAndFares.error) {
+                    console.log(passTypesAndFares.types)
                     const types: PassTypeProps[] = passTypesAndFares.types.map((type: any) => ({
                         id: type.id,
                         name: type.name,
-                        code: type.passenger_types_code
+                        code: type?.passenger_types_code
                     }));
 
                     const paxFares: PaxFareProps[] = passTypesAndFares.fares.map((fare: any) => ({
@@ -307,7 +308,7 @@ export default function Forms({ errorForm }: FormProps) {
         <View>
             <View style={{ flex: 1, marginTop: 10 }}>
                 {passengers.map((p, index) => (
-                    <View key={index + 1} style={{ position: 'relative', borderColor: errorForm.includes(p.seatNumber ?? '') ? '#cf2a3a' : '#B3B3B3', borderWidth: 1, borderRadius: 8, paddingHorizontal: 5, paddingVertical: 10, marginBottom: 20, backgroundColor: '#fff' }}>
+                    <View key={p.id} style={{ position: 'relative', borderColor: errorForm.includes(p.seatNumber ?? '') ? '#cf2a3a' : '#B3B3B3', borderWidth: 1, borderRadius: 8, paddingHorizontal: 5, paddingVertical: 10, marginBottom: 20, backgroundColor: '#fff' }}>
                         {passengers.some((p) => p.passType == 'Passes' && index != 0) && (
                             <TouchableOpacity style={{ alignSelf: 'flex-end', top: -5, flexDirection:'row', alignItems: 'center' }}>
                                 <Ionicons name='close' size={20} color={'#cf2a3a'} />
@@ -434,7 +435,7 @@ export default function Forms({ errorForm }: FormProps) {
                                 </View>
                                 
                                 {p.cargo.map((c, cargoIndex) => (
-                                    <View key={`${p.seatNumber}-${cargoIndex}`}>
+                                    <View key={`${p.id}-${cargoIndex}`}>
                                         {cargoIndex != 0 && (
                                             <TouchableOpacity onPress={() => removeCargo(p.seatNumber, index, cargoIndex)} style={{ flexDirection: 'row', alignItems: 'center', marginVertical: 10, alignSelf: 'flex-end' }}>
                                                 <Ionicons name={'close'} size={20} color={'#cf2a3a'} />

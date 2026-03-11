@@ -28,6 +28,7 @@ export default {
     },
     plugins: [
       "expo-router",
+      "expo-audio",
       "expo-font",
       "expo-web-browser",
       [

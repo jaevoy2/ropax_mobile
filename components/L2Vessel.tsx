@@ -6,6 +6,7 @@ import { seatSelection } from '@/utils/channel';
 import { supabase } from '@/utils/supabase';
 import React, { useCallback, useEffect, useMemo, useState } from 'react';
 import { Alert, Dimensions, Text, TouchableOpacity, View } from 'react-native';
+import { v4 as uuid } from 'uuid';
 
 const { height } = Dimensions.get('window');
 const touristSeat = ['BC1', 'BC2', 'BC3', 'BC4', 'BC5', 'P1', 'P2', 'P4', 'P3', 'P5', 'P6', 'P7', 'P8'];
@@ -115,10 +116,11 @@ export default function L2Vessel({onSeatSelect}: L2VesselProps) {
     
     const assignseat = useCallback(async (seat: string | number, type: string, accomm_id: number) => {
         try {
-            const { error } = await seatSelection(seat, id)
+            const { error } = await seatSelection(seat, id);
+            const temp = uuid();
 
             if(!error) {
-                setPassengers(prev => [...prev, { seatNumber: seat, accommodation: type, accommodationID: accomm_id }]);
+                setPassengers(prev => [...prev, { id: temp, seatNumber: seat, accommodation: type, accommodationID: accomm_id }]);
                 onSeatSelect?.(seat);
             }else {
                 Alert.alert('Error', 'Seat selection failed. Please try again later.');
@@ -177,7 +179,7 @@ export default function L2Vessel({onSeatSelect}: L2VesselProps) {
         const selectedSeats = data?.map((d: any) => d.seat_number);
         setSeatSelectionChannel(selectedSeats || []);
 
-        const listen = supabase.channel('seats_changes_channels').on('postgres_changes', { event: '*', schema: 'public', table: 'seats_selections' }, (payload) => {
+        const listen = supabase.channel('custom-insert-channel').on('postgres_changes', { event: '*', schema: 'public', table: 'seats_selections' }, (payload) => {
 
             if(payload.eventType == "INSERT") {
                 const newData: any = payload.new;

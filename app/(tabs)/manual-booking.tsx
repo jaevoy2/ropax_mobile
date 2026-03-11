@@ -449,7 +449,7 @@ export default function ManualBooking() {
                                     { trips && trips.filter(t => t.hasDeparted == false).map((trip) => (
                                         <TouchableOpacity onPress={() => handleSaveTrip(trip.vessel, trip.trip_id, trip.route_id, trip.route_origin, trip.route_destination, trip.mobile_code, trip.code, trip.web_code, trip.departure_time, trip.vessel_id, trip.isCargoable)}
                                             key={trip.trip_id} style={{ paddingHorizontal: 15, paddingVertical: 20, backgroundColor: '#fff', borderRadius: 10, marginTop: 12, flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' }}>
-                                            <View>
+                                            <View style={{ width: '80%' }}>
                                                 <Text style={{ fontWeight: 'bold', fontSize: 13, color: '#cf2a3a' }}>{`${trip.departure}`}</Text>
                                                 <Text style={{ fontWeight: 'bold', fontSize: 13 }}>{`${trip.route_origin}  >  ${trip.route_destination} [ ${trip.vessel} ]`}</Text>
                                             </View>
@@ -577,9 +577,11 @@ export default function ManualBooking() {
                     )}
                 </View>
             </Animated.View>
-            <Pressable onPress={() => router.push('/scanner')} style={{ position: 'absolute', bottom: 80, right: 20, padding: 18, backgroundColor: '#cf2a3a', borderRadius: 50, elevation: 3 }}>
-                <MaterialCommunityIcons name={'qrcode-scan'} size={28} color={'#fff'} />
-            </Pressable>
+            {bookingType == 'Walk-In' && (
+                <Pressable onPress={() => router.push('/scanner')} style={{ position: 'absolute', bottom: 80, right: 20, padding: 18, backgroundColor: '#cf2a3a', borderRadius: 50, elevation: 3 }}>
+                    <MaterialCommunityIcons name={'qrcode-scan'} size={28} color={'#fff'} />
+                </Pressable>
+            )}
         </GestureHandlerRootView>
     )
 }

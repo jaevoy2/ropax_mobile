@@ -2,7 +2,7 @@ import { FetchManageBookingList } from "@/api/manageBookingList";
 import { Ionicons, MaterialCommunityIcons } from "@expo/vector-icons";
 import { router, useFocusEffect } from "expo-router";
 import React, { useCallback, useState } from "react";
-import { ActivityIndicator, Alert, Dimensions, FlatList, Modal, RefreshControl, Text, TextInput, TouchableOpacity, View } from "react-native";
+import { ActivityIndicator, Alert, FlatList, Modal, RefreshControl, Text, TextInput, TouchableOpacity, View } from "react-native";
 import { Calendar } from "react-native-calendars";
 import { GestureHandlerRootView } from 'react-native-gesture-handler';
 
@@ -19,8 +19,16 @@ type PaxBookingProps = {
     paxType: string;
 }
 
+export const bookingStatuses = [
+    { id: 0, label: 'Pending', color: '#ffc107', bgColor: 'rgba(255, 193, 7, 0.15)', icon: 'clock-time-eight' },
+    { id: 1, label: 'Confirmed', color: '#19B87E', bgColor: '#19b87e34', icon: 'check-decagram' },
+    { id: 2, label: 'Onboard', color: '#6c757d', bgColor: 'rgba(108, 117, 125, 0.15)', icon: 'trending-up' },
+    { id: 3, label: 'Completed', color: '#19B87E', bgColor: '#19b87e34', icon: 'sail-boat' },
+    { id: 4, label: 'Expired' , color: '#ffc107', bgColor: 'rgba(255, 193, 7, 0.15)', icon: 'alert' },
+    { id: 5, label: 'Refunded', color: '#0dcaf0', bgColor: 'rgba(13, 202, 240, 0.15)', icon: 'cash-check' },
+    { id: 6, label: 'Cancelled', color: '#dc3545', brColor: 'rgba(220, 53, 69, 0.15)', icon: 'book-cancel-outline' }
+]
 
-const { height, width } = Dimensions.get('window')
 
 export default function ManageBooking() {
     const [passengers, setPassengers] = useState<PaxBookingProps[] | []>([])
@@ -70,30 +78,33 @@ export default function ManageBooking() {
     const fetchBooking = async (dateString: string, search: string | null) => {
         try {
             const response = await FetchManageBookingList(dateString, search)
+            console.log(response.data[0])
             
             if(!response.error) {
-                const paxData: PaxBookingProps[] = response.data.map((passenger: any) => ({
-                    id: passenger.id,
-                    name: `${passenger.first_name} ${passenger.last_name}`,
-                    departureDate: new Date(passenger.bookings.find((c: any) => c.trip_schedule).trip_schedule.specific_days).toLocaleDateString('en-US', {
-                        year: 'numeric',
-                        month: 'long',
-                        day: 'numeric'
-                    }),
-                    departureTime: new Date(`1970-01-01T${passenger.bookings.find((t: any) => 
-                        t.trip_schedule)?.trip_schedule.trip.departure_time}`).toLocaleTimeString('en-US', {
-                        hour: 'numeric',
-                        minute: '2-digit',
-                        hour12: true
-                    }),
-                    route: passenger.bookings.find((t: any) => t.trip_schedule)?.trip_schedule.trip.route.mobile_code,
-                    vessel: passenger.bookings.find((t: any) => t.trip_schedule)?.trip_schedule.trip.vessel.name,
-                    referenceNumber: passenger.bookings.find((r: any) => r.reference_no).reference_no,
-                    bookingStatus: passenger.bookings.find((s: any) => s.status_id)?.status_id,
-                    bookingId: passenger.bookings.find((booking: any) => booking.id)?.id,
-                    paxType: passenger.passenger_type.name
-                }))
-                setPassengers(paxData)
+                if(response.data.length > 0) {
+                    const paxData: PaxBookingProps[] = response.data.map((passenger: any) => ({
+                        id: passenger.id,
+                        name: `${passenger.first_name} ${passenger.last_name}`,
+                        departureDate: new Date(passenger.bookings.find((c: any) => c.trip_schedule).trip_schedule.specific_days).toLocaleDateString('en-US', {
+                            year: 'numeric',
+                            month: 'long',
+                            day: 'numeric'
+                        }),
+                        departureTime: new Date(`1970-01-01T${passenger.bookings.find((t: any) => 
+                            t.trip_schedule)?.trip_schedule.trip.departure_time}`).toLocaleTimeString('en-US', {
+                            hour: 'numeric',
+                            minute: '2-digit',
+                            hour12: true
+                        }),
+                        route: passenger.bookings.find((t: any) => t.trip_schedule)?.trip_schedule.trip.route.mobile_code,
+                        vessel: passenger.bookings.find((t: any) => t.trip_schedule)?.trip_schedule.trip.vessel?.code,
+                        referenceNumber: passenger.bookings.find((r: any) => r.reference_no).reference_no,
+                        bookingStatus: passenger.bookings.find((s: any) => s.status_id)?.status_id ?? 0,
+                        bookingId: passenger.bookings.find((booking: any) => booking.id)?.id,
+                        paxType: passenger.passenger_type?.name
+                    }))
+                    setPassengers(paxData)
+                }
             }
         }catch (error: any) {
             Alert.alert('Error', error.message)
@@ -145,17 +156,19 @@ export default function ManageBooking() {
     const PassengerItem = React.memo(({ paxDatas }: { paxDatas: PaxBookingProps }) => {
         return (
             <TouchableOpacity onPress={() => router.push( `/bookingInfo?bookingId=${paxDatas.bookingId}&paxId=${paxDatas.id}&refNum=${paxDatas.referenceNumber}` )} 
-                style={{ height: 90, borderColor: '#B3B3B3', borderWidth: 1, backgroundColor: '#fff', borderRadius: 8, padding: 8, marginBottom: 10 }}>
-                <Text style={{ alignSelf: 'flex-end', fontSize: 10 }}>{paxDatas.departureDate}</Text>
-                <View style={{ borderBottomColor: '#dadadaff', borderBottomWidth: 1, flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', marginBottom: 5, paddingBottom: 8 }}>
-                    <Text style={{ fontWeight: 'bold', fontSize: 18 }}>{paxDatas.name}</Text>
-                    <Text style={{ fontSize: 12, color: '#cf2a3a', fontWeight: 'bold' }}>{paxDatas.referenceNumber}</Text>
+                style={{ minHeight: 90, maxHeight: 100, borderColor: '#dadadaff', elevation: 2, borderWidth: 1, backgroundColor: '#fff', borderRadius: 8, padding: 8, marginBottom: 10 }}>
+                <View style={{ borderBottomColor: '#dadadaff', borderBottomWidth: 1, flexDirection: 'row', alignItems: 'flex-end', justifyContent: 'space-between', marginBottom: 5, paddingBottom: 8 }}>
+                    <Text style={{ fontWeight: 'bold', fontSize: 17, width: '50%' }}>{paxDatas?.name}</Text>
+                    <View style={{ flexDirection: 'column', alignItems: 'flex-end' }}>
+                        <Text style={{ alignSelf: 'flex-end', fontSize: 10 }}>{paxDatas.departureDate}</Text>
+                        <Text style={{ fontSize: 12, color: '#cf2a3a', fontWeight: 'bold' }}>{paxDatas.referenceNumber}</Text>
+                    </View>
                 </View>
                 <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' }}>
                     <Text style={{ fontSize: 10 }}>{`${paxDatas.vessel}  |  ${paxDatas.route}  |  ${paxDatas.departureTime}`}</Text>
-                    <View style={{ flexDirection: 'row', alignItems: 'center', gap: 3, borderColor: paxDatas.bookingStatus != null ? '#19B87E' : '#FCCA03', backgroundColor: paxDatas.bookingStatus != null ? '#19b87e3d' : '#fcca0342', borderWidth: 1, padding: 3, borderRadius: 5 }}>
-                        <Text style={{ color: paxDatas.bookingStatus != null ? '#19B87E' : '#FCCA03', fontSize: 10 }}>{paxDatas.bookingStatus != null ? 'Paid' : 'Pending'}</Text>
-                        <MaterialCommunityIcons name={paxDatas.bookingStatus != null ? 'check-decagram' : 'clock-time-eight'} size={14} color={paxDatas.bookingStatus != null ? '#19B87E' : '#FCCA03'} />
+                    <View style={{ flexDirection: 'row', alignItems: 'center', gap: 3, borderColor: bookingStatuses.find(p => p.id == paxDatas.bookingStatus).color ?? 'transparent', backgroundColor: bookingStatuses.find(s => s.id == paxDatas.bookingStatus).bgColor ?? 'transparent', borderWidth: 1, padding: 3, borderRadius: 5 }}>
+                        <MaterialCommunityIcons name={bookingStatuses.find(p => p.id == paxDatas.bookingStatus).icon as any} size={14} color={bookingStatuses.find(p => p.id == paxDatas.bookingStatus).color} />
+                        <Text style={{ color: bookingStatuses.find(p => p.id == paxDatas.bookingStatus).color ?? 'transparent', fontSize: 10, fontWeight: '800' }}>{bookingStatuses.find(p => p.id == paxDatas.bookingStatus).label ?? '--'}</Text>
                     </View>
                 </View>
             </TouchableOpacity>
@@ -170,7 +183,6 @@ export default function ManageBooking() {
                         <View style={{ width: '80%', backgroundColor: '#fff', padding: 20, borderRadius: 10, shadowColor: '#000', shadowOffset: { width: 0, height: 2 }, shadowOpacity: 0.25, shadowRadius: 4 }}>
                             <Text style={{ fontSize: 18, fontWeight: 'bold' }}>Select Date</Text>
                             <Calendar
-                            // minDate={new Date().toISOString().split('T')[0]}
                             onDayPress={(day) => {
                                 setDate(day.dateString),
                                 setCalendarVisible(false),
@@ -216,7 +228,7 @@ export default function ManageBooking() {
                             <>
                                 <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', marginBottom: 10 }}>
                                     <Text style={{ fontWeight: 'bold', fontSize: 18 }}>Bookings</Text>
-                                    <Text style={{ fontSize: 15, fontWeight: 'bold' }}>{formattedDate}</Text>
+                                    {/* <Text style={{ fontSize: 15, fontWeight: 'bold' }}>{formattedDate}</Text> */}
                                 </View>
                                 <FlatList data={PassengerLists.reverse()} keyExtractor={(passengers) => String(passengers.id)} showsVerticalScrollIndicator={false}
                                     refreshControl={<RefreshControl refreshing={loading} onRefresh={() => handleRefresh()} colors={['#cf2a3a']} />}

@@ -14,6 +14,7 @@ import { router } from "expo-router";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { ActivityIndicator, Alert, Dimensions, Image, ScrollView, Text, TextInput, TouchableOpacity, View } from "react-native";
 import { GestureHandlerRootView } from 'react-native-gesture-handler';
+import { v4 as uuid } from 'uuid';
 
 
 const { width, height } = Dimensions.get('window');
@@ -150,8 +151,10 @@ export default function SeatPlan() {
         setPassesFormLoading(true);
         setPassengers([]);
 
+        const temp = uuid();
+
         setTimeout(() => {
-            setPassengers([{ passType_id: passesTypeID, passType: passesTypeName, passTypeCode: passesTypeCode }]);
+            setPassengers([{ id: temp, passType_id: passesTypeID, passType: passesTypeName, passTypeCode: passesTypeCode }]);
             passesSheetRef.current?.expand();
             setPassesFormLoading(false);
             
@@ -159,7 +162,9 @@ export default function SeatPlan() {
     }
 
     const addPasses = () => {
-        setPassengers(prev => [...prev, { passType_id: passesTypeID, passType: passesTypeName, passTypeCode: passesTypeCode }]);
+        const temp = uuid();
+
+        setPassengers(prev => [...prev, { id: temp, passType_id: passesTypeID, passType: passesTypeName, passTypeCode: passesTypeCode }]);
     }
 
     const handleSave = () => {
@@ -377,7 +382,7 @@ export default function SeatPlan() {
                         <View style={{ paddingHorizontal: 10 }}>
                             <View style={{ flexDirection: 'row', flexWrap: 'wrap', gap: 8, borderColor: '#B3B3B3', borderWidth: 1, backgroundColor: '#fff', borderRadius: 8, padding: 8, width: '100%', marginTop: 5 }}>
                                 {passengers.map((p) => (
-                                    <View key={p.seatNumber} style={{ position: 'relative' }}>
+                                    <View key={p.id} style={{ position: 'relative' }}>
                                         {isFormVisible == false && (
                                             <TouchableOpacity onPress={() => handleRemoveSeat(p.seatNumber)} style={{ position: 'absolute', top: -8, right: -4, zIndex: 3 }}>
                                                 <Ionicons name="remove-circle" size={20} color={'#cf2a3a'} />
@@ -394,7 +399,7 @@ export default function SeatPlan() {
                             <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'flex-end', marginVertical: 15, paddingHorizontal: 10 }}>
                                 <View style={{ flexDirection: 'column', alignItems: 'flex-start' }}>
                                     <Text style={{ fontSize: 11 }}>Reference#:</Text>
-                                    <Text style={{ fontWeight: '900', fontSize: 14, color: '#cf2a3a' }}>LMBS-000000-{year}{origin.charAt(0)}{destination.charAt(0)}</Text>
+                                    <Text style={{ fontWeight: '900', fontSize: 14, color: '#cf2a3a' }}>LMBS-000000-{year}{origin?.charAt(0)}{destination?.charAt(0)}</Text>
                                 </View>
                                 <View style={{ flexDirection: 'column', alignItems: 'flex-end' }}>
                                     <Text style={{ fontSize: 9, fontWeight: '900', color: '#cf2a3a' }}>Total Fare:</Text>
@@ -456,7 +461,7 @@ export default function SeatPlan() {
                     <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'flex-end', marginVertical: 15, paddingHorizontal: 10 }}>
                         <View style={{ flexDirection: 'column', alignItems: 'flex-start' }}>
                             <Text style={{ fontSize: 11 }}>Reference#:</Text>
-                            <Text style={{ fontWeight: '900', fontSize: 14, color: '#cf2a3a' }}>LMBS-000000-{year}{origin.charAt(0)}{destination.charAt(0)}</Text>
+                            <Text style={{ fontWeight: '900', fontSize: 14, color: '#cf2a3a' }}>LMBS-000000-{year}{origin?.charAt(0)}{destination?.charAt(0)}</Text>
                         </View>
                         <View style={{ flexDirection: 'column', alignItems: 'flex-end' }}>
                             <Text style={{ fontSize: 9, fontWeight: '900', color: '#cf2a3a' }}>Total Fare:</Text>

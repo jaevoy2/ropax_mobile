@@ -1,22 +1,20 @@
 import Constants from "expo-constants";
 
 
-export async function UserLogin(email:string, password: string) {
-    const extras = Constants.expoConfig?.extra ?? {};
-    const API_KEY = extras.API_KEY as string;
+export async function ValidateQr(qrcode: string) {
+    const extras = Constants.expoConfig.extra ?? {};
     const API_URL = extras.API_URL as string;
+    const API_KEY = extras.API_KEY as string;
     const ORIGIN = extras.ORIGIN as string;
 
     try {
-        const res = await fetch(`${API_URL}login`, {
-            method: 'POST',
+        const res = await fetch(`${API_URL}booking/validate/${qrcode}`, {
+            method: 'GET',
             headers: {
                 'Accept': 'application/json',
-                'Content-Type': 'application/json',
                 'x-api-key': `${API_KEY}`,
                 'Origin': `${ORIGIN}`
-            }, 
-            body: JSON.stringify({ email, password})
+            }
         });
 
         const response = await res.json();
@@ -26,8 +24,7 @@ export async function UserLogin(email:string, password: string) {
         }
 
         return response;
-    }
-    catch(error) {
+    }catch(error) {
         throw error;
     }
 }

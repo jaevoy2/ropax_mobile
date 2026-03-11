@@ -47,18 +47,13 @@ export default function Login() {
 
         try {
             const response = await UserLogin(email, password);
-            if(response) {
-                console.log(response)
+            if(!response.error) {
                 AsyncStorage.setItem('token', response.token);
                 AsyncStorage.setItem('userID', String(response.user.id));
                 AsyncStorage.setItem('name', response.user.name);
                 AsyncStorage.setItem('image', response.user.profile_picture ?? '');
                 AsyncStorage.setItem('role', response.user.assigned_role.name);
-                console.log(response.user.assigned_role.name)
-                    if(response.user.station) {
-                        AsyncStorage.setItem('stationID', String(response.user.station.id));
-                        AsyncStorage.setItem('station', response.user.station.name);
-                    }
+
                 router.replace('/(tabs)/manual-booking');
             }
         }catch(error: any) {

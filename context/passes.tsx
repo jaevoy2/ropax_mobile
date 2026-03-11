@@ -29,7 +29,7 @@ export function PassesTypeProvider({ children }: { children: ReactNode }) {
                     if(passergerType) {
                         setPassesTypeID(passergerType.id);
                         setPassesTypeName(passergerType.name);
-                        setPassesTypeCode(passergerType.passenger_types_code);
+                        setPassesTypeCode(passergerType?.passenger_types_code) ?? '';
                     }else {
                         console.log('Passes type not found.')
                     }

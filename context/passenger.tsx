@@ -9,6 +9,7 @@ export type InfantProps = {
 }
 
 export type PassengerProps = {
+    id: string;
     accommodation?: string;
     accommodationID?: number | null;
     passType?: string;

@@ -366,7 +366,7 @@ export default function CargoComponent({ dateChange }: {dateChange: string} ) {
                     <View style={{ paddingHorizontal: 20 }}>
                         {trips?.filter(t => t.hasDeparted == false).map((trip) => (
                             <TouchableOpacity onPress={() => handleTripSelect(trip.vessel, trip.trip_id, trip.route_id, trip.route_origin, trip.route_destination, trip.mobile_code, trip.code, trip.web_code, trip.departure_time, trip.vessel_id)} key={trip.trip_id} style={{ paddingHorizontal: 15, paddingVertical: 20, backgroundColor: '#fff', borderRadius: 10, marginTop: 12, flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' }}>
-                                <View>
+                                <View style={{ width: '80%' }}>
                                     <Text style={{ fontWeight: 'bold', fontSize: 13, color: '#cf2a3a' }}>{`${trip.departure}`}</Text>
                                     <Text style={{ fontWeight: 'bold', fontSize: 13 }}>{`${trip.route_origin}  >  ${trip.route_destination} [ ${trip.vessel} ]`}</Text>
                                 </View>
@@ -385,11 +385,11 @@ export default function CargoComponent({ dateChange }: {dateChange: string} ) {
                 ) : (
                     <View>
                         <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' }}>
-                            <View style={{ flexDirection: 'row', alignItems: 'center', gap: 8 }}>
+                            <View style={{ flexDirection: 'row', alignItems: 'center', gap: 8, width: '70%' }}>
                                 <Ionicons name={'boat'} color={'#fff'} size={26} style={{ backgroundColor: '#cf2a3a', padding: 5, borderRadius: 50 }} />
-                                <View style={{ flexDirection: 'column', width: '58%' }}>
+                                <View style={{ flexDirection: 'column' }}>
                                     <Text style={{ color: '#747373ff', fontSize: 11 }}>{timeWithRoute}</Text>
-                                    <Text style={{ color: '#cf2a3a', fontSize: 15, fontWeight: '900', marginTop: -5 }}>{selectedVessel}</Text>
+                                    <Text style={{ color: '#cf2a3a', fontSize: 15, fontWeight: '900', marginTop: -5, width: '90%' }}>{selectedVessel}</Text>
                                 </View>
                             </View>
                             
@@ -417,7 +417,7 @@ export default function CargoComponent({ dateChange }: {dateChange: string} ) {
                             </View>
                         )}
 
-                        <View style={{ height: height - 295, marginTop: 5 }}>
+                        <View style={{ height: height - 320, marginTop: 5 }}>
                             <ScrollView nestedScrollEnabled={true}>
                                 {paxCargoProperty?.map((c: any) => (
                                     <View key={c.id} style={{ borderColor: '#B3B3B3', backgroundColor: '#fff', padding: 10, borderRadius: 8, borderWidth: 1, marginTop: 10 }}>
@@ -568,7 +568,7 @@ export default function CargoComponent({ dateChange }: {dateChange: string} ) {
                                         <TextInput onChangeText={(text) => setNote(text)} placeholder='Receiver, e.g' style={{ fontSize: 13 }} />
                                     </View>
                                 </View>
-                                <TouchableOpacity onPress={() => handleSaveCargo()} disabled={saveCargoLoading} style={{ backgroundColor: '#cf2a3a', width: '100%', alignSelf: 'center', borderRadius: 30, paddingVertical: 15, marginTop: 30 }}>
+                                <TouchableOpacity onPress={() => handleSaveCargo()} disabled={saveCargoLoading} style={{ backgroundColor: '#cf2a3a', width: '100%', alignSelf: 'center', borderRadius: 8, paddingVertical: 15, marginTop: 30 }}>
                                     {saveCargoLoading == true ? (
                                         <ActivityIndicator size='small' color={'#fff'} />
                                     ) : (
