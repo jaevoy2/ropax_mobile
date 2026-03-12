@@ -4,9 +4,10 @@ import { usePassengers } from '@/context/passenger';
 import { useTrip } from '@/context/trip';
 import { seatSelection } from '@/utils/channel';
 import { supabase } from '@/utils/supabase';
+import AsyncStorage from '@react-native-async-storage/async-storage';
+import * as Crypto from 'expo-crypto';
 import React, { useCallback, useEffect, useMemo, useState } from 'react';
 import { Alert, Dimensions, Text, TouchableOpacity, View } from 'react-native';
-import { v4 as uuid } from 'uuid';
 
 const { height, width } = Dimensions.get('window');
 
@@ -91,20 +92,20 @@ type SRVesselProps = {
 
 type AccomsProps = {
     id: number;
-    name: string;
+    name?: string;
     code: string;
 }
 
 type BookedSeat = {
     seat_no: string | number;
-    passTypeCode: string;
-    station: {
+    passTypeCode?: string;
+    station?: {
         id: number;
-        name: string;
+        name?: string;
         created_at?: string;
         updated_at?: string;
-        code: string;
-        color: string;
+        code?: string;
+        color?: string;
     }
 }
 
@@ -119,10 +120,12 @@ export default function SRVessel({ onSeatSelect }: SRVesselProps) {
 
     const assignseat = useCallback(async (seat: number | string, type: string, accomm_id: number) => {
         const paxHasCargo = passengers.find(p => p.hasCargo == true);
+        const stationId = await AsyncStorage.getItem('stationID');
+        const stationColor = await AsyncStorage.getItem('stationColor');
 
         try {
-            const { error } = await seatSelection(seat, id);
-            const tempId = uuid()
+            const { error } = await seatSelection(seat, id, Number(stationId), stationColor);
+            const tempId = Crypto.randomUUID();
 
             if(!error) {
                 if(!paxHasCargo || (paxHasCargo && paxHasCargo.seatNumber != null)){
@@ -168,11 +171,12 @@ export default function SRVessel({ onSeatSelect }: SRVesselProps) {
                 const seats = await FetchBookings(id);
                 
                 if(!seats.error) {
-                    const bookings = seats.data.flatMap((t: any) =>
+                    const bookings = seats.data.filter((b: any) => b.station_id != null)
+                        .flatMap((t: any) =>
                         t.passengers.map((p: any) => ({
-                            passTypeCode: p.passenger_type.passenger_types_code,
-                            seat_no: p.pivot.seat_no,
-                            station: t.station
+                            passTypeCode: p?.passenger_type?.passenger_types_code,
+                            seat_no: p?.pivot.seat_no,
+                            station: t?.station
                         }))
                     )
                     setBookedSeats(bookings);
@@ -193,7 +197,7 @@ export default function SRVessel({ onSeatSelect }: SRVesselProps) {
         setSeatSelectionChannel(selectedSeats || []);
 
         const listen = supabase.channel('custom-insert-channel').on('postgres_changes', { event: '*', schema: 'public', table: 'seats_selections' }, (payload) => {
-6
+
             if(payload.eventType == "INSERT") {
                 const newData: any = payload.new;
                 const { seat_number, trip_id } = newData;

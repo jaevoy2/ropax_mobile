@@ -101,7 +101,7 @@ export default function TicketGenerator() {
                 <Text style={{ color: '#fff', fontWeight: 'bold', fontSize: 15 }}>Done</Text>
             </TouchableOpacity>
             <View style={{ position: 'relative', height: '80%', top: -70 }}>
-                <ScrollView>
+                <ScrollView style={{ flex: 1 }}>
                     <View ref={viewRef} style={{ backgroundColor: '#fff', left: '50%', transform: [{ translateX: '-50%' }], width: '85%', borderRadius: 10, padding: 10 }}>
                         <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', paddingVertical: 5, borderBottomWidth: 1, borderBlockColor: '#9B9B9B' }}>
                             <View style={{ flexDirection: 'row', alignItems: 'center', gap: 5 }}>
@@ -280,7 +280,7 @@ export default function TicketGenerator() {
                     </View>
                 </ScrollView>
             </View>
-            <TouchableOpacity onPress={() => generateTicket()} style={{ position: 'absolute', bottom: 0, backgroundColor: '#cf2a3a', width: '95%', alignSelf: 'center', borderRadius: 30, paddingVertical: 12, zIndex: 5 }}>
+            <TouchableOpacity onPress={() => generateTicket()} style={{ position: 'absolute', bottom: 30, backgroundColor: '#cf2a3a', width: '90%', alignSelf: 'center', borderRadius: 8, paddingVertical: 12, zIndex: 5 }}>
                 <Text style={{ fontSize: 18, fontWeight: 'bold', textAlign: 'center', color: '#fff' }}>Print</Text>
             </TouchableOpacity>
         </View>

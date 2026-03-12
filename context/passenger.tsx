@@ -29,6 +29,7 @@ export type PassengerProps = {
     hasCargo?: boolean;
     infant?: InfantProps[];
     cargo?: PaxCargoProperties[];
+    bookingType?: string;
 }
 
 
@@ -37,22 +38,20 @@ type PassengerContextType = {
     setPassengers: React.Dispatch<React.SetStateAction<PassengerProps[]>>;
     clearPassengers: () => void;
     updatePassenger: <K extends keyof PassengerProps>(
-        index: number | string | null,
-        seatNumber: number | string | null,
+        id: number | string,
         key: K,
         value: PassengerProps[K]
     ) => void;
 
     updateInfant: <K extends keyof InfantProps>(
-        seatNumber: number | string | null,
+        id: number | string,
         index: number,
         key: K,
         value: InfantProps[K]
     ) => void;
 
     updateCargo: <K extends keyof PaxCargoProperties> (
-        seatNumber: number | string | null,
-        paxIndex: number,
+        paxId: number | string,
         cargoIndex: number,
         key: K,
         value: PaxCargoProperties[K]
@@ -66,22 +65,21 @@ export const PassengerProvider: React.FC<{ children: React.ReactNode }> = ({ chi
     const clearPassengers = () => setPassengers([]);
 
     const updatePassenger = <K extends keyof PassengerProps>(
-        index: number | string | null,
-        seatNumber: number | string | null,
+        id: number | string,
         key: K,
         value: PassengerProps[K]
     ) => setPassengers(prev => 
-        prev.map((p, paxIndex) => p.seatNumber == seatNumber || index == paxIndex ? { ...p, [key]: value }: p )
+        prev.map((p) => p.id == id ? { ...p, [key]: value }: p )
     );
 
     const updateInfant = <K extends keyof InfantProps> (
-        indentifier: number | string | null,
+        id: number | string,
         index: number,
         key: K,
         value: InfantProps[K]
     ) => setPassengers((prev) =>
         prev.map((p, passIndex) => { 
-            if (p.seatNumber !== indentifier && passIndex !== indentifier || !p.infant) return p;
+            if (p.id !== id && passIndex !== index || !p.infant) return p;
             return {
                 ...p,
                 infant: p.infant?.map((inf, i) =>
@@ -92,14 +90,13 @@ export const PassengerProvider: React.FC<{ children: React.ReactNode }> = ({ chi
     );
 
     const updateCargo = <K extends keyof PaxCargoProperties> (
-        seatNumber: number | string | null,
-        paxIndex: number | number,
+        id: number | string,
         cargoIndex: number,
         key: K,
         value: PaxCargoProperties[K]
     ) => setPassengers((prev) => 
         prev.map((p, index) => {
-            if (!p.cargo || seatNumber != p.seatNumber || paxIndex != index) return p;
+            if (!p.cargo || id != p.id) return p;
             return {
                 ...p,
                 cargo: p.cargo.map((c, i) =>

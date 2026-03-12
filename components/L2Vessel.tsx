@@ -4,9 +4,10 @@ import { usePassengers } from '@/context/passenger';
 import { useTrip } from '@/context/trip';
 import { seatSelection } from '@/utils/channel';
 import { supabase } from '@/utils/supabase';
+import AsyncStorage from '@react-native-async-storage/async-storage';
+import * as Crypto from 'expo-crypto';
 import React, { useCallback, useEffect, useMemo, useState } from 'react';
 import { Alert, Dimensions, Text, TouchableOpacity, View } from 'react-native';
-import { v4 as uuid } from 'uuid';
 
 const { height } = Dimensions.get('window');
 const touristSeat = ['BC1', 'BC2', 'BC3', 'BC4', 'BC5', 'P1', 'P2', 'P4', 'P3', 'P5', 'P6', 'P7', 'P8'];
@@ -94,7 +95,7 @@ type AccomsProps = {
 
 type BookedSeat = {
     seat_no: string | number;
-    passTypeCode: string;
+    passTypeCode?: string;
     station: {
         id: number;
         name: string;
@@ -112,15 +113,29 @@ export default function L2Vessel({onSeatSelect}: L2VesselProps) {
     const [bookedSeats, setBookedSeats] = useState<BookedSeat[]>([]);
     const [accommodations, setAccommodations] = useState<AccomsProps[] | null>(null);
     const [seatSelectionChannel, setSeatSelectionChannel] = useState<string[]>([]);
-    const { setPassengers } = usePassengers();
+    const { passengers, setPassengers, updatePassenger } = usePassengers();
     
     const assignseat = useCallback(async (seat: string | number, type: string, accomm_id: number) => {
         try {
-            const { error } = await seatSelection(seat, id);
-            const temp = uuid();
+            const paxHasCargo = passengers.find(p => p.hasCargo == true);
+            const stationId = await AsyncStorage.getItem('stationID');
+            const stationColor = await AsyncStorage.getItem('stationColor');
+
+            const { error } = await seatSelection(seat, id, Number(stationId), stationColor);
+            const temp = Crypto.randomUUID()
 
             if(!error) {
-                setPassengers(prev => [...prev, { id: temp, seatNumber: seat, accommodation: type, accommodationID: accomm_id }]);
+                if(!paxHasCargo || (paxHasCargo && paxHasCargo.seatNumber != null)){}
+                const paxScanner = passengers.filter(p => p.seatNumber == '' && p.passType != 'Passes' || 'Infant');
+
+                if(paxScanner) {
+                    paxScanner.forEach((pax) => {
+                        updatePassenger(pax.id, 'seatNumber', seat)
+                    })
+                }else {                    
+                    setPassengers(prev => [...prev, { id: temp, seatNumber: seat, accommodation: type, accommodationID: accomm_id }]);
+                }
+
                 onSeatSelect?.(seat);
             }else {
                 Alert.alert('Error', 'Seat selection failed. Please try again later.');
@@ -156,12 +171,12 @@ export default function L2Vessel({onSeatSelect}: L2VesselProps) {
                 if(!seats.error) {
                     const bookings = seats.data.flatMap((t: any) =>
                         t.passengers.map((p: any) => ({
-                            passTypeCode: p.passenger_type.passenger_types_code,
+                            passTypeCode: p.passenger_type?.passenger_types_code,
                             seat_no: p.pivot.seat_no,
                             station: t.station
                         }))
                     )
-                
+                    console.log('passengers: ',bookings)
                     setBookedSeats(bookings);
                 }
             }catch(error: any) {

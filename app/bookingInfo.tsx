@@ -16,7 +16,8 @@ const { height, width } = Dimensions.get('screen');
 
 type PaxInfo = {
     id?: number;
-    name?: string;
+    first_name?: string;
+    last_name?: string;
     tripId: number;
     departureDate?: string;
     departureTime?: string;
@@ -77,7 +78,8 @@ export default function BookingInfo() {
             if(!response.error) {
                 const paxData: PaxInfo[] = response.data.map((pax: any) => ({
                     id: pax.id,
-                    name: `${pax.first_name} ${pax.last_name}`,
+                    first_name: pax.first_name,
+                    last_name: pax.last_name,
                     tripId: pax.bookings[0].trip_schedule_id,
                     departureDate: new Date(pax.bookings.find((c: any) => c.created_at).created_at).toLocaleDateString('en-US', {
                         year: 'numeric',
@@ -104,7 +106,9 @@ export default function BookingInfo() {
                     tripStatus: pax.bookings[0].trip_schedule.status,
                     seatNumber: pax.bookings[0].pivot.seat_no,
                     passenger_type: pax.passenger_type.name,
+                    passengerTypeId: pax.passenger_type.id,
                     accommodation: pax.accommodation_type[0]?.name,
+                    accommodationTypeId: pax.accommodation_type[0]?.id,
                     fare: pax.fares[0]?.fare ? pax.fares[0]?.fare : pax.bookings.find((r: any) => r.pivot)?.pivot?.fare,
                     bookingType: pax.bookings[0].type_id,
                     isCargoable: pax.bookings[0].trip_schedule.trip.vessel.is_cargoable
@@ -144,7 +148,7 @@ export default function BookingInfo() {
         setTimeout(() => {
             for(const pax of paxInfo) {
                 setPassengers(prev => [...prev, {
-                    id: String(paxId), seatNumber: '', accommodation: pax.accommodation, accommodationID: pax.accommodationTypeId, passType: pax.passenger_type, passType_id: pax.passengerTypeId  
+                    id: String(paxId), first_name: pax.first_name, last_name: pax.last_name, seatNumber: '', accommodation: pax.accommodation, accommodationID: pax.accommodationTypeId, passType: pax.passenger_type, passType_id: pax.passengerTypeId  
                 }])
             }
 
@@ -177,7 +181,7 @@ export default function BookingInfo() {
                                 <View style={{ flexDirection: 'row', alignItems: 'center', gap: 10 }}>
                                     <Ionicons name={'person'} color={'#fff'} size={22} style={{ padding: 10, backgroundColor: '#cf2a3a', borderRadius: 50 }} />
                                     <View style={{ width: '55%' }}>
-                                        <Text style={{ fontWeight: '600', fontSize: 16 }}>{paxInfo.find((p: any) => p.id == Number(paxId))?.name}</Text>
+                                        <Text style={{ fontWeight: '600', fontSize: 16 }}>{`${paxInfo.find((p: any) => p.id == Number(paxId))?.first_name} ${paxInfo.find((p: any) => p.id == Number(paxId))?.last_name}`}</Text>
                                         <Text style={{ color: '#cf2a3a', fontSize: 10, fontWeight: '900' }}>{paxInfo.find((p: any) => p.id == Number(paxId))?.referenceNumber}</Text>
                                     </View>
                                 </View>

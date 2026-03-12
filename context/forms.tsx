@@ -15,9 +15,9 @@ type FormProps = {
 }
 
 type PassTypeProps = {
-    id: number;
-    name: string;
-    code: string;
+    id?: number;
+    name?: string;
+    code?: string;
 }
 
 type PaxFareProps = {
@@ -51,7 +51,6 @@ export default function Forms({ errorForm }: FormProps) {
                 const passTypesAndFares = await FetchPassengerType();
 
                 if(!passTypesAndFares.error) {
-                    console.log(passTypesAndFares.types)
                     const types: PassTypeProps[] = passTypesAndFares.types.map((type: any) => ({
                         id: type.id,
                         name: type.name,
@@ -165,37 +164,14 @@ export default function Forms({ errorForm }: FormProps) {
         )
     }
 
-    const onFareInput = (passIndex: number, seatNum: string | number | undefined | null, fare: string) => {
-        const hasPasses = passengers.some((p) => p.passType == 'Passes');
-
-        if(!hasPasses && seatNum) {
-            updatePassenger(passIndex, seatNum!, 'fare', Number(fare.replace(/[^0-9.]/g,'')));
-            return;
-        }
-
-        updatePassenger(passIndex, null, 'fare', Number(fare.replace(/[^0-9.]/g,'')));
-
-    }
-
-    const onFieldInput = (passIndex: number, seatNum: string | number | undefined | null, inputKey: string, value: string | number) => {
-        const hasPasses = passengers.some((p) => p.passType == 'Passes');
-
-        if(!hasPasses && seatNum) {
-            updatePassenger(passIndex, seatNum!, inputKey as keyof PassengerProps, value);
-            return;
-        }
-
-        updatePassenger(passIndex, null, inputKey as keyof PassengerProps, value);
-    }
-
-    const handleCargoQuantity = (operation: 'add' | 'minus', cargoIndex: number, paxSeat: string | number | null, paxIndex: number) => {
-        const passenger = passengers[paxIndex];
+    const handleCargoQuantity = (operation: 'add' | 'minus', cargoIndex: number, paxId: string | number) => {
+        const passenger = passengers.find(p => p.id == paxId);
         if(!passenger) return;
 
         const paxCargo = passenger.cargo[cargoIndex]
         if(!paxCargo) return;
 
-        updateCargo(paxSeat, paxIndex, cargoIndex, 'quantity', operation == 'add' ? paxCargo.quantity += 1 : paxCargo.quantity -= 1)
+        updateCargo(paxId, cargoIndex, 'quantity', operation == 'add' ? paxCargo.quantity += 1 : paxCargo.quantity -= 1)
 
     }
 
@@ -213,7 +189,7 @@ export default function Forms({ errorForm }: FormProps) {
                 p.passenger_type_id == typeID
         );
 
-        updatePassenger(index, passenger.seatNumber, 'fare', prop.fare)
+        updatePassenger(passenger.id, 'fare', prop.fare)
     }
 
     const ComputedCargoAmount = (cargo: PaxCargoProperties) => {
@@ -296,8 +272,8 @@ export default function Forms({ errorForm }: FormProps) {
             if(!prevCargoProp) return;
 
             if(prevCargoProp.cargoAmount != c.cargoAmount || prevCargoProp.cargoOptionID != c.cargoOptionID) {
-                updateCargo(c.seatNumber, c.paxIndex,  c.cargoIndex, 'cargoAmount', c.cargoAmount)
-                updateCargo(c.seatNumber, c.paxIndex,  c.cargoIndex, 'cargoOptionID', c.cargoOptionID)
+                updateCargo(c.id,  c.cargoIndex, 'cargoAmount', c.cargoAmount)
+                updateCargo(c.id,  c.cargoIndex, 'cargoOptionID', c.cargoOptionID)
             }
         });
 
@@ -328,7 +304,7 @@ export default function Forms({ errorForm }: FormProps) {
                                 <Text style={{ fontSize: 9, fontWeight: 'bold', color: '#545454' }}>Fare:</Text>
                                 <View style={{ borderColor: '#FFC107', backgroundColor: '#ffc10727', borderWidth: 2, borderRadius: 5, flexDirection: 'row', alignItems: 'center', paddingHorizontal: 15 }}>
                                     <Text style={{ fontSize: 16 }}>₱</Text>
-                                    <TextInput onChangeText={(text) => onFareInput(index, p.seatNumber, text)} value={String(p?.fare?.toLocaleString('en-PH', { minimumFractionDigits: 2, maximumFractionDigits: 2 }) ?? 0.00)} keyboardType={'numeric'} placeholder='00.00' style={{ fontWeight: 'bold', textAlign: 'right' }} />
+                                    <TextInput onChangeText={(text) => updatePassenger(p.id, 'fare',  Number(text.replace(/[^0-9.]/g,'')))} value={String(p?.fare?.toLocaleString('en-PH', { minimumFractionDigits: 2, maximumFractionDigits: 2 }) ?? '')} keyboardType={'numeric'} placeholder='00.00' style={{ fontWeight: 'bold', textAlign: 'right' }} />
                                 </View>
                             </View>
                         </View>
@@ -344,7 +320,7 @@ export default function Forms({ errorForm }: FormProps) {
                                         <>
                                             {passengerType?.filter((t) => t.name != 'Infant' && t.name != 'Passes')
                                                 .map((type) => (
-                                                <TouchableOpacity onPress={() => {handlePaxFare(p, index, type.id), updatePassenger(index, p.seatNumber, 'passType', type.name), updatePassenger(index, p.seatNumber, 'passType_id', type.id), updatePassenger(index, p.seatNumber!, 'passTypeCode', type.code)}}
+                                                <TouchableOpacity onPress={() => {handlePaxFare(p, index, type.id), updatePassenger(p.id, 'passType', type.name), updatePassenger(p.id, 'passType_id', type.id), updatePassenger(p.id, 'passTypeCode', type.code)}}
                                                 key={type.id} style={{ backgroundColor: p.passType == type.name ? '#cf2a3a' : 'transparent', borderColor: '#cf2a3a', borderWidth: 1, paddingVertical: 4, paddingHorizontal: 18, borderRadius: 5  }}>
                                                     <Text style={{ textAlign: 'center', fontSize: 12, color: p.passType == type.name ? '#fff' : '#cf2a3a' }}>{type.name}</Text>
                                                 </TouchableOpacity>
@@ -358,21 +334,21 @@ export default function Forms({ errorForm }: FormProps) {
                         <View style={{ marginTop: 10 }}>
                             <Text style={{ fontSize: 9, fontWeight: 'bold', color: '#545454' }}>Full Name:</Text>
                             <View style={{ borderColor: '#B3B3B3', borderWidth: 1, borderRadius: 5 }}>
-                                <TextInput value={p.name ?? ''} onChangeText={(text) => onFieldInput(index, p.seatNumber, 'name', text)} placeholder='Last Name, First Name' style={{ fontSize: 13, fontWeight: '600' }} />
+                                <TextInput value={p.name ?? ''} onChangeText={(text) => updatePassenger(p.id, 'name', text)} placeholder='Last Name, First Name' style={{ fontSize: 13, fontWeight: '600' }} />
                             </View>
                         </View>
                         <View style={{ marginTop: 5, flexDirection: 'row', gap: 8, alignItems: 'flex-end' }}>
                             <View style={{ width: '40%' }}>
                                 <Text style={{ fontSize: 9, fontWeight: 'bold', color: '#545454' }}>Age:</Text>
                                 <View style={{ borderColor: '#B3B3B3', borderWidth: 1, borderRadius: 5 }}>
-                                    <TextInput onChangeText={(text) => onFieldInput(index, p.seatNumber, 'age', Number(text))} keyboardType='numeric' placeholder='Age' style={{ fontSize: 13, fontWeight: '600' }} />
+                                    <TextInput onChangeText={(text) => updatePassenger(p.id, 'age', Number(text))} keyboardType='numeric' placeholder='Age' style={{ fontSize: 13, fontWeight: '600' }} />
                                 </View>
                             </View>
                             <View style={{ width: '56%', }}>
                                 <Text style={{ fontSize: 9, fontWeight: 'bold', color: '#545454' }}>Gender:</Text>
                                 <View style={{ flexDirection:'row', gap: 5 }}>
                                     {passGender.map((gender) => (
-                                        <TouchableOpacity onPress={() => onFieldInput(index, p.seatNumber, 'gender', gender)} key={gender} style={{ backgroundColor: p.gender == gender ? '#cf2a3a' : 'transparent', borderColor: '#cf2a3a', borderWidth: 1, width: '50%', borderRadius: 5, justifyContent :'center', paddingVertical: 8 }}>
+                                        <TouchableOpacity onPress={() => updatePassenger(p.id, 'gender', gender)} key={gender} style={{ backgroundColor: p.gender == gender ? '#cf2a3a' : 'transparent', borderColor: '#cf2a3a', borderWidth: 1, width: '50%', borderRadius: 5, justifyContent :'center', paddingVertical: 8 }}>
                                             <Text style={{ textAlign: 'center', fontSize: 14, color: p.gender == gender ? '#fff' : '#cf2a3a' }}>{gender}</Text>
                                         </TouchableOpacity>
                                     ))}
@@ -383,13 +359,13 @@ export default function Forms({ errorForm }: FormProps) {
                             <View style={{ width: '40%' }}>
                                 <Text style={{ fontSize: 9, fontWeight: 'bold', color: '#545454' }}>Nationality:</Text>
                                 <View style={{ borderColor: '#B3B3B3', borderWidth: 1, borderRadius: 5 }}>
-                                    <TextInput onChangeText={(text) => onFieldInput(index, p.seatNumber, 'nationality', text)} defaultValue='Filipino' style={{ fontSize: 13, fontWeight: '600' }} />
+                                    <TextInput onChangeText={(text) => updatePassenger(p.id, 'nationality', text)} defaultValue='Filipino' style={{ fontSize: 13, fontWeight: '600' }} />
                                 </View>
                             </View>
                             <View style={{ width: '57.5%' }}>
                                 <Text style={{ fontSize: 9, fontWeight: 'bold', color: '#545454' }}>Address:</Text>
                                 <View style={{ borderColor: '#B3B3B3', borderWidth: 1, borderRadius: 5 }}>
-                                    <TextInput onChangeText={(text) => onFieldInput(index, p.seatNumber, 'address', text)} placeholder='Address' style={{ fontSize: 13, fontWeight: '600' }} />
+                                    <TextInput onChangeText={(text) => updatePassenger(p.id, 'address', text)} placeholder='Address' style={{ fontSize: 13, fontWeight: '600' }} />
                                 </View>
                             </View>
                         </View>
@@ -397,7 +373,7 @@ export default function Forms({ errorForm }: FormProps) {
                             <View style={{ width: '40%' }}>
                                 <Text style={{ fontSize: 9, fontWeight: 'bold', color: '#545454' }}>Contact#:</Text>
                                 <View style={{ borderColor: '#B3B3B3', borderWidth: 1, borderRadius: 5 }}>
-                                    <TextInput placeholder='+63' onChangeText={(text) => onFieldInput(index, p.seatNumber, 'contact', text)} style={{ fontSize: 13, fontWeight:'600' }} />
+                                    <TextInput placeholder='+63' onChangeText={(text) => updatePassenger(p.id, 'contact', text)} style={{ fontSize: 13, fontWeight:'600' }} />
                                 </View>
                             </View>
                             <View style={{ flexDirection: 'row' }}>
@@ -455,13 +431,13 @@ export default function Forms({ errorForm }: FormProps) {
                                                 <View style={{ flexDirection: 'column', alignItems: 'flex-end' }}>
                                                     <Text style={{ fontSize: 10, fontWeight: 'bold', color: '#545454' }}>Quantity:</Text>
                                                     <View style={{ flexDirection: 'row', alignItems: 'center', borderColor: '#B3B3B3', paddingHorizontal: 5, borderWidth: 1, borderRadius: 5 }}>
-                                                        <TouchableOpacity disabled={c.quantity == 1} onPress={() => handleCargoQuantity('minus', cargoIndex, p.seatNumber, index)} style={{ paddingRight: 5 }}>
+                                                        <TouchableOpacity disabled={c.quantity == 1} onPress={() => handleCargoQuantity('minus', cargoIndex, p.id)} style={{ paddingRight: 5 }}>
                                                             <Ionicons name={'remove'} size={18} color={c.quantity == 1 && "#d4d4d4ff"} />
                                                         </TouchableOpacity>
                                                         <Text style={{ paddingHorizontal: 14, fontWeight: 'bold', borderRightColor: '#B3B3B3', borderLeftColor: '#B3B3B3', borderLeftWidth: 1, borderRightWidth: 1, paddingVertical: 5 }}>
                                                             {c.quantity}
                                                         </Text>
-                                                        <TouchableOpacity onPress={() => handleCargoQuantity('add', cargoIndex, p.seatNumber, index)} style={{ paddingLeft: 5 }}>
+                                                        <TouchableOpacity onPress={() => handleCargoQuantity('add', cargoIndex, p.id)} style={{ paddingLeft: 5 }}>
                                                             <Ionicons name={'add'} size={18}/>
                                                         </TouchableOpacity>
                                                     </View>
@@ -471,7 +447,7 @@ export default function Forms({ errorForm }: FormProps) {
                                         <View style={{ width: '100%' }}>
                                             <Text style={{ fontSize: 9, fontWeight: 'bold', color: '#545454' }}>Cargo Type:</Text>
                                             <View style={{ borderColor: '#B3B3B3', borderWidth: 1, borderRadius: 5 }}>
-                                                <Dropdown onChange={(item) => {updateCargo( p.seatNumber ?? null, index, cargoIndex, 'cargoType', item.label), updateCargo(p.seatNumber ?? null, index, cargoIndex, 'cargoTypeID', item.value)}} 
+                                                <Dropdown onChange={(item) => {updateCargo( p.id, cargoIndex, 'cargoType', item.label), updateCargo(p.id, cargoIndex, 'cargoTypeID', item.value)}} 
                                                 value={c.cargoTypeID} data={cargoProperties?.data.cargo_types.map((type: any) => ({ label: type.name, value: type.id })) } labelField="label" valueField="value" placeholder="Select Cargo Type" style={{ height: 40, width: '100%', paddingHorizontal: 10 }}
                                                     containerStyle={{
                                                         alignSelf: 'flex-start',
@@ -495,7 +471,8 @@ export default function Forms({ errorForm }: FormProps) {
                                                 <View style={{ width: '100%' }}>
                                                     <Text style={{ fontSize: 9, fontWeight: 'bold', color: '#545454' }}>Brand:</Text>
                                                     <View style={{ borderColor: '#B3B3B3', borderWidth: 1, borderRadius: 5 }}>
-                                                        <Dropdown onChange={(item) => {updateCargo(p.seatNumber ?? null, index, cargoIndex, 'cargoBrand', item.label), updateCargo(p.seatNumber ?? null, index, cargoIndex, 'cargoBrandID', item.value)}} value={c.cargoBrandID} data={cargoProperties?.data.brands.map((b: any) => ({ label: b.name, value: b.id }))} labelField="label" valueField="value" placeholder="Select Brand" style={{ height: 40, width: '100%', paddingHorizontal: 10 }}
+                                                        <Dropdown onChange={(item) => {updateCargo(p.id, cargoIndex, 'cargoBrand', item.label), updateCargo(p.id, cargoIndex, 'cargoBrandID', item.value)}} value={c.cargoBrandID}
+                                                            data={cargoProperties?.data.brands.map((b: any) => ({ label: b.name, value: b.id }))} labelField="label" valueField="value" placeholder="Select Brand" style={{ height: 40, width: '100%', paddingHorizontal: 10 }}
                                                             containerStyle={{
                                                                 alignSelf: 'flex-start',
                                                                 width: '90%',
@@ -517,7 +494,7 @@ export default function Forms({ errorForm }: FormProps) {
                                                     <View style={{ width: '50%' }}>
                                                         <Text style={{ fontSize: 9, fontWeight: 'bold', color: '#545454' }}>Specifications:</Text>
                                                         <View style={{ borderColor: '#B3B3B3', borderWidth: 1, borderRadius: 5 }}>
-                                                            <Dropdown onChange={(item) => {updateCargo(p.seatNumber ?? null, index, cargoIndex, 'cargoSpecification', String(item.label)),  updateCargo(p.seatNumber ?? null, index, cargoIndex, 'cargoSpecificationID', item.value)}} 
+                                                            <Dropdown onChange={(item) => {updateCargo(p.id, cargoIndex, 'cargoSpecification', String(item.label)),  updateCargo(p.id, cargoIndex, 'cargoSpecificationID', item.value)}} 
                                                                 value={c.cargoSpecificationID} data={cargoProperties.data.cargo_options.filter(opt => opt.specification).map((s: any) => ({ label: String(s.specification), value: s.id }))} labelField="label" valueField="value" placeholder="Select CC" style={{ height: 40, width: '100%', paddingHorizontal: 10 }}
                                                                 containerStyle={{
                                                                     alignSelf: 'flex-start',
@@ -539,7 +516,7 @@ export default function Forms({ errorForm }: FormProps) {
                                                     <View style={{ width: '48%' }}>
                                                         <Text style={{ fontSize: 9, fontWeight: 'bold', color: '#545454' }}>Plate#:</Text>
                                                         <View style={{ borderColor: '#B3B3B3', borderWidth: 1, borderRadius: 5 }}>
-                                                            <TextInput value={c.cargoPlateNo} onChangeText={(text) => updateCargo(p.seatNumber ?? null, index, cargoIndex, 'cargoPlateNo', text)} placeholder='Plate#' style={{ fontSize: 13 }} />
+                                                            <TextInput value={c.cargoPlateNo} onChangeText={(text) => updateCargo(p.id, cargoIndex, 'cargoPlateNo', text)} placeholder='Plate#' style={{ fontSize: 13 }} />
                                                         </View>
                                                     </View>
                                                 </View>
@@ -548,7 +525,7 @@ export default function Forms({ errorForm }: FormProps) {
                                             <View style={{ marginTop: 5 }}>
                                                 <Text style={{ fontSize: 9, fontWeight: 'bold', color: '#545454' }}>Parcel Category:</Text>
                                                 <View style={{ borderColor: '#B3B3B3', borderWidth: 1, borderRadius: 5 }}>
-                                                    <Dropdown onChange={(item) => {updateCargo(p.seatNumber ?? null, index, cargoIndex, 'parcelCategory', item.label), updateCargo(p.seatNumber ?? null, index, cargoIndex, 'parcelCategoryID', item.value)}} 
+                                                    <Dropdown onChange={(item) => {updateCargo(p.id, cargoIndex, 'parcelCategory', item.label), updateCargo(p.id, cargoIndex, 'parcelCategoryID', item.value)}} 
                                                     value={c.parcelCategoryID} data={cargoProperties?.data.parcel_categories.map((category: any) => ({ label: category.name.slice(1, -1), value: category.id })) } labelField="label" valueField="value" placeholder="Select Category" style={{ height: 40, width: '100%', paddingHorizontal: 10 }}
                                                         containerStyle={{
                                                             alignSelf: 'flex-start',

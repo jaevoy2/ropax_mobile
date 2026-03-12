@@ -16,6 +16,7 @@ type UserProp = {
     stationID?: number;
     station?: string;
     role?: string;
+    stationColor: string;
 }
 
 type StationProps = {
@@ -41,18 +42,20 @@ export default function GenSettings() {
             const userStationID = await AsyncStorage?.getItem('stationID');
             const userStation = await AsyncStorage?.getItem('station');
             const userRole = await AsyncStorage?.getItem('role');
+            const station_color = await AsyncStorage?.getItem('stationColor');
 
             const userData: UserProp = {
                 id: Number(userID),
                 name: userName ?? '',
                 image: userImage ?? '',
-                stationID: Number(userStationID) ?? 0,
+                stationID: Number(userStationID),
                 station: userStation ?? '',
-                role: userRole ?? ''
+                role: userRole ?? '',
+                stationColor: station_color ?? ''
             }
-            setSelectedStation(Number(userStationID) ?? 0)
+            setSelectedStation(Number(userStationID))
+            
             setUser(userData);
-            console.log(userData)
         }
 
         loadUserData()
@@ -87,17 +90,20 @@ export default function GenSettings() {
         try {
             const saveStation = await SaveStation(user!.id, selectedStation);
             if(saveStation) {
-                console.log(AsyncStorage.setItem('stationID', String(saveStation.station.id)));
                 AsyncStorage.setItem('station', saveStation.station.name);
-
+                AsyncStorage.setItem('stationID', String(saveStation.station.id));
+                AsyncStorage.setItem('stationColor', saveStation.station.color);
+                
                 const setSaveStation: UserProp = {
                     id: user?.id,
                     name: user?.name,
                     image: user?.image,
+                    role: user?.role,
                     stationID: saveStation.station.id,
-                    station: saveStation.station.name, 
+                    station: saveStation.station.name,
+                    stationColor: saveStation.station.color
                 }
-
+                
                 setUser(setSaveStation);
 
                 Alert.alert('Success', saveStation.success, [{
@@ -160,13 +166,13 @@ export default function GenSettings() {
                                 <View style={{ flexDirection: 'column', gap: 8, marginTop: 10 }}>
                                     {stationOptions?.map((option) => (
                                         <TouchableOpacity onPress={() => setSelectedStation(option.id)} key={option.id} style={{ paddingHorizontal: 8, paddingVertical: 10, borderWidth: 1, 
-                                        borderColor: '#cf2a3a', borderRadius: 5, backgroundColor: selectedStation == option.id ? '#cf2a3a' : 'transparent' }}>
-                                            <Text style={{ fontWeight: 'bold', color: selectedStation == option.id ? '#fff' : '#cf2a3a' }}>{option.name}</Text>
+                                        borderColor: '#cf2a3a', borderRadius: 5, backgroundColor: user.stationID == option.id || selectedStation == option.id ? '#cf2a3a' : 'transparent' }}>
+                                            <Text style={{ fontWeight: 'bold', color: user.stationID == option.id || selectedStation == option.id ? '#fff' : '#cf2a3a' }}>{option.name}</Text>
                                         </TouchableOpacity>
                                     ))}
                                 </View>
                                 <View style={{ flexDirection: 'row', alignItems: 'center', gap: 10, alignSelf: 'flex-end', marginTop: 20 }}>
-                                    <TouchableOpacity onPress={() => setStationModal(false)}>
+                                    <TouchableOpacity onPress={() => {setStationModal(false), setSelectedStation(0)}}>
                                         <Text>Cancel</Text>
                                     </TouchableOpacity>
                                     <TouchableOpacity onPress={handleSaveStation} disabled={saveSpinner}>
