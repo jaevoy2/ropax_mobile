@@ -5,7 +5,7 @@ import { useTrip } from '@/context/trip';
 import { Ionicons } from '@expo/vector-icons';
 import { router } from 'expo-router';
 import { useEffect, useMemo, useRef, useState } from 'react';
-import { ActivityIndicator, Alert, Animated, Dimensions, ScrollView, Text, TextInput, TouchableOpacity, View } from 'react-native';
+import { ActivityIndicator, Alert, Animated, Dimensions, KeyboardAvoidingView, Platform, ScrollView, Text, TextInput, TouchableOpacity, View } from 'react-native';
 import { Dropdown } from 'react-native-element-dropdown';
 
 const { height, width } = Dimensions.get('window');
@@ -383,7 +383,7 @@ export default function CargoComponent({ dateChange }: {dateChange: string} ) {
                         <ActivityIndicator size={'large'} color={'#cf2a3a'} />
                     </View>
                 ) : (
-                    <View>
+                    <View style={{ height: height - 250 }}>
                         <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' }}>
                             <View style={{ flexDirection: 'row', alignItems: 'center', gap: 8, width: '70%' }}>
                                 <Ionicons name={'boat'} color={'#fff'} size={26} style={{ backgroundColor: '#cf2a3a', padding: 5, borderRadius: 50 }} />
@@ -417,8 +417,8 @@ export default function CargoComponent({ dateChange }: {dateChange: string} ) {
                             </View>
                         )}
 
-                        <View style={{ height: height - 320, marginTop: 5 }}>
-                            <ScrollView nestedScrollEnabled={true}>
+                        <KeyboardAvoidingView style={{ flex: 1, paddingBottom: 100 }} behavior={Platform.OS === 'android' ? 'padding' : 'height'}>
+                            <ScrollView style={{ flex: 1 }} nestedScrollEnabled={true}>
                                 {paxCargoProperty?.map((c: any) => (
                                     <View key={c.id} style={{ borderColor: '#B3B3B3', backgroundColor: '#fff', padding: 10, borderRadius: 8, borderWidth: 1, marginTop: 10 }}>
                                         {c.id > 1 && (
@@ -576,7 +576,7 @@ export default function CargoComponent({ dateChange }: {dateChange: string} ) {
                                     )}
                                 </TouchableOpacity>
                             </ScrollView>
-                        </View>
+                        </KeyboardAvoidingView>
                     </View>
                 )}
             </Animated.View>

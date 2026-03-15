@@ -8,9 +8,10 @@ import { Ionicons } from '@expo/vector-icons';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { router } from 'expo-router';
 import React, { useEffect, useState } from 'react';
-import { ActivityIndicator, Alert, Dimensions, Text, TextInput, TouchableOpacity, View } from 'react-native';
+import { ActivityIndicator, Alert, Dimensions, KeyboardAvoidingView, Platform, ScrollView, Text, TextInput, TouchableOpacity, View } from 'react-native';
 
 const { height } = Dimensions.get('window');
+
 
 export default function PaymentSummary() {
     const { passengers } = usePassengers();
@@ -95,129 +96,182 @@ export default function PaymentSummary() {
     }
 
     return (
-        <View style={{ backgroundColor: '#f1f1f1', position: 'relative', height: height }}>
-            <TouchableOpacity onPress={() => router.back()} style={{ position: 'absolute', top: 45, left: 10, zIndex: 3 }}>
-                <Ionicons name='chevron-back' size={30} color={'#fff'} />
-            </TouchableOpacity>
-            <View style={{ height: 100, backgroundColor: '#cf2a3a', paddingTop: 50 }}>
+        <View style={{ backgroundColor: '#fafafa', flex: 1 }}>
+            <View style={{ height: 100, backgroundColor: '#cf2a3a', paddingTop: 40, paddingHorizontal: 20, flexDirection: 'row', alignItems: 'center', gap: 15 }}>
+                <TouchableOpacity onPress={() => router.back()} >
+                    <Ionicons name='arrow-back' size={28} color={'#fff'} />
+                </TouchableOpacity>
                 <Text style={{ fontSize: 18, color: '#fff', fontWeight: 'bold', textAlign: 'center' }}>Payment Summary</Text>
             </View>
-            <View style={{ paddingHorizontal: 10, paddingTop: 20 }}>
-                <View style={{ flexDirection: 'row', gap: 8, alignItems: 'center', paddingBottom: 10 }}>
-                    <Ionicons name={'boat'} color={'#fff'} size={30} style={{ backgroundColor: '#cf2a3a', padding: 5, borderRadius: 50 }} />
-                    <View style={{ flexDirection: 'column' }}>
-                        <Text style={{ color: '#747373ff', fontSize: 11 }}>{timeWithRoute}</Text>
-                        <Text style={{ color: '#cf2a3a', fontSize: 20, fontWeight: '900', marginTop: -5 }}>{vessel}</Text>
-                    </View>
-                </View>
-                {passengers.length > 0 && (
-                    <View style={{ borderBottomColor: '#c9c9c9ff', borderBottomWidth: 1, paddingVertical: 15 }}>
-                        <Text style={{ fontSize: 14, fontWeight: '500', flexDirection: 'column' }}>Passenger/s</Text>
-                        <View style={{ gap: 5 }}>
-                            {passengers.map((p, index) => (
-                                <View key={`${p.accommodationID}-${index}`} style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', marginLeft: 15 }}>
-                                    <View style={{ flexDirection: 'row', width: '40%', gap: 3 }}>
-                                        <Text style={{ fontSize: 12, fontWeight: '400' }}>{`${p.name?.split(',')[1]?.trim().charAt(0)}. ${p.name?.split(',')[0]} `}</Text>
-                                        <Text style={{ fontSize: 12, fontWeight: '400', color: '#4b4b4bff' }}>{`(${p.passType})`}</Text>
-                                    </View>
-                                    <Text style={{ fontSize: 12, fontWeight: 'bold' }}>₱ {p.fare ? p.fare?.toFixed(2) : '0.00'}</Text>
+            <KeyboardAvoidingView behavior={Platform.OS === 'android' ? 'padding' : 'height'} style={{ flex: 1, paddingBottom: 10 }}>
+                <View style={{ flex: 1 }}>
+                    <ScrollView style={{ flex: 1 }}>
+                        <View style={{ paddingHorizontal: 10, paddingTop: 20 }}>
+                            <View style={{ borderColor: "#dadada", borderWidth: 1, padding: 10, borderRadius: 8, flexDirection: 'row', gap: 8, alignItems: 'center', paddingBottom: 10 }}>
+                                <Ionicons name={'boat'} color={'#fff'} size={28} style={{ backgroundColor: '#cf2a3a', padding: 10, borderRadius: 50 }} />
+                                <View style={{ flexDirection: 'column' }}>
+                                    <Text style={{ color: '#cf2a3a', fontSize: 16, fontWeight: '900', marginTop: -5 }}>{vessel}</Text>
+                                    <Text style={{ color: '#747373ff', fontSize: 11, fontWeight: '600' }}>{timeWithRoute}</Text>
                                 </View>
-                            ))}
-                        </View>
-                        <View style={{ gap: 5, marginLeft: 15 }}>
-                            {passengers.map((p, index) => 
-                                p.hasInfant && p.infant?.map((i, index) => (
-                                    <View key={`${p.accommodationID}${index}`} style={{ marginBottom: 3 }}>
-                                        <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' }}>
-                                            <View style={{ flexDirection: 'row',  width: '40%', gap: 3 }}>
-                                                <Text style={{ fontSize: 12, fontWeight: '400' }}>{`${i.name?.split(',')[1]?.trim().charAt(0)}. ${i.name?.split(',')[0]}`}</Text>
-                                                <Text style={{ fontSize: 12, fontWeight: '400', color: '#4b4b4bff' }}>{`(Infant)`}</Text>
-                                            </View>
-                                            <Text style={{ fontSize: 12, fontWeight: 'bold' }}>₱ 0.00</Text>
+                            </View>
+
+                            <View style={{ borderColor: "#dadada", borderWidth: 1, borderRadius: 8, marginTop: 15 }}>
+                                <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', gap: 3, backgroundColor: '#cf2a3b27', borderTopRightRadius: 6, borderTopLeftRadius: 6, padding: 10  }}>
+                                    <View>
+                                        <Text style={{ fontWeight: 'bold', color: '#cf2a3a' }}>Payment</Text>
+                                        <Text style={{ fontSize: 9, fontWeight: '600', color: '#cf2a3a' }}>Payment must be settled before departure.</Text>
+                                    </View>
+                                    <Ionicons name={'alert-circle'} color={'#cf2a3a'} size={24} />
+                                </View>
+                                <View style={{ paddingHorizontal: 10, paddingVertical: 15, gap: 10 }}>
+                                    <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' }}>
+                                        <Text style={{ color: '#646464', fontSize: 13, }}>Cash Tendered</Text>
+                                        <View style={{ flexDirection: 'row', alignItems: 'center', gap: 5, borderBottomColor: "#cf2a3a", borderBottomWidth: 1 }}>
+                                            <Text style={{ fontSize: 20, fontWeight: '600' }}>₱</Text>
+                                            <TextInput onChangeText={(text) => setPassCashTendered(Number(text))} keyboardType={'numeric'} placeholder='0.00' style={{ width: 80, fontSize: 16, height: 40, backgroundColor: '#fafafa', textAlign: 'right', paddingHorizontal: 3, borderColor: '#fafafa' }} />
                                         </View>
                                     </View>
-                                ))
-                            )}
-                        </View>
-                    </View>
-                )}
-                {(passengers.some(p => p.hasCargo == true) || paxCargoProperty.length > 0) && (
-                    <View style={{ borderBottomColor: '#c9c9c9ff', borderBottomWidth: 1, paddingVertical: 10 }}>
-                        <View style={{ width: '100%', flexDirection: 'column' }}>
-                            <Text style={{ fontSize: 14, fontWeight: '500', flexDirection: 'column' }}>Cargo/s</Text>
-                            {passengers.length == 0 ? (
-                                <>
-                                    {paxCargoProperty.map((cargo: any) => (
-                                        <View key={`${cargo.id}-${cargo.cargoAmount}`} style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', marginLeft: 15, }}>
-                                            <View style={{ flexDirection: 'row', gap: 3 }}>
-                                                <Text style={{ fontSize: 12 }}>{`${cargo.quantity}x`}</Text>
-                                                <Text style={{ fontSize: 12 }}>
-                                                    { cargo.cargoType == 'Rolling Cargo' ? `${cargo.cargoBrand} ${cargo.cargoSpecification}` : cargo.parcelCategory}
+                                    <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' }}>
+                                        <Text style={{ color: '#646464', fontSize: 13, }}>Change</Text>
+                                        <Text style={{ fontSize: 18, fontWeight: '800', color: '#cf2a3a' }}>₱ {cashTendered != 0 ? fareChange?.toFixed(2) : '00.00'}</Text>
+                                    </View>
+                                </View>
+                            </View>
+
+                            <View style={{ marginTop: 15, borderColor: "#dadada", borderWidth: 1, borderRadius: 8 }}>
+                                {passengers.length > 0 ? (
+                                    <>
+                                        <Text style={{ padding: 10, borderBottomColor: '#dadada', borderBottomWidth: 1, fontWeight: 'bold' }}>Passenger/s</Text>
+                                        {passengers.map((pax: any) =>(
+                                            <View key={pax.id}>
+                                                <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', paddingHorizontal: 10, paddingTop: 10 }}>
+                                                    <View style={{ flexDirection: 'column', width: '65%' }}>
+                                                        <Text style={{ fontSize: 14, fontWeight: '700', color: '#cf2a3a' }}>{pax.name}</Text>
+                                                        <View style={{ flexDirection: 'row', alignItems: 'center', gap: 5 }}>
+                                                            <Text style={{ fontSize: 10, color: '#646464', fontWeight: '600' }}>{pax?.seatNumber != 'N/A' ? `Seat# ${pax?.seatNumber}` : '---'}</Text>
+                                                            <Text style={{ fontSize: 10, color: '#646464' }}>|</Text>
+                                                            <Text style={{ fontSize: 10, color: '#646464', fontWeight: '600' }}>{pax?.passType}</Text>
+                                                            <Text style={{ fontSize: 10, color: '#646464' }}>|</Text>
+                                                            <Text style={{ fontSize: 10, color: '#646464', fontWeight: '600' }}>{pax?.accommodation}</Text>
+                                                            <Text style={{ fontSize: 10, color: '#646464' }}>|</Text>
+                                                            <Text style={{ fontSize: 10, color: '#646464', fontWeight: '600' }}>{pax?.passType}</Text>
+                                                        </View>
+                                                    </View>
+                                                    <View style={{ flexDirection: 'column', alignItems: 'flex-end' }}>
+                                                        <Text style={{ color: '#646464', fontSize: 10, }}>Fare</Text>
+                                                        <Text style={{ fontSize: 13, fontWeight: '800', color: '#cf2a3a' }}>₱ {Number(pax?.fare).toFixed(2)}</Text>
+                                                    </View>
+                                                </View>
+                                                {pax.infant && pax.infant.length > 0 && pax.infant.map((inf: any, index: number) => (
+                                                    <View key={`inf-${index}`} style={{ flexDirection: 'row',justifyContent: 'space-between', paddingHorizontal: 10, paddingTop: 5 }} >
+                                                        <View style={{ flexDirection: 'column', width: '70%' }}>
+                                                            <Text style={{ fontSize: 14, fontWeight: '700', color: '#cf2a3a' }}>
+                                                                {inf.name}
+                                                            </Text>
+
+                                                            <View style={{ flexDirection: 'row', gap: 5 }}>
+                                                                <Text style={{ fontSize: 10, color: '#646464', fontWeight: '600' }}>
+                                                                    N/A
+                                                                </Text>
+                                                                <Text style={{ fontSize: 10, color: '#646464', fontWeight: '600' }}>
+                                                                    |
+                                                                </Text>
+                                                                <Text style={{ fontSize: 10, color: '#646464', fontWeight: '600' }}>
+                                                                    Infant
+                                                                </Text>
+                                                                <Text style={{ fontSize: 10, color: '#646464', fontWeight: '600' }}>
+                                                                    |
+                                                                </Text>
+                                                                <Text style={{ fontSize: 10, color: '#646464', fontWeight: '600' }}>
+                                                                    {inf.gender}
+                                                                </Text>
+                                                            </View>
+                                                        </View>
+                                                        <View style={{ flexDirection: 'column', alignItems: 'flex-end' }}>
+                                                            <Text style={{ color: '#646464', fontSize: 10, }}>Fare</Text>
+                                                            <Text style={{ fontSize: 13, fontWeight: '800', color: '#cf2a3a' }}>₱ 0.00</Text>
+                                                        </View>
+                                                    </View>
+                                                ))}
+                                    
+                                            </View>
+                                        ))}
+                                        {passengers.some(p => p.hasCargo == true) && (
+                                            <>
+                                                <Text style={{ padding: 10, borderBottomColor: '#dadada', borderBottomWidth: 1,borderTopColor: '#dadada', borderTopWidth: 1, fontWeight: 'bold', marginTop: 5 }}>
+                                                    Cargo/s
                                                 </Text>
-                                                <Text style={{ fontSize: 12, color: '#4b4b4bff' }}>{`(${cargo.cargoType})`}</Text>
-                                            </View>
-                                            <View style={{ flexDirection: 'row', alignItems: 'center', gap: 2 }}>
-                                                <Text style={{ fontSize: 12, fontWeight: 'bold' }}>₱ </Text>
-                                                <Text style={{ fontSize: 12, fontWeight: 'bold'}}>{(Number(cargo?.cargoAmount || 0)).toFixed(2)}</Text>
-                                            </View>
-                                        </View>
-                                    ))} 
-                                </>
-                            ) : (
-                                <>
-                                    {passengers.flatMap(p => p.hasCargo ? 
-                                        p.cargo.map(c => (
-                                            <View key={`${c.id}-${c.cargoAmount}`} style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', marginLeft: 15, }}>
-                                                <View style={{ flexDirection: 'row', gap: 3 }}>
-                                                    <Text style={{ fontSize: 12 }}>{`${c.quantity}x`}</Text>
-                                                    <Text style={{ fontSize: 12 }}>
-                                                        { c.cargoType == 'Rolling Cargo' ? `${c.cargoBrand} ${c.cargoSpecification}` : c.parcelCategory}
-                                                    </Text>
-                                                    <Text style={{ fontSize: 12, color: '#4b4b4bff' }}>{`(${c.cargoType})`}</Text>
-                                                </View>
-                                                <View style={{ flexDirection: 'row', alignItems: 'center', gap: 2 }}>
-                                                    <Text style={{ fontSize: 12, fontWeight: 'bold' }}>₱ </Text>
-                                                    <Text style={{ fontSize: 12, fontWeight: 'bold' }}>{c?.cargoAmount.toFixed(2)}</Text>
-                                                </View>
-                                            </View>
-                                        )) : []
-                                    )}
-                                </>
-                            )}
+                                               {passengers.map((p, pIndex) =>
+                                                    p.hasCargo && p.cargo?.map((cargo, index) => (
+                                                        <View
+                                                        key={`${pIndex}-${index}`}
+                                                        style={{
+                                                            flexDirection: 'row',
+                                                            alignItems: 'center',
+                                                            justifyContent: 'space-between',
+                                                            paddingHorizontal: 10,
+                                                            paddingTop: 10
+                                                        }}
+                                                        >
+                                                        <View style={{ flexDirection: 'column', width: '65%' }}>
+                                                            <View style={{ flexDirection: 'row', alignItems: 'center', gap: 5 }}>
+                                                            <Text style={{ fontSize: 14, fontWeight: '700', color: '#cf2a3a' }}>
+                                                                {`${cargo.quantity}x`}
+                                                            </Text>
 
-                        </View>
-                    </View>
-                )}
-                <View style={{ borderBottomColor: '#c9c9c9ff', borderBottomWidth: 1, paddingVertical: 10 }}>
-                    <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' }}>
-                        <Text style={{ fontSize: 12, fontWeight: 'bold' }}>Subtotal:</Text>
-                        <View style={{ flexDirection: 'row', alignItems: 'center', gap: 2 }}>
-                            <Text style={{ fontSize: 16, fontWeight: '900', color: '#cf2a3a' }}>₱ </Text>
-                            <Text style={{ fontSize: 16, fontWeight: '900', color: '#cf2a3a' }}>
-                                {passengers.length != 0 ? totalFare?.toLocaleString('en-PH', { minimumFractionDigits: 2,  maximumFractionDigits: 2}) : totalFare?.toLocaleString('en-PH', { minimumFractionDigits: 2,  maximumFractionDigits: 2})}
-                            </Text>
-                        </View>
-                    </View>
-                </View>
-                <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', paddingBottom: 10, paddingTop: 20, borderBottomColor: '#c9c9c9ff', borderBottomWidth: 1, }}>
-                    <Text style={{ fontSize: 12, fontWeight: 'bold', color: '#545454' }}>Cash Tendered:</Text>
-                    <View style={{ marginTop: -10, flexDirection: 'row', alignItems: 'flex-start', borderColor: '#cf2a3a', borderWidth: 1, borderRadius: 5, paddingHorizontal: 8 }}>
-                        <Text style={{ fontWeight: 'bold', fontSize: 16, marginTop: 9 }}>₱ </Text>
-                        <TextInput onChangeText={(text) => setPassCashTendered(Number(text))} keyboardType={'numeric'} placeholder='00.00' style={{ fontWeight: 'bold', fontSize: 16, textAlign: 'right' }} />
-                    </View>
-                </View>
-                <View style={{ paddingVertical: 10 }}>
-                    <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' }}>
-                        <Text style={{ fontSize: 12, fontWeight: 'bold', color: '#545454' }}>Change:</Text>
-                        <View style={{ flexDirection: 'row', alignItems: 'center', }}>
-                            <Text style={{ fontWeight: 'bold', fontSize: 20, color: '#cf2a3a' }}>₱ </Text>
-                            <Text style={{ fontSize: 20, fontWeight: '900', color: '#cf2a3a' }}>{cashTendered != 0 ? fareChange?.toFixed(2) : '00.00'}</Text>
-                        </View>
-                    </View>
-                </View>
-            </View>
+                                                            <Text style={{ fontSize: 14, color: '#cf2a3a', fontWeight: '700' }}>
+                                                                {cargo.cargoType === 'Rolling Cargo'
+                                                                ? `${cargo.cargoBrand} ${cargo.cargoSpecification}`
+                                                                : cargo.parcelCategory}
+                                                            </Text>
+                                                            </View>
 
-            <TouchableOpacity onPress={() => handleConfirmation()} style={{ position: 'absolute', bottom: 0, backgroundColor: '#cf2a3a', width: '95%', alignSelf: 'center', borderRadius: 30, paddingVertical: 15, zIndex: 5 }}>
+                                                            <Text style={{ fontSize: 10, color: '#646464', fontWeight: '600' }}>
+                                                            {`(${cargo.cargoType})`}
+                                                            </Text>
+                                                        </View>
+
+                                                        <Text style={{ fontSize: 13, fontWeight: '800', color: '#cf2a3a' }}>
+                                                            ₱ {(Number(cargo.cargoAmount || 0)).toFixed(2)}
+                                                        </Text>
+                                                        </View>
+                                                    ))
+                                                )}
+                                            </> 
+                                        )}
+                                    </>
+                                ) : (
+                                    <>
+                                        <Text style={{ padding: 10, borderBottomColor: '#dadada', borderBottomWidth: 1, fontWeight: 'bold', marginTop: 5 }}>
+                                            Cargo/s
+                                        </Text>
+                                        {paxCargoProperty.map((cargo, index) =>(
+                                            <View key={cargo.id} style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', paddingHorizontal: 10, paddingTop: 10 }}>
+                                                <View style={{ flexDirection: 'column', width: '65%' }}>
+                                                    <View style={{ flexDirection: 'row', alignItems: 'center', gap: 5 }}>
+                                                        <Text style={{ fontSize: 14, fontWeight: '700', color: '#cf2a3a' }}>{`${cargo.quantity}x`}</Text>
+                                                        <Text style={{ fontSize: 14, color: '#cf2a3a', fontWeight: '700' }}>
+                                                            { cargo.cargoType == 'Rolling Cargo' ? `${cargo.cargoBrand} ${cargo.cargoSpecification}` : cargo.parcelCategory}
+                                                        </Text>
+                                                    </View>
+                                                    <Text style={{ fontSize: 10, color: '#646464', fontWeight: '600' }}>{`(${cargo.cargoType})`}</Text>
+                                                </View>
+                                                <Text style={{ fontSize: 13, fontWeight: '800', color: '#cf2a3a' }}>₱ {(Number(cargo.cargoAmount || 0)).toFixed(2)}</Text>
+                                            </View>
+                                        ))}
+                                    </> 
+                                )}
+
+                                <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginTop: 10, paddingHorizontal: 10, paddingVertical: 12, backgroundColor: '#cf2a3b27', borderBottomRightRadius: 6, borderBottomLeftRadius: 6 }}>
+                                    <Text style={{ color: '#cf2a3a', fontSize: 13, fontWeight: '800' }}>Total Amount</Text>
+                                    <Text style={{ fontSize: 16, fontWeight: '800', color: '#cf2a3a' }}>₱ {totalFare.toFixed(2)}</Text>
+                                </View>
+                            </View>
+                        </View>
+                    </ScrollView>
+                </View>
+            </KeyboardAvoidingView>
+            <TouchableOpacity onPress={() => handleConfirmation()} style={{ position: 'absolute', bottom: 30, backgroundColor: '#cf2a3a', width: '95%', alignSelf: 'center', borderRadius: 8, paddingVertical: 15, zIndex: 5 }}>
                 {loading == true ? (
                     <ActivityIndicator size={'small'} color={'#fff'} style={{ alignSelf: 'center' }} />
                 ) : (
@@ -228,30 +282,3 @@ export default function PaymentSummary() {
     )
 }
 
-
-
-
-// {paxInfo.find((p: any) => p.id == Number(paxId) )?.bookingStatus == null && (
-//     <View style={styles.card}>
-//         <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', gap: 3, backgroundColor: '#cf2a3b27', borderTopRightRadius: 6, borderTopLeftRadius: 6, padding: 10  }}>
-//             <View>
-//                 <Text style={{ fontWeight: 'bold', color: '#cf2a3a' }}>Payment</Text>
-//                 <Text style={{ fontSize: 9, fontWeight: '600', color: '#cf2a3a' }}>Payment must be settled before departure.</Text>
-//             </View>
-//             <Ionicons name={'alert-circle'} color={'#cf2a3a'} size={24} />
-//         </View>
-//         <View style={{ paddingHorizontal: 10, paddingBottom: 10 }}>
-//             <View style={styles.bookingContainer}>
-//                 <Text style={{ color: '#646464', fontSize: 13, }}>Cash Tendered</Text>
-//                 <View style={{ flexDirection: 'row', alignItems: 'center', gap: 5 }}>
-//                     <Text style={{ fontSize: 20, fontWeight: '600' }}>₱</Text>
-//                     <TextInput onChangeText={(text) => setCash(Number(text))} keyboardType={'numeric'} placeholder='0.00' style={styles.input} />
-//                 </View>
-//             </View>
-//             <View style={styles.bookingContainer}>
-//                 <Text style={{ color: '#646464', fontSize: 13, }}>Change</Text>
-//                 <Text style={{ fontSize: 16, fontWeight: '700' }}>₱ 0.00</Text>
-//             </View>
-//         </View>
-//     </View>
-// )}

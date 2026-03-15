@@ -88,19 +88,6 @@ export default function QRScanner() {
             audio.seekTo(0);
             audio.play();
 
-            const isValid = code.includes('LMBS');
-
-            if(!isValid) {
-                Alert.alert('Invalid', 'Invalid QR code', [{
-                    text: 'ok',
-                    onPress: () => {
-                        setScanned(false);
-                    }
-                }])
-                
-                return;
-            }
-
             setScreenLoading(true);
             loadingAnim();
             handleValidateQr(code)
@@ -120,12 +107,12 @@ export default function QRScanner() {
                 const paxId = response.data.passengers[0].id
                 const refNum = response.data.reference_no;
                 
-                // router.replace(`/bookingInfo?bookingId=${bookingId}&paxId=${paxId}&refNum=${refNum}`)
+                router.replace(`/bookingInfo?bookingId=${bookingId}&paxId=${paxId}&refNum=${refNum}`)
             }
         }catch(error) {
             Alert.alert('Error', error.message)
         }finally{
-            // setScreenLoading(false)
+            setScreenLoading(false)
         }
     }
 

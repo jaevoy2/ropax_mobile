@@ -26,6 +26,7 @@ export type PassengerProps = {
     fare?: number;
     refNumber?: number;
     hasInfant?: boolean;
+    hasScanned?: boolean;
     hasCargo?: boolean;
     infant?: InfantProps[];
     cargo?: PaxCargoProperties[];

@@ -72,7 +72,7 @@ const SeatPlan: React.FC<SeatProps> = React.memo(({ start, limit, skipPattern = 
                     <TouchableOpacity disabled={!!booked || isPassenger || seatSelectionChannel.includes(String(seat))} onPress={() => onSeatSelect?.(seat, type, accomm_id)} key={seat}
                     style={{  paddingVertical: 2, width: 32, height: 32, borderColor: '#A9A9B2', borderWidth: 1, borderRadius: 3, 
                     backgroundColor: 
-                        booked ? booked.station.color : isPassenger ? '#BA68C8' : touristSeat.includes(seat) && !seatSelectionChannel.includes(String(seat)) ? '#E6E2C6' : seatSelectionChannel.includes(String(seat)) ? '#e6d1e9ff' : 'transparent'
+                        booked ? booked?.station?.color : isPassenger ? '#BA68C8' : touristSeat.includes(seat) && !seatSelectionChannel.includes(String(seat)) ? '#E6E2C6' : seatSelectionChannel.includes(String(seat)) ? '#e6d1e9ff' : 'transparent'
                     }}>
                         <Text style={{ fontSize: 16, textAlign: 'center', fontWeight: 'bold', 
                             color: booked || isPassenger || seatSelectionChannel.includes(String(seat)) ? '#fff' : '#000' }}>
@@ -111,7 +111,7 @@ type BookedSeat = {
 
 const bClassNames = ['Business Class', 'B Class', 'B-Class']
 
-export default function SRVessel({ onSeatSelect }: SRVesselProps) {
+const SRVessel = ({ onSeatSelect }: SRVesselProps) => {
     const { id } = useTrip();
     const [bookedSeats, setBookedSeats] = useState<BookedSeat[]>([]);
     const [accommodations, setAccommodations] = useState<AccomsProps[] | null>(null);
@@ -119,7 +119,7 @@ export default function SRVessel({ onSeatSelect }: SRVesselProps) {
     const [seatSelectionChannel, setSeatSelectionChannel] = useState<string[]>([]);
 
     const assignseat = useCallback(async (seat: number | string, type: string, accomm_id: number) => {
-        const paxHasCargo = passengers.find(p => p.hasCargo == true);
+        const paxScan = passengers.find(p => p.hasScanned == true && p.seatNumber == '');
         const stationId = await AsyncStorage.getItem('stationID');
         const stationColor = await AsyncStorage.getItem('stationColor');
 
@@ -128,11 +128,11 @@ export default function SRVessel({ onSeatSelect }: SRVesselProps) {
             const tempId = Crypto.randomUUID();
 
             if(!error) {
-                if(!paxHasCargo || (paxHasCargo && paxHasCargo.seatNumber != null)){
+                if(!paxScan){
                     setPassengers(prev => [...prev, { id: tempId, seatNumber: seat, accommodation: type, accommodationID: accomm_id }]);
                 }else{
                     setPassengers(prev => 
-                        prev.map((p) => p.hasCargo ? { ...p, seatNumber: seat, accommodation: type, accommodationID: accomm_id }: p)
+                        prev.map((p) => p.hasScanned && p.id == paxScan.id ? { ...p, seatNumber: seat }: p)
                     )
                 }
         
@@ -246,7 +246,7 @@ export default function SRVessel({ onSeatSelect }: SRVesselProps) {
                             onPress={() => assignseat?.(seat, accommodations?.find((accom) => bClassNames.includes(accom.name))?.name!, accommodations?.find((accom) => bClassNames.includes(accom.name))?.id!)} key={seat} 
                             style={{ paddingVertical: 3, width: '35%', borderColor: '#A9A9B2', borderWidth: 1, borderRadius: 3, 
                             backgroundColor: 
-                                booked ? booked.station.color : isPassenger ? '#BA68C8' : seatSelectionChannel.includes(seat) ? '#e6d1e9ff' : seat == 'A' || seat == 'B' && !seatSelectionChannel.includes(seat) ? '#E6E2C6' : 'transparent'
+                                booked ? booked?.station?.color : isPassenger ? '#BA68C8' : seatSelectionChannel.includes(seat) ? '#e6d1e9ff' : seat == 'A' || seat == 'B' && !seatSelectionChannel.includes(seat) ? '#E6E2C6' : 'transparent'
                             }}> 
                                 <Text style={{ textAlign: 'center', fontWeight: 'bold', 
                                     color: booked || isPassenger || seatSelectionChannel.includes(seat) ? '#fff' : '#000' }}>
@@ -269,7 +269,7 @@ export default function SRVessel({ onSeatSelect }: SRVesselProps) {
                             onPress={() => assignseat?.(seat, accommodations?.find((accom) => bClassNames.includes(accom.name))?.name!, accommodations?.find((accom) => bClassNames.includes(accom.name))?.id!)} key={seat} 
                             style={{ paddingVertical: 3, width: '35%', borderColor: '#A9A9B2', borderWidth: 1, borderRadius: 3, 
                             backgroundColor: 
-                                booked ? booked.station.color : isPassenger  ? '#BA68C8' : !seatSelectionChannel.includes(seat) ? '#E6E2C6' : '#e6d1e9ff'
+                                booked ? booked?.station?.color : isPassenger  ? '#BA68C8' : !seatSelectionChannel.includes(seat) ? '#E6E2C6' : '#e6d1e9ff'
                             }}> 
                                 <Text style={{ textAlign: 'center', fontWeight: 'bold', 
                                     color: booked || isPassenger || seatSelectionChannel.includes(seat) ? '#fff' : '#000' }}>
@@ -290,7 +290,7 @@ export default function SRVessel({ onSeatSelect }: SRVesselProps) {
                             onPress={() => assignseat?.(seat, accommodations?.find((accom) => bClassNames.includes(accom.name))?.name!, accommodations?.find((accom) => bClassNames.includes(accom.name))?.id!)} key={seat} 
                             style={{ paddingVertical: 3, width: '35%', borderColor: '#A9A9B2', borderWidth: 1, borderRadius: 3, 
                             backgroundColor: 
-                                booked ? booked.station.color : isPassenger ? '#BA68C8' : seatSelectionChannel.includes(seat) ? '#e6d1e9ff' : seat == "C" || seat == "D" ? '#E6E2C6' : 'transparent'
+                                booked ? booked?.station?.color : isPassenger ? '#BA68C8' : seatSelectionChannel.includes(seat) ? '#e6d1e9ff' : seat == "C" || seat == "D" ? '#E6E2C6' : 'transparent'
                             }}> 
                                 <Text style={{ textAlign: 'center', fontWeight: 'bold', 
                                     color: booked || isPassenger || seatSelectionChannel.includes(seat) ? '#fff' : '#000' }}>
@@ -334,3 +334,5 @@ export default function SRVessel({ onSeatSelect }: SRVesselProps) {
         </View>
     )
 } 
+
+export default React.memo(SRVessel)

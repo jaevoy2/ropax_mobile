@@ -58,26 +58,19 @@ export default function SeatPlan() {
     }, [passengers.length]);
 
     useEffect(() => {
-        let totalFare;
-        const paxFare = passengers.reduce((sum, p) => {
-            let subtotal = sum + Number(p.fare || 0);
+        console.log(passengers[0])
+        const totalFare = passengers.reduce((sum, p) => {
+            const passengerFare = Number(p.fare || 0);
 
-            return subtotal;
+            const cargoTotal = (p.cargo ?? []).reduce((cargoSum, c) => {
+                return cargoSum + (Number.isFinite(c.cargoAmount) ? Number(c.cargoAmount) : 0);
+            }, 0);
+
+            return sum + passengerFare + cargoTotal;
         }, 0);
-        totalFare = paxFare;
-        
-        if(passengers.some(p => p.hasCargo == true)) {
-            passengers.forEach(p => {
-                const cargoTotal = (p.cargo ?? []).reduce((total, c) => {
-                    return total + (Number.isFinite(c.cargoAmount) ? c.cargoAmount : 0)
-                }, 0)
-
-                totalFare += cargoTotal;
-            })
-        }
 
         setTotalFare(totalFare);
-    }, [passengers, paxCargoProperty])
+    }, [passengers, paxCargoProperty]);
 
     const handleSeatSelect = () => {
         if(passengers.length == 0 || (passengers.length == 1 && passengers.some(p => p.hasCargo == true))) {
@@ -85,32 +78,36 @@ export default function SeatPlan() {
         }
     }
 
-    const handleRemoveSeat = (seat: number | string | undefined | null) => {
-        if(errorForm.includes(seat!)) {
-            const updateErrorForm = errorForm.filter((e: any) => e != seat);
-            setErrorForm(updateErrorForm);
+    const handleRemoveSeat = (seat: number | string, paxId: string | number) => {
+        if (!seat) return;
+
+        if (errorForm.includes(seat)) {
+            setErrorForm(prev => prev.filter(e => e != seat));
         }
 
-        seatRemoval(seat!, id);
-        
-        const newSeats = passengers.filter(s => s.seatNumber != seat);
-        const hasCargo = passengers.some((p) => p.hasCargo != false);
-        let paxCargoSeat = passengers.find((p) => p.hasCargo == true);
-        
-        if(!hasCargo || (hasCargo && paxCargoSeat?.seatNumber != seat)) {
-            setPassengers(newSeats);
-        }
+        seatRemoval(seat, id);
 
-        if(hasCargo && paxCargoSeat?.seatNumber == seat) {
-            setPassengers(prev => 
-                prev.map(p => p.hasCargo ? { ...p, seatNumber: null, accommodation: '', accommodationID: null }: p)
-            );
-        }
+        setPassengers(prev => {
+            const paxHasScan = prev.some(p => p.hasScanned && p.id == paxId);
 
-        if(newSeats.length == 0 || (paxCargoSeat?.seatNumber == null && passengers.length == 1)) {
-            seatSheetRef.current?.close();
-        }
-    }
+            const updatedPassengers = paxHasScan
+                ? prev.map(p =>
+                    p.id == paxId ? { ...p, seatNumber: '' } : p
+                )
+                : prev.filter(p => p.seatNumber != seat);
+
+            const noSeatsLeft = updatedPassengers.filter(p => p.seatNumber).length === 0;
+
+            const singleUnscannedPassenger =
+                noSeatsLeft && !paxHasScan;
+
+            if (singleUnscannedPassenger) {
+                seatSheetRef.current?.close();
+            }
+
+            return updatedPassengers;
+        });
+    };
 
     const handleForceSeatRemoval = () => {
         passengers.forEach(paxSeat => {
@@ -173,6 +170,7 @@ export default function SeatPlan() {
     }
 
     const handleSave = () => {
+        console.log(passengers)
         setSaveLoading(true);
         setErrorForm([]);
 
@@ -318,8 +316,7 @@ export default function SeatPlan() {
                     setTotalBookings(totalBookingFetch.total_paying);
                 }
             }catch(error: any) {
-                console.log('total: ', error)
-                Alert.alert('', error.message);
+                Alert.alert('Error', error.message);
             }
         }
 
@@ -335,14 +332,14 @@ export default function SeatPlan() {
                 ]} style={{ zIndex: -1, height: '100%', width: width }} />
                 
                 <TouchableOpacity onPress={() => {router.back(), handleForceSeatRemoval()}} style={{ position: 'absolute', left: 20, top: 50, zIndex: 1 }}>
-                    <Ionicons name={'chevron-back'} size={30} color={'#fff'} />
+                    <Ionicons name={'arrow-back'} size={30} color={'#fff'} />
                 </TouchableOpacity>
                 <TouchableOpacity disabled={passengers.length > 0 && passengers.some(p => p.hasCargo == false)} onPress={() => handlePassesForm()} style={{ position: 'absolute', right: 20, top: 50, zIndex: 1, opacity: passesIsHidden == true ?0 : 1 }}>
                     <MaterialCommunityIcons name={'account-arrow-right'} size={30} color={'#fff'} />
                 </TouchableOpacity>
 
                 <View style={{ position: 'absolute', paddingTop: 50, width: width, flex: 1 }}>
-                    <Text style={{ textAlign: 'center', color: '#fff', fontSize: 20, fontWeight: 'bold' }}>{vessel}</Text>
+                    <Text style={{ textAlign: 'center', color: '#fff', fontSize: 18, fontWeight: 'bold' }}>{vessel}</Text>
                     <Text style={{ textAlign: 'center', color: '#fff', fontSize: 10 }}>Vessel Seat Plan</Text>
                     <View style={{ paddingTop: 10, height: height - 60 }}>
                         <ScrollView style={{ height: '100%' }} contentContainerStyle={{ paddingBottom: 20 }}>
@@ -390,7 +387,7 @@ export default function SeatPlan() {
                                 {passengers.map((p) => (
                                     <View key={p.id} style={{ position: 'relative' }}>
                                         {isFormVisible == false && (
-                                            <TouchableOpacity onPress={() => handleRemoveSeat(p.seatNumber)} style={{ position: 'absolute', top: -8, right: -4, zIndex: 3 }}>
+                                            <TouchableOpacity onPress={() => handleRemoveSeat(p.seatNumber, p.id)} style={{ position: 'absolute', top: -8, right: -4, zIndex: 3 }}>
                                                 <Ionicons name="remove-circle" size={20} color={'#cf2a3a'} />
                                             </TouchableOpacity>
                                         )}
@@ -405,7 +402,7 @@ export default function SeatPlan() {
                             <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'flex-end', marginVertical: 15, paddingHorizontal: 10 }}>
                                 <View style={{ flexDirection: 'column', alignItems: 'flex-start' }}>
                                     <Text style={{ fontSize: 11 }}>Reference#:</Text>
-                                    <Text style={{ fontWeight: '900', fontSize: 14, color: '#cf2a3a' }}>LMBS-000000-{year}{origin?.charAt(0)}{destination?.charAt(0)}</Text>
+                                    <Text style={{ fontWeight: '900', fontSize: 14, color: '#cf2a3a' }}>LMBS000000{year}{origin?.charAt(0)}{destination?.charAt(0)}</Text>
                                 </View>
                                 <View style={{ flexDirection: 'column', alignItems: 'flex-end' }}>
                                     <Text style={{ fontSize: 9, fontWeight: '900', color: '#cf2a3a' }}>Total Fare:</Text>

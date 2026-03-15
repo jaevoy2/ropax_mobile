@@ -15,11 +15,11 @@ export default {
     },
     android: {
       adaptiveIcon: {
-        foregroundImage: "./assets/images/adaptive-icon.png",
+        foregroundImage: "./assets/icons/adaptive-icon.png",
         backgroundColor: "#ffffff"
       },
       edgeToEdgeEnabled: true,
-      package: "com.jaevoy.leopards_mobile"
+      package: "com.jaevoy.leopards_mobile",
     },
     web: {
       bundler: "metro",
@@ -45,6 +45,9 @@ export default {
       typedRoutes: true
     },
     extra: {
+      eas: {
+        projectId: "9e944cbb-9ec3-4988-91a9-ebb3d1f8cc2a"
+      },
       API_URL: process.env.API_URL, 
       API_KEY: process.env.API_KEY,
       ORIGIN: process.env.ORIGIN,

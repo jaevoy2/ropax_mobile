@@ -16,7 +16,7 @@ import { GestureHandlerRootView, Pressable } from 'react-native-gesture-handler'
 
 const { height, width } = Dimensions.get('window');
 
-type TripProps = {
+export type TripProps = {
     trip_id: number;
     departure: string;
     vessel: string;

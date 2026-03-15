@@ -78,7 +78,6 @@ export default function ManageBooking() {
     const fetchBooking = async (dateString: string, search: string | null) => {
         try {
             const response = await FetchManageBookingList(dateString, search)
-            console.log(response.data[0])
             
             if(!response.error) {
                 if(response.data.length > 0) {

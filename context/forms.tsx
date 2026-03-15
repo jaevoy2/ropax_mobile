@@ -38,7 +38,6 @@ export default function Forms({ errorForm }: FormProps) {
     const [paxFares, setPaxFares] = useState<PaxFareProps[] | null>(null)
 
     useEffect(() => {
-        console.log(passengers)
         const departureTime = new Date(`1970-01-01T${departure_time}`).toLocaleTimeString(
             'en-US', {
                 hour: 'numeric',
@@ -131,6 +130,7 @@ export default function Forms({ errorForm }: FormProps) {
     }
 
     const addPaxCargo = (indentifier: string | number, newCargo: PaxCargoProperties) => {
+        console.log()
         setPassengers((prev) => 
             prev.map((p, index) => {
                 if(p.seatNumber !== indentifier && index !== indentifier) return p;
@@ -193,12 +193,18 @@ export default function Forms({ errorForm }: FormProps) {
     }
 
     const ComputedCargoAmount = (cargo: PaxCargoProperties) => {
-        let prop;
-        if(!cargo || !cargoProperties) return { amount: Number(0.00), optionID: 0 };
+        if(!cargo || !cargoProperties) {
+            return { amount: 0, optionID: 0 };
+        }
 
-        if(cargo?.cargoType == 'Rolling Cargo') {
-            if(!cargo.cargoBrandID  || !cargo.cargoSpecificationID) return { amount: Number(0.00), optionID: 0 };;
-            
+        let prop;
+
+        if(cargo.cargoType === 'Rolling Cargo') {
+
+            if(!cargo.cargoBrandID || !cargo.cargoSpecificationID) {
+                return { amount: 0, optionID: 0 };
+            }
+
             prop = cargoProperties.data.cargo_options?.find(
                 c => 
                     c.cargo_type_id == cargo.cargoTypeID &&
@@ -208,76 +214,89 @@ export default function Forms({ errorForm }: FormProps) {
             );
 
             return {
-                amount: prop?.price ? Number(prop.price * cargo.quantity) : Number(0.00),
+                amount: prop ? Number(prop.price * cargo.quantity) : 0,
                 optionID: prop?.id ?? 0
-            }
+            };
         }
 
-        if(cargo?.cargoType == 'Parcel') {
-            if(!cargo.parcelCategoryID) return { amount: Number(0.00), optionID: 0 };
+        if(cargo.cargoType === 'Parcel') {
+
+            if(!cargo.parcelCategoryID) {
+                return { amount: 0, optionID: 0 };
+            }
 
             prop = cargoProperties.data.cargo_options?.find(
-                c => 
+                c =>
                     c.parcel_category_id == cargo.parcelCategoryID &&
                     c.route_id == routeID
             );
 
             return {
-                amount: prop?.price ? Number(prop.price * cargo.quantity) : Number(0.00),
+                amount: prop ? Number(prop.price * cargo.quantity) : 0,
                 optionID: prop?.id ?? 0
-            }
+            };
         }
 
-        if(cargo?.cargoType == 'Animal/Pet') {
+        if(cargo.cargoType === 'Animal/Pet') {
+
+            const petType = cargoProperties.data.cargo_types?.find(
+                t => t.name === 'Animal/Pet'
+            );
+
             prop = cargoProperties.data.cargo_options?.find(
-                c => c.cargo_type_id == cargoProperties.data.cargo_types?.find(t => t.name == 'Animal/Pet').id &&
-                c.route_id == routeID
+                c =>
+                    c.cargo_type_id == petType?.id &&
+                    c.route_id == routeID
             );
 
             return {
-                amount: prop?.price ? Number(prop.price * cargo.quantity) : Number(0.00),
+                amount: prop ? Number(prop.price * cargo.quantity) : 0,
                 optionID: prop?.id ?? 0
-            }
+            };
         }
 
-        return { amount: 0.00, optionID: 0 };
+        return { amount: 0, optionID: 0 };
     };
 
-    const computedCargoList = useMemo(() => {
-        const paxCargo = passengers.filter((p) => p.hasCargo == true)
-            .flatMap((p, index) => 
-                p.cargo.map((c, cargoIndex) => {
-                const prop = ComputedCargoAmount(c)
+    const computedPassengerCargo = useMemo(() => {
+        return passengers.map((pax) => {
+            if (!pax.cargo || pax.cargo.length === 0) return pax;
 
+            const updatedCargo = pax.cargo.map((cargoItem) => {
+                const { amount, optionID } = ComputedCargoAmount(cargoItem);
                 return {
-                    ...c,
-                    seatNumber: p.seatNumber,
-                    paxIndex: index,
-                    cargoIndex: cargoIndex,
-                    cargoAmount: prop.amount,
-                    cargoOptionID: prop.optionID
+                    ...cargoItem,
+                    cargoAmount: amount,
+                    cargoOptionID: optionID,
                 };
-            }));
+            });
 
-        return paxCargo
+            return { ...pax, cargo: updatedCargo };
+        });
     }, [passengers, cargoProperties, routeID]);
-
-
+    
     useEffect(() => {
-        computedCargoList.forEach((c) => {
-            const passenger = passengers[c.paxIndex]
-            if(!passenger) return;
+        computedPassengerCargo.forEach((pax) => {
+            pax.cargo?.forEach((cargoItem) => {
+                const original = passengers
+                    .find((p) => p.id === pax.id)
+                    ?.cargo?.find((c) => c.id === cargoItem.id);
 
-            const prevCargoProp = passenger.cargo?.[c.cargoIndex];
-            if(!prevCargoProp) return;
+                if (!original) return;
 
-            if(prevCargoProp.cargoAmount != c.cargoAmount || prevCargoProp.cargoOptionID != c.cargoOptionID) {
-                updateCargo(c.id,  c.cargoIndex, 'cargoAmount', c.cargoAmount)
-                updateCargo(c.id,  c.cargoIndex, 'cargoOptionID', c.cargoOptionID)
-            }
+                if (
+                    original.cargoAmount !== cargoItem.cargoAmount ||
+                    original.cargoOptionID !== cargoItem.cargoOptionID
+                ) {
+                    updateCargo(pax.id, pax.cargo.indexOf(cargoItem), 'cargoAmount', cargoItem.cargoAmount);
+                    updateCargo(pax.id, pax.cargo.indexOf(cargoItem), 'cargoOptionID', cargoItem.cargoOptionID);
+                }
+            });
         });
 
-    }, [computedCargoList, passengers])
+    }, [computedPassengerCargo, passengers]);
+
+
 
 
     return (
@@ -341,7 +360,7 @@ export default function Forms({ errorForm }: FormProps) {
                             <View style={{ width: '40%' }}>
                                 <Text style={{ fontSize: 9, fontWeight: 'bold', color: '#545454' }}>Age:</Text>
                                 <View style={{ borderColor: '#B3B3B3', borderWidth: 1, borderRadius: 5 }}>
-                                    <TextInput onChangeText={(text) => updatePassenger(p.id, 'age', Number(text))} keyboardType='numeric' placeholder='Age' style={{ fontSize: 13, fontWeight: '600' }} />
+                                    <TextInput value={String(p?.age ?? '')} onChangeText={(text) => updatePassenger(p.id, 'age', Number(text))} keyboardType='numeric' placeholder='Age' style={{ fontSize: 13, fontWeight: '600' }} />
                                 </View>
                             </View>
                             <View style={{ width: '56%', }}>
@@ -359,13 +378,13 @@ export default function Forms({ errorForm }: FormProps) {
                             <View style={{ width: '40%' }}>
                                 <Text style={{ fontSize: 9, fontWeight: 'bold', color: '#545454' }}>Nationality:</Text>
                                 <View style={{ borderColor: '#B3B3B3', borderWidth: 1, borderRadius: 5 }}>
-                                    <TextInput onChangeText={(text) => updatePassenger(p.id, 'nationality', text)} defaultValue='Filipino' style={{ fontSize: 13, fontWeight: '600' }} />
+                                    <TextInput value={p.nationality ?? 'Filipino'} onChangeText={(text) => updatePassenger(p.id, 'nationality', text)} defaultValue='Filipino' style={{ fontSize: 13, fontWeight: '600' }} />
                                 </View>
                             </View>
                             <View style={{ width: '57.5%' }}>
                                 <Text style={{ fontSize: 9, fontWeight: 'bold', color: '#545454' }}>Address:</Text>
                                 <View style={{ borderColor: '#B3B3B3', borderWidth: 1, borderRadius: 5 }}>
-                                    <TextInput onChangeText={(text) => updatePassenger(p.id, 'address', text)} placeholder='Address' style={{ fontSize: 13, fontWeight: '600' }} />
+                                    <TextInput value={p.address ?? ''} onChangeText={(text) => updatePassenger(p.id, 'address', text)} placeholder='Address' style={{ fontSize: 13, fontWeight: '600' }} />
                                 </View>
                             </View>
                         </View>
@@ -373,11 +392,11 @@ export default function Forms({ errorForm }: FormProps) {
                             <View style={{ width: '40%' }}>
                                 <Text style={{ fontSize: 9, fontWeight: 'bold', color: '#545454' }}>Contact#:</Text>
                                 <View style={{ borderColor: '#B3B3B3', borderWidth: 1, borderRadius: 5 }}>
-                                    <TextInput placeholder='+63' onChangeText={(text) => updatePassenger(p.id, 'contact', text)} style={{ fontSize: 13, fontWeight:'600' }} />
+                                    <TextInput value={p.contact ?? ''} placeholder='+63' onChangeText={(text) => updatePassenger(p.id, 'contact', text)} style={{ fontSize: 13, fontWeight:'600' }} />
                                 </View>
                             </View>
                             <View style={{ flexDirection: 'row' }}>
-                                <TouchableOpacity onPress={() => hasInfantChecker(p.seatNumber!, index, p.hasInfant!, passengerType?.find((i) => i.name == 'Infant')?.id ?? 0 )}
+                                <TouchableOpacity disabled={p.passType == 'Child'} onPress={() => hasInfantChecker(p.seatNumber!, index, p.hasInfant!, passengerType?.find((i) => i.name == 'Infant')?.id ?? 0 )}
                                     style={{ flexDirection: 'row', alignItems: 'center', marginTop: 15 }}>
                                     <Checkbox status={p.hasInfant ? 'checked' : 'unchecked'} color='#cf2a3a' uncheckedColor="#999" />
                                     <Text style={{ fontSize: 13 }}>Infant</Text>

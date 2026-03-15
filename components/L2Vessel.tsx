@@ -70,7 +70,7 @@ const SeatPlan: React.FC<SeatProps> = ({ start, limit, skipPattern = false, lett
                 return(
                     <TouchableOpacity disabled={!!booked || isPassenger || seatSelectionChannel.includes(`${letter}${seat}`)} key={seat} onPress={() => onSeatSelect?.(`${letter}${seat}`, type, accomm_id)} 
                     style={{ width: 33, height: 33, borderColor: '#A9A9B2', borderWidth: 1, borderRadius: 3, 
-                    backgroundColor: booked ? booked.station.color : isPassenger ? '#BA68C8' : touristSeat.includes(`${letter}${seat}`) && !seatSelectionChannel.includes(`${letter}${seat}`) ? '#E6E2C6' : seatSelectionChannel.includes(`${letter}${seat}`) ? '#e6d1e9ff' : 'transparent',
+                    backgroundColor: booked ? booked?.station.color : isPassenger ? '#BA68C8' : touristSeat.includes(`${letter}${seat}`) && !seatSelectionChannel.includes(`${letter}${seat}`) ? '#E6E2C6' : seatSelectionChannel.includes(`${letter}${seat}`) ? '#e6d1e9ff' : 'transparent',
                     alignItems: 'center', justifyContent: 'center', margin: 2 }}>
                         <Text style={{ fontSize: 10.5, fontWeight: 'bold', 
                             color: booked || isPassenger ? '#fff' : seatSelectionChannel.includes(`${letter}${seat}`) ? '#FFFFFF' : '#000' }}>
