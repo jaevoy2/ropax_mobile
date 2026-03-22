@@ -125,13 +125,16 @@ export default function QRScanner() {
 
     if(!permission.granted) {
         return (
-            <SafeAreaView style={[styles.container, { justifyContent: 'center', backgroundColor: '#00000088' }]}>
-                <View style={{ backgroundColor: '#fff',width: '90%', alignSelf: 'center', padding: 20, borderRadius: 8 }}>
+            <SafeAreaView style={[styles.container, { backgroundColor: '#00000088', position: 'relative' }]}>
+                <View style={{ backgroundColor: '#fff',width: '90%', alignSelf: 'center', padding: 20, borderRadius: 20, position: 'absolute', bottom: 50 }}>
                     <Text style={styles.permissionText}>
                         We need access to your camera to scan QR codes.
                     </Text>
                     <TouchableOpacity style={styles.permissionButton} onPress={requestPermission}>
                         <Text style={styles.permissionButtonText}>Grant Permission</Text>
+                    </TouchableOpacity>
+                    <TouchableOpacity onPress={() => router.back()} style={{ paddingVertical: 15, alignSelf: 'center' }}>
+                        <Text style={{ color: '#5a5a5a' }}>Decline</Text>
                     </TouchableOpacity>
                 </View>
             </SafeAreaView>

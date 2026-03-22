@@ -24,6 +24,7 @@ export default function RootLayout() {
                       <Stack.Screen name="summary" options={{ headerShown: false }} />
                       <Stack.Screen name="bookingInfo" options={{ headerShown: false }} />
                       <Stack.Screen name="scanner" options={{ headerShown: false }} />
+                      <Stack.Screen name="bookingForm" options={{ headerShown: false }} />
                       
                       <Stack.Screen name="expenses" options={{ headerShown: false }} />
                       <Stack.Screen name="addExpenses" options={{ headerShown: false }} />

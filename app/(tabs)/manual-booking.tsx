@@ -7,6 +7,7 @@ import { usePassengers } from "@/context/passenger";
 import { useTrip } from "@/context/trip";
 import { seatRemoval } from "@/utils/channel";
 import { Ionicons, MaterialCommunityIcons } from "@expo/vector-icons";
+import AsyncStorage from '@react-native-async-storage/async-storage';
 import { router } from 'expo-router';
 import { useEffect, useRef, useState } from "react";
 import { ActivityIndicator, Alert, Animated, AppState, Dimensions, Modal, RefreshControl, ScrollView, Text, TouchableOpacity, View } from "react-native";
@@ -62,7 +63,7 @@ const bookingTypes = [
 ];
 
 export default function ManualBooking() {
-    const { id, vessel, routeID, setRouteID, setVessel, setID, setOrigin, setDestination, setVesselID, setCode, setWebCode, setDepartureTime, setMobileCode, setIsCargoable } = useTrip();
+    const { id, setRouteID, setVessel, setID, setOrigin, setDestination, setVesselID, setCode, setWebCode, setDepartureTime, setMobileCode, setIsCargoable } = useTrip();
     const { passengers, clearPassengers } = usePassengers();
     const { setCargoProperties } = useCargo();
     const [bookingType, setBookingType] = useState<string>('Walk-In');
@@ -269,8 +270,17 @@ export default function ManualBooking() {
         }
     }
 
-    const handleSaveTrip = (vesselName: string, trip_id: number, routeId: number, origin: string, destination: string, mobileCode: string, code: string, web_code: string, departureTime: string, vesselID: number, cargoable: number) => {
-        setLoading(true);          
+    const handleSaveTrip = async (vesselName: string, trip_id: number, routeId: number, origin: string, destination: string, mobileCode: string, code: string, web_code: string, departureTime: string, vesselID: number, cargoable: number) => {
+        setLoading(true);
+        
+        const stationID = await AsyncStorage.getItem('stationID');
+
+        if(!stationID) {
+            setLoading(false)
+            Alert.alert('Invalid', 'Station is not set yet.');
+            return;
+        }
+        
         setTimeout(() => {
             if(trip_id != id) {
                 passengers.forEach( passenger => {
@@ -372,7 +382,7 @@ export default function ManualBooking() {
 
 
     return (
-        <GestureHandlerRootView style={{ backgroundColor: '#f1f1f1', height: height, position: 'relative' }}>
+        <GestureHandlerRootView style={{ backgroundColor: '#fdfdfd', height: height, position: 'relative' }}>
             {calendar && (
                 <Modal transparent animationType="slide" onRequestClose={() => setCalendar(false)} >
                     <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center', backgroundColor: 'rgba(0, 0, 0, 0.5)' }}>
@@ -448,7 +458,7 @@ export default function ManualBooking() {
                                 <>
                                     { trips && trips.filter(t => t.hasDeparted == false).map((trip) => (
                                         <TouchableOpacity onPress={() => handleSaveTrip(trip.vessel, trip.trip_id, trip.route_id, trip.route_origin, trip.route_destination, trip.mobile_code, trip.code, trip.web_code, trip.departure_time, trip.vessel_id, trip.isCargoable)}
-                                            key={trip.trip_id} style={{ paddingHorizontal: 15, paddingVertical: 20, backgroundColor: '#fff', borderRadius: 10, marginTop: 12, flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' }}>
+                                            key={trip.trip_id} style={{ paddingHorizontal: 15, elevation: 5, paddingVertical: 20, backgroundColor: '#fff', borderRadius: 10, marginTop: 12, flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' }}>
                                             <View style={{ width: '78%' }}>
                                                 <Text style={{ fontWeight: 'bold', fontSize: 13, color: '#cf2a3a' }}>{`${trip.departure}`}</Text>
                                                 <Text style={{ fontWeight: 'bold', fontSize: 13 }}>{`${trip.route_origin}  >  ${trip.route_destination} [ ${trip.vessel} ]`}</Text>

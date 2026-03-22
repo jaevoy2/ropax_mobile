@@ -26,7 +26,7 @@ export const bookingStatuses = [
     { id: 3, label: 'Completed', color: '#19B87E', bgColor: '#19b87e34', icon: 'sail-boat' },
     { id: 4, label: 'Expired' , color: '#ffc107', bgColor: 'rgba(255, 193, 7, 0.15)', icon: 'alert' },
     { id: 5, label: 'Refunded', color: '#0dcaf0', bgColor: 'rgba(13, 202, 240, 0.15)', icon: 'cash-check' },
-    { id: 6, label: 'Cancelled', color: '#dc3545', brColor: 'rgba(220, 53, 69, 0.15)', icon: 'book-cancel-outline' }
+    { id: 6, label: 'Cancelled', color: '#dc3545', bgColor: 'rgba(220, 53, 69, 0.15)', icon: 'book-cancel-outline' }
 ]
 
 
@@ -42,7 +42,7 @@ export default function ManageBooking() {
 
     useFocusEffect(
         useCallback(() => {
-            const today = new Date;
+            const today = new Date();
             const options: Intl.DateTimeFormatOptions = {
                 year: 'numeric',
                 month: 'long',
@@ -80,30 +80,28 @@ export default function ManageBooking() {
             const response = await FetchManageBookingList(dateString, search)
             
             if(!response.error) {
-                if(response.data.length > 0) {
-                    const paxData: PaxBookingProps[] = response.data.map((passenger: any) => ({
-                        id: passenger.id,
-                        name: `${passenger.first_name} ${passenger.last_name}`,
-                        departureDate: new Date(passenger.bookings.find((c: any) => c.trip_schedule).trip_schedule.specific_days).toLocaleDateString('en-US', {
-                            year: 'numeric',
-                            month: 'long',
-                            day: 'numeric'
-                        }),
-                        departureTime: new Date(`1970-01-01T${passenger.bookings.find((t: any) => 
-                            t.trip_schedule)?.trip_schedule.trip.departure_time}`).toLocaleTimeString('en-US', {
-                            hour: 'numeric',
-                            minute: '2-digit',
-                            hour12: true
-                        }),
-                        route: passenger.bookings.find((t: any) => t.trip_schedule)?.trip_schedule.trip.route.mobile_code,
-                        vessel: passenger.bookings.find((t: any) => t.trip_schedule)?.trip_schedule.trip.vessel?.code,
-                        referenceNumber: passenger.bookings.find((r: any) => r.reference_no).reference_no,
-                        bookingStatus: passenger.bookings.find((s: any) => s.status_id)?.status_id ?? 0,
-                        bookingId: passenger.bookings.find((booking: any) => booking.id)?.id,
-                        paxType: passenger.passenger_type?.name
-                    }))
-                    setPassengers(paxData)
-                }
+                const paxData: PaxBookingProps[] = response.data.map((passenger: any) => ({
+                    id: passenger.id,
+                    name: `${passenger.first_name} ${passenger.last_name}`,
+                    departureDate: new Date(passenger.bookings.find((c: any) => c.trip_schedule).trip_schedule.specific_days).toLocaleDateString('en-US', {
+                        year: 'numeric',
+                        month: 'long',
+                        day: 'numeric'
+                    }),
+                    departureTime: new Date(`1970-01-01T${passenger.bookings.find((t: any) => 
+                        t.trip_schedule)?.trip_schedule.trip.departure_time}`).toLocaleTimeString('en-US', {
+                        hour: 'numeric',
+                        minute: '2-digit',
+                        hour12: true
+                    }),
+                    route: passenger.bookings.find((t: any) => t.trip_schedule)?.trip_schedule.trip.route.mobile_code,
+                    vessel: passenger.bookings.find((t: any) => t.trip_schedule)?.trip_schedule.trip.vessel?.code,
+                    referenceNumber: passenger.bookings.find((r: any) => r.reference_no).reference_no,
+                    bookingStatus: passenger.bookings.find((s: any) => s.status_id)?.status_id ?? 0,
+                    bookingId: passenger.bookings.find((booking: any) => booking.id)?.id,
+                    paxType: passenger.passenger_type?.name
+                }))
+                setPassengers(paxData)
             }
         }catch (error: any) {
             Alert.alert('Error', error.message)
@@ -155,7 +153,7 @@ export default function ManageBooking() {
     const PassengerItem = React.memo(({ paxDatas }: { paxDatas: PaxBookingProps }) => {
         return (
             <TouchableOpacity onPress={() => router.push( `/bookingInfo?bookingId=${paxDatas.bookingId}&paxId=${paxDatas.id}&refNum=${paxDatas.referenceNumber}` )} 
-                style={{ minHeight: 90, maxHeight: 100, borderColor: '#dadadaff', elevation: 2, borderWidth: 1, backgroundColor: '#fff', borderRadius: 8, padding: 8, marginBottom: 10 }}>
+                style={{ minHeight: 90, maxHeight: 100, borderColor: '#dadadaff', elevation: 5, borderWidth: 1, backgroundColor: '#fff', borderRadius: 8, padding: 8, marginBottom: 10 }}>
                 <View style={{ borderBottomColor: '#dadadaff', borderBottomWidth: 1, flexDirection: 'row', alignItems: 'flex-end', justifyContent: 'space-between', marginBottom: 5, paddingBottom: 8 }}>
                     <Text style={{ fontWeight: 'bold', fontSize: 17, width: '50%' }}>{paxDatas?.name}</Text>
                     <View style={{ flexDirection: 'column', alignItems: 'flex-end' }}>
@@ -175,7 +173,7 @@ export default function ManageBooking() {
     })
 
     return (
-        <GestureHandlerRootView style={{ flex: 1, backgroundColor: '#f7f7f7' }}>
+        <GestureHandlerRootView style={{ flex: 1, backgroundColor: '#fdfdfd' }}>
             {calendarVisible && (
                 <Modal transparent animationType="slide" onRequestClose={() => setCalendarVisible(false)} >
                     <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center', backgroundColor: 'rgba(0, 0, 0, 0.5)' }}>
@@ -229,7 +227,7 @@ export default function ManageBooking() {
                                     <Text style={{ fontWeight: 'bold', fontSize: 18 }}>Bookings</Text>
                                     {/* <Text style={{ fontSize: 15, fontWeight: 'bold' }}>{formattedDate}</Text> */}
                                 </View>
-                                <FlatList data={PassengerLists.reverse()} keyExtractor={(passengers) => String(passengers.id)} showsVerticalScrollIndicator={false}
+                                <FlatList data={[...PassengerLists].reverse()} keyExtractor={(passengers) => String(passengers.id)} showsVerticalScrollIndicator={false}
                                     refreshControl={<RefreshControl refreshing={loading} onRefresh={() => handleRefresh()} colors={['#cf2a3a']} />}
                                     renderItem={({ item: passengerDatas }) => <PassengerItem paxDatas={passengerDatas}/>}
                                     getItemLayout={(passengerDatas, index) => ({

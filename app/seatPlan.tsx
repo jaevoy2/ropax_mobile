@@ -1,8 +1,8 @@
 import { FetchTotalBookings } from "@/api/totalBookings";
+import Forms from "@/components/forms";
 import L2Vessel from "@/components/L2Vessel";
 import SRVessel from "@/components/srVessel";
 import { useCargo } from "@/context/cargoProps";
-import Forms from "@/context/forms";
 import { usePassengers } from "@/context/passenger";
 import { usePassesType } from "@/context/passes";
 import { useTrip } from "@/context/trip";
@@ -10,7 +10,6 @@ import { seatRemoval } from "@/utils/channel";
 import { Ionicons, MaterialCommunityIcons } from "@expo/vector-icons";
 import BottomSheet, { BottomSheetBackdrop, BottomSheetScrollView } from '@gorhom/bottom-sheet';
 import * as Crypto from 'expo-crypto';
-import { LinearGradient } from "expo-linear-gradient";
 import { router } from "expo-router";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { ActivityIndicator, Alert, Dimensions, Image, KeyboardAvoidingView, Platform, ScrollView, Text, TextInput, TouchableOpacity, View } from "react-native";
@@ -23,9 +22,9 @@ const icon = require('@/assets/images/logo_icon.png');
 const text_logo = require('@/assets/images/logo.png');
 
 export default function SeatPlan() {
+    const { passengers, setPassengers } = usePassengers();
     const { id, vessel, destination, origin, setTotalFare, totalFare } = useTrip();
     const { passesTypeID, passesTypeCode, passesTypeName } = usePassesType();
-    const { passengers, setPassengers } = usePassengers();
     const { paxCargoProperty } = useCargo();
     const [year, setYear] = useState('');
     const [formLoading, setFormLoading] = useState(false);
@@ -40,7 +39,7 @@ export default function SeatPlan() {
     const seatSheetRef = useRef<BottomSheet>(null);
     const passesSheetRef = useRef<BottomSheet>(null);
 
-    const seatSnapPoints = useMemo(() => ["26%","35%", "45%", "55%", "65%", "70%", "90%"], []);
+    const seatSnapPoints = useMemo(() => ["26%","35%", "45%", "55%", "65%", "70%", "95%"], []);
     const passesSnapPoints = useMemo(() => ["90%"], []);
 
     useEffect(() => {
@@ -55,11 +54,10 @@ export default function SeatPlan() {
         }else {
             setPassesIsHidden(false);
         }
-    }, [passengers.length]);
+    }, [passengers]);
 
-    useEffect(() => {
-        console.log(passengers[0])
-        const totalFare = passengers.reduce((sum, p) => {
+    const computedFare = useMemo(() => {
+        return passengers.reduce((sum, p) => {
             const passengerFare = Number(p.fare || 0);
 
             const cargoTotal = (p.cargo ?? []).reduce((cargoSum, c) => {
@@ -69,16 +67,20 @@ export default function SeatPlan() {
             return sum + passengerFare + cargoTotal;
         }, 0);
 
-        setTotalFare(totalFare);
     }, [passengers, paxCargoProperty]);
 
-    const handleSeatSelect = () => {
-        if(passengers.length == 0 || (passengers.length == 1 && passengers.some(p => p.hasCargo == true))) {
+    useEffect(() => {
+        setTotalFare(computedFare)
+    }, [computedFare])
+
+    
+    const handleSeatSelect = useCallback(() => {
+        if(passengers.length == 0) {
             seatSheetRef.current?.snapToIndex(0);
         }
-    }
+    }, [passengers])
 
-    const handleRemoveSeat = (seat: number | string, paxId: string | number) => {
+    const handleRemoveSeat =  useCallback((seat: number | string, paxId: string | number) => {
         if (!seat) return;
 
         if (errorForm.includes(seat)) {
@@ -107,7 +109,7 @@ export default function SeatPlan() {
 
             return updatedPassengers;
         });
-    };
+    }, [id, errorForm, setPassengers]);
 
     const handleForceSeatRemoval = () => {
         passengers.forEach(paxSeat => {
@@ -321,30 +323,24 @@ export default function SeatPlan() {
         }
 
     return (
-        <GestureHandlerRootView style={{ flex: 1 }}>
+        <GestureHandlerRootView style={{ flex: 1, backgroundColor: '#cf2a3a' }}>
             <View style={{ height: '100%', overflow: 'hidden' }}>
-                <LinearGradient
-                    colors={[
-                        'rgba(214, 48, 65, 1)',
-                        'rgba(228, 80, 80, 0.8)',
-                        'rgba(228, 80, 80, 0.52)', 
-                        'rgba(253, 0, 0, 0.15)',
-                ]} style={{ zIndex: -1, height: '100%', width: width }} />
-                
-                <TouchableOpacity onPress={() => {router.back(), handleForceSeatRemoval()}} style={{ position: 'absolute', left: 20, top: 50, zIndex: 1 }}>
-                    <Ionicons name={'arrow-back'} size={30} color={'#fff'} />
-                </TouchableOpacity>
-                <TouchableOpacity disabled={passengers.length > 0 && passengers.some(p => p.hasCargo == false)} onPress={() => handlePassesForm()} style={{ position: 'absolute', right: 20, top: 50, zIndex: 1, opacity: passesIsHidden == true ?0 : 1 }}>
-                    <MaterialCommunityIcons name={'account-arrow-right'} size={30} color={'#fff'} />
-                </TouchableOpacity>
+                <View style={{ height: 100, flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', paddingHorizontal: 20, paddingTop: 20 }}>
+                    <TouchableOpacity onPress={() => {router.back(), handleForceSeatRemoval()}} style={{ zIndex: 1 }}>
+                        <Ionicons name={'arrow-back'} size={30} color={'#fff'} />
+                    </TouchableOpacity>
+                    <TouchableOpacity disabled={passengers.length > 0 && passengers.some(p => p.hasCargo == false)} onPress={() => handlePassesForm()} style={{ opacity: passesIsHidden == true ?0 : 1 }}>
+                        <MaterialCommunityIcons name={'account-arrow-right'} size={30} color={'#fff'} />
+                    </TouchableOpacity>
+                </View>                
 
                 <View style={{ position: 'absolute', paddingTop: 50, width: width, flex: 1 }}>
-                    <Text style={{ textAlign: 'center', color: '#fff', fontSize: 18, fontWeight: 'bold' }}>{vessel}</Text>
+                    <Text style={{ color: '#fff', fontSize: 16, fontWeight: 'bold', alignSelf: 'center', textAlign: 'center' }}>{vessel}</Text>
                     <Text style={{ textAlign: 'center', color: '#fff', fontSize: 10 }}>Vessel Seat Plan</Text>
                     <View style={{ paddingTop: 10, height: height - 60 }}>
                         <ScrollView style={{ height: '100%' }} contentContainerStyle={{ paddingBottom: 20 }}>
-                            <Image source={deck} style={{ opacity: 0.5, width: '100%', height: height + 620, marginLeft: -3 }} />
-                            <View style={{ height: 300, width: '95%', zIndex: 5, position: 'absolute', left: '50%', transform: [{ translateX: '-50%' }], alignItems: 'center', }}>
+                            <Image source={deck} style={{ opacity: 0.5, width: '100%', height: height + 620, alignSelf: 'center', tintColor: '#ffffff' }} />
+                            <View style={{ height: 300, width: '95%', zIndex: 5, position: 'absolute', alignSelf: 'center', alignItems: 'center', }}>
                                 <Image source={icon} style={{ width: 41, height: 40, marginTop: 40 }} />
                                 <Image source={text_logo} style={{ width: 120, height: 28, marginTop: 10 }} />
                                 <Text style={{ fontSize: 15, fontWeight: '900', color: '#cf2a3a', marginTop: 20 }}>{totalBookings} TOTAL PAYING PASSENGERS</Text>
@@ -359,7 +355,7 @@ export default function SeatPlan() {
                                         <Text style={{ fontSize: 12, fontWeight: 'bold' }}>{destination}</Text>
                                     </View>
                                 </View>
-                                <View>
+                                <View style={{ alignSelf: 'center' }}>
                                     {vessel == 'Mbca Leopards Sea Runner' || vessel == 'Sea Runner' ? (
                                         <SRVessel onSeatSelect={handleSeatSelect} />
                                     ) : (
@@ -374,11 +370,11 @@ export default function SeatPlan() {
                 {!passengers.some((p) => p.passType == 'Passes') && passengers.some((p) => p.seatNumber != null) && (
                     <BottomSheet ref={seatSheetRef} snapPoints={seatSnapPoints} index={passengers.length > 0 ? 0 : -1} bottomInset={1} backdropComponent={renderBottomSheetBackdrop} enableHandlePanningGesture={false} enableContentPanningGesture={false}  handleIndicatorStyle={{ display: 'none' }} >
                         <View style={{ flexDirection:'row', justifyContent: 'space-between', alignItems: 'center', paddingTop: 5, paddingHorizontal: 10 }}>
-                            <Text style={{ fontSize: 10, fontWeight: "bold" }}>Seat# selected</Text>
+                            <Text style={{ fontSize: 14, fontWeight: "bold" }}>Seat# selected</Text>
                             {isFormVisible == true && (
                                 <TouchableOpacity onPress={() => handleSeatChange()} style={{ flexDirection: 'row', alignItems: 'center', gap: 2 }}>
                                     <Ionicons name="swap-horizontal" size={20} color={'#cf2a3a'} />
-                                    <Text style={{ color: '#cf2a3a', fontSize: 11, fontWeight: 'bold' }}>Change Seat</Text>
+                                    <Text style={{ color: '#cf2a3a', fontSize: 14, fontWeight: 'bold' }}>Change Seat</Text>
                                 </TouchableOpacity>
                             )}
                         </View>
@@ -407,8 +403,9 @@ export default function SeatPlan() {
                                 <View style={{ flexDirection: 'column', alignItems: 'flex-end' }}>
                                     <Text style={{ fontSize: 9, fontWeight: '900', color: '#cf2a3a' }}>Total Fare:</Text>
                                     <View style={{ borderColor: '#cf2a3a', backgroundColor: '#cf2a3b1a', borderWidth: 2, borderRadius: 5, flexDirection: 'row', alignItems: 'center', paddingHorizontal: 15 }}>
-                                        <Text style={{ fontSize: 16 }}>₱</Text>
-                                        <TextInput value={String(totalFare != 0 ? totalFare.toLocaleString('en-PH', { minimumFractionDigits: 2, maximumFractionDigits: 2 }) : '')} onChangeText={(text) => setTotalFare(Number(text))} placeholder='00.00' style={{ fontWeight: 'bold', textAlign: 'right' }} keyboardType={'numeric'} />
+                                        <Text style={{ fontSize: 18, color: '#cf2a3a', fontWeight: '900' }}>₱</Text>
+                                        <TextInput value={String(totalFare != 0 ? totalFare.toLocaleString('en-PH', { minimumFractionDigits: 2, maximumFractionDigits: 2 }) : '')}
+                                            onChangeText={(text) => setTotalFare(Number(text))} placeholder='00.00' style={{ fontWeight: '900', textAlign: 'right', color: '#cf2a3a', fontSize: 17 }} keyboardType={'numeric'} />
                                     </View>
                                 </View>
                             </View>
@@ -432,7 +429,7 @@ export default function SeatPlan() {
                                         </View>
                                 )}
                                 {isFormVisible == false ? (
-                                    <TouchableOpacity onPress={() => onFormView()} disabled={passengers.length == 0} style={{ backgroundColor: passengers.length == 0 ? '#df5a68ff' : '#cf2a3a', width: '100%', alignSelf: 'center', borderRadius: 8, paddingVertical: 15, marginTop: 15 }}>
+                                    <TouchableOpacity onPress={() => router.push('/bookingForm')} disabled={passengers.length == 0} style={{ backgroundColor: passengers.length == 0 ? '#df5a68ff' : '#cf2a3a', width: '100%', alignSelf: 'center', borderRadius: 8, paddingVertical: 15, marginTop: 15 }}>
                                         <Text style={{ fontSize: 16, fontWeight: 'bold', textAlign: 'center', color: '#fff' }}>Continue</Text>
                                     </TouchableOpacity>
                                 ) : (
@@ -465,13 +462,13 @@ export default function SeatPlan() {
                         <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'flex-end', marginVertical: 15, paddingHorizontal: 10 }}>
                             <View style={{ flexDirection: 'column', alignItems: 'flex-start' }}>
                                 <Text style={{ fontSize: 11 }}>Reference#:</Text>
-                                <Text style={{ fontWeight: '900', fontSize: 14, color: '#cf2a3a' }}>LMBS-000000-{year}{origin?.charAt(0)}{destination?.charAt(0)}</Text>
+                                <Text style={{ fontWeight: '900', fontSize: 14, color: '#cf2a3a' }}>LMBS000000{year}{origin?.charAt(0)}{destination?.charAt(0)}</Text>
                             </View>
                             <View style={{ flexDirection: 'column', alignItems: 'flex-end' }}>
                                 <Text style={{ fontSize: 9, fontWeight: '900', color: '#cf2a3a' }}>Total Fare:</Text>
                                 <View style={{ borderColor: '#cf2a3a', backgroundColor: '#cf2a3b1a', borderWidth: 2, borderRadius: 5, flexDirection: 'row', alignItems: 'center', paddingHorizontal: 15 }}>
-                                    <Text style={{ fontSize: 16 }}>₱</Text>
-                                    <TextInput value={String(totalFare != 0 ? totalFare.toString() : '')} onChangeText={(text) => setTotalFare(Number(text))} placeholder='00.00' style={{ fontWeight: 'bold', textAlign: 'right' }} keyboardType={'numeric'} />
+                                    <Text style={{ fontSize: 16, color: '#cf2a3a' }}>₱</Text>
+                                    <TextInput value={String(totalFare != 0 ? totalFare.toString() : '')} onChangeText={(text) => setTotalFare(Number(text))} placeholder='00.00' style={{ fontWeight: '900', textAlign: 'right' }} keyboardType={'numeric'} />
                                 </View>
                             </View>
                         </View>

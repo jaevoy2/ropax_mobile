@@ -592,11 +592,14 @@ export default function BookingInfo() {
                             </View>
                         </View>
                         <View style={{ paddingHorizontal: 20, marginTop: 10 }}>
-                            <TouchableOpacity onPress={() => handleSelectAll()} style={{ flexDirection: 'row', alignItems: 'center' }}>
-                                <Checkbox status={selectAll ? 'checked' : 'unchecked'} color='#cf2a3a' uncheckedColor="#999" />
-                                <Text style={{ color: selectAll ? '#cf2a3a' : '#999' }}>Select All</Text>
-                            </TouchableOpacity>
-                            <View style={{ flexDirection: 'row', flexWrap: 'wrap' }}>
+                            <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', borderBottomColor: '#dadada', borderBottomWidth: 1 }}>
+                                <Text style={{ color: '#5a5a5a' }}>Passenger/s</Text>
+                                <TouchableOpacity onPress={() => handleSelectAll()} style={{ flexDirection: 'row', alignItems: 'center' }}>
+                                    <Checkbox status={selectAll ? 'checked' : 'unchecked'} color='#cf2a3a' uncheckedColor="#999" />
+                                    <Text style={{ color: selectAll ? '#cf2a3a' : '#999' }}>Select All</Text>
+                                </TouchableOpacity>
+                            </View>
+                            <View style={{ flexDirection: 'row', flexWrap: 'wrap', marginTop: 5 }}>
                                 {paxInfo.map((p: any) => (
                                     <TouchableOpacity key={p.id} onPress={() => handleCancelPax(p.id)} style={{ flexDirection: 'row', alignItems: 'center' }}>
                                         <Checkbox status={p.forCancel == true ? 'checked' : 'unchecked'} color='#cf2a3a' uncheckedColor="#999" />
