@@ -325,7 +325,7 @@ export default function Forms({ errorForm }: FormProps) {
                             </TouchableOpacity>
                         )}
                         <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' }}>
-                            {passengers.some((p) => p.passType != 'Passes') && (
+                            {p.passType != 'Passes' && (
                                 <View style={{ flexDirection: 'column', alignItems: 'flex-start' }}>
                                     <Text style={{ color: '#cf2a3a', fontSize: 11, fontWeight: '900' }}>{p.accommodation} Seat#</Text>
                                     <Text style={{ textAlign: 'center', fontWeight: 'bold', fontSize: 18, color: '#cf2a3a', borderColor: '#cf2a3a', backgroundColor: '#cf2a3b1a', borderWidth: 1, paddingVertical: 5, paddingHorizontal: 25, borderRadius: 5 }}>
@@ -342,7 +342,7 @@ export default function Forms({ errorForm }: FormProps) {
                                 </View>
                             </View>
                         </View>
-                        {!passengers.some((p) => p.passType == 'Passes') && (
+                        {p.passType != 'Passes' && (
                             <View style={{ flexDirection: 'column', alignItems: 'flex-start', marginTop: 10, gap: 5 }}>
                                 <Text style={{ fontSize: 12, fontWeight: 'bold', color: '#545454' }}>Type:</Text>
                                 <View style={{ flexDirection: 'row', flexWrap: 'wrap', gap: 5 }}>

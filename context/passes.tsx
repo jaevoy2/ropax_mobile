@@ -22,9 +22,9 @@ export function PassesTypeProvider({ children }: { children: ReactNode }) {
         const passesType = async () => {
             try {
                 const response = await FetchPassengerType();
-    
+
                 if(response) {
-                    const passergerType = response.data.find((type: any) => type.name == 'Passes' || type.code == 'P');
+                    const passergerType = response.types.find((type: any) => type.name == 'Passes' || type.code == 'P');
 
                     if(passergerType) {
                         setPassesTypeID(passergerType.id);

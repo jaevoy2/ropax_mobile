@@ -11,6 +11,7 @@ import { ActivityIndicator, Alert, Dimensions, Image, Modal, ScrollView, Text, T
 import QRCode from 'react-native-qrcode-svg';
 import { captureRef } from 'react-native-view-shot';
 
+
 const logo_text = require('@/assets/images/logo.png');
 const logo_icon = require('@/assets/images/logo_icon.png');
 const { height, width } = Dimensions.get('window');
@@ -54,7 +55,8 @@ export default function TicketGenerator() {
 
             const snapshotUri: string = await captureRef(viewRef, {
                 format: 'png',
-                quality: 1
+                quality: 1,
+                width: 384
             });
 
             const cacheUri: string = `${FileSystem.cacheDirectory}.ticket.png`;
@@ -102,7 +104,7 @@ export default function TicketGenerator() {
             </TouchableOpacity>
             <View style={{ position: 'relative', height: '80%', top: -70 }}>
                 <ScrollView style={{ flex: 1 }}>
-                    <View ref={viewRef} style={{ backgroundColor: '#fff', left: '50%', transform: [{ translateX: '-50%' }], width: '85%', borderRadius: 10, padding: 10 }}>
+                    <View ref={viewRef} style={{ backgroundColor: '#fff', left: '50%', transform: [{ translateX: '-50%' }], width: '90%', borderRadius: 10, padding: 10 }}>
                         <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', paddingVertical: 5, borderBottomWidth: 1, borderBlockColor: '#9B9B9B' }}>
                             <View style={{ flexDirection: 'row', alignItems: 'center', gap: 5 }}>
                                 <Image source={logo_icon} style={{ width: 38, height: 37 }} />
@@ -148,8 +150,8 @@ export default function TicketGenerator() {
                                         )}
                                     </View>
                                 
-                                    <View style={{ paddingVertical: 5, marginTop: 5 }}>
-                                        <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', marginBottom: 3 }}>
+                                    <View style={{ paddingVertical: 5 }}>
+                                        <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', marginBottom: 3, borderBottomColor: '#9B9B9B', borderBottomWidth: 1, paddingBottom: 5 }}>
                                             <Text style={{ fontSize: 14, width: '40%', fontWeight: '700' }}>Name:</Text>
                                             <Text style={{ fontSize: 14, width: 50, fontWeight: '700' }}>Type:</Text>
                                             <Text style={{ fontSize: 14, fontWeight: '700', width: 50, }}>Seat#:</Text>

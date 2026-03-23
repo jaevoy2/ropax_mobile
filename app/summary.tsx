@@ -128,12 +128,12 @@ export default function PaymentSummary() {
                                         <Text style={{ color: '#646464', fontSize: 13, }}>Cash Tendered</Text>
                                         <View style={{ flexDirection: 'row', alignItems: 'center', gap: 5, borderBottomColor: "#cf2a3a", borderBottomWidth: 1 }}>
                                             <Text style={{ fontSize: 20, fontWeight: '600' }}>₱</Text>
-                                            <TextInput onChangeText={(text) => setPassCashTendered(Number(text))} keyboardType={'numeric'} placeholder='0.00' style={{ width: 80, fontSize: 16, height: 40, backgroundColor: '#fafafa', textAlign: 'right', paddingHorizontal: 3, borderColor: '#fafafa' }} />
+                                            <TextInput onChangeText={(text) => setPassCashTendered(Number(text))} keyboardType={'numeric'} placeholder='0.00' style={{ width: 100, fontSize: 20, height: 45, fontWeight: 'bold', backgroundColor: '#fafafa', textAlign: 'right', paddingHorizontal: 3, borderColor: '#fafafa' }} />
                                         </View>
                                     </View>
                                     <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' }}>
-                                        <Text style={{ color: '#646464', fontSize: 13, }}>Change</Text>
-                                        <Text style={{ fontSize: 18, fontWeight: '800', color: '#cf2a3a' }}>₱ {cashTendered != 0 ? fareChange?.toFixed(2) : '00.00'}</Text>
+                                        <Text style={{ color: '#646464', fontSize: 14, }}>Change</Text>
+                                        <Text style={{ fontSize: 20, fontWeight: '800', color: '#cf2a3a' }}>₱ {cashTendered != 0 ? fareChange?.toFixed(2) : '00.00'}</Text>
                                     </View>
                                 </View>
                             </View>
@@ -159,7 +159,7 @@ export default function PaymentSummary() {
                                                     </View>
                                                     <View style={{ flexDirection: 'column', alignItems: 'flex-end' }}>
                                                         <Text style={{ color: '#646464', fontSize: 10, }}>Fare</Text>
-                                                        <Text style={{ fontSize: 13, fontWeight: '800', color: '#cf2a3a' }}>₱ {Number(pax?.fare).toFixed(2)}</Text>
+                                                        <Text style={{ fontSize: 13, fontWeight: '800', color: '#cf2a3a' }}>₱ {Number(pax?.fare ?? 0).toFixed(2)}</Text>
                                                     </View>
                                                 </View>
                                                 {pax.infant && pax.infant.length > 0 && pax.infant.map((inf: any, index: number) => (

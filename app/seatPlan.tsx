@@ -33,7 +33,6 @@ export default function SeatPlan() {
     const [totalBookings, setTotalBookings] = useState<number>(0);
     const [saveloading, setSaveLoading] = useState(false);
     const [errorForm, setErrorForm] = useState<(string | number)[]>([]);
-    const [currentSheetIndex, setCurrentSheetIndex] = useState(null);
     const [passesIsHidden, setPassesIsHidden] = useState(false);
 
     const seatSheetRef = useRef<BottomSheet>(null);
@@ -134,22 +133,6 @@ export default function SeatPlan() {
         seatSheetRef.current?.snapToIndex(0);
     }
 
-    const onFormView = () => {
-        if(passengers.some(p => p.seatNumber == '' && (p.passType != 'Passes' || 'Infant'))) {
-            Alert.alert('Invalid', 'Please select passenger seat number');
-            return;
-        }
-
-        setFormLoading(true);
-        setIsFormVisible(true);
-        
-        const index = seatSnapPoints.length - 1;
-        seatSheetRef.current?.snapToIndex(index);
-        setCurrentSheetIndex(index);
-        setTimeout(() => {
-            setFormLoading(false);
-        }, 300);
-    }
 
     const handlePassesForm = () => {
         setPassesFormLoading(true);
@@ -172,7 +155,6 @@ export default function SeatPlan() {
     }
 
     const handleSave = () => {
-        console.log(passengers)
         setSaveLoading(true);
         setErrorForm([]);
 
@@ -394,55 +376,10 @@ export default function SeatPlan() {
                                 ))}
                             </View>
                         </View>
-                        {isFormVisible == true && (
-                            <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'flex-end', marginVertical: 15, paddingHorizontal: 10 }}>
-                                <View style={{ flexDirection: 'column', alignItems: 'flex-start' }}>
-                                    <Text style={{ fontSize: 11 }}>Reference#:</Text>
-                                    <Text style={{ fontWeight: '900', fontSize: 14, color: '#cf2a3a' }}>LMBS000000{year}{origin?.charAt(0)}{destination?.charAt(0)}</Text>
-                                </View>
-                                <View style={{ flexDirection: 'column', alignItems: 'flex-end' }}>
-                                    <Text style={{ fontSize: 9, fontWeight: '900', color: '#cf2a3a' }}>Total Fare:</Text>
-                                    <View style={{ borderColor: '#cf2a3a', backgroundColor: '#cf2a3b1a', borderWidth: 2, borderRadius: 5, flexDirection: 'row', alignItems: 'center', paddingHorizontal: 15 }}>
-                                        <Text style={{ fontSize: 18, color: '#cf2a3a', fontWeight: '900' }}>₱</Text>
-                                        <TextInput value={String(totalFare != 0 ? totalFare.toLocaleString('en-PH', { minimumFractionDigits: 2, maximumFractionDigits: 2 }) : '')}
-                                            onChangeText={(text) => setTotalFare(Number(text))} placeholder='00.00' style={{ fontWeight: '900', textAlign: 'right', color: '#cf2a3a', fontSize: 17 }} keyboardType={'numeric'} />
-                                    </View>
-                                </View>
-                            </View>
-                        )}
 
-                        <KeyboardAvoidingView style={{ flex: 1, paddingBottom: 100 }} behavior={Platform.OS === 'android' ? "padding" : 'height'}>
-                            <BottomSheetScrollView contentContainerStyle={{ paddingHorizontal: 10, paddingBottom: 10 }} showsVerticalScrollIndicator={true}>
-                                {isFormVisible == true && (
-                                        <View style={{ position: 'relative' }}>
-                                            {formLoading == true ? (
-                                                <View style={{ height: '80%', justifyContent: 'center', alignItems: 'center',  }}>
-                                                    <ActivityIndicator size={'large'} color={'#cf2a3a'} />
-                                                </View>
-                                            ) : (
-                                                <View style={{ flex: 1 }}>
-                                                    <ScrollView style={{ paddingBottom: 30 }}>
-                                                        <Forms errorForm={errorForm} />
-                                                    </ScrollView>
-                                                </View>
-                                            )}
-                                        </View>
-                                )}
-                                {isFormVisible == false ? (
-                                    <TouchableOpacity onPress={() => router.push('/bookingForm')} disabled={passengers.length == 0} style={{ backgroundColor: passengers.length == 0 ? '#df5a68ff' : '#cf2a3a', width: '100%', alignSelf: 'center', borderRadius: 8, paddingVertical: 15, marginTop: 15 }}>
-                                        <Text style={{ fontSize: 16, fontWeight: 'bold', textAlign: 'center', color: '#fff' }}>Continue</Text>
-                                    </TouchableOpacity>
-                                ) : (
-                                    <TouchableOpacity onPress={() => handleSave()} style={{ backgroundColor: '#cf2a3a', width: '100%', alignSelf: 'center', borderRadius: 8, paddingVertical: 15 }}>
-                                        {saveloading == true ? (
-                                            <ActivityIndicator size='small' color={'#fff'} />
-                                        ) : (
-                                            <Text style={{ fontSize: 16, fontWeight: 'bold', textAlign: 'center', color: '#fff' }}>Proceed Payment</Text>
-                                        )}
-                                    </TouchableOpacity>
-                                )}
-                            </BottomSheetScrollView>
-                        </KeyboardAvoidingView>
+                        <TouchableOpacity onPress={() => router.push('/bookingForm')} disabled={passengers.length == 0} style={{ backgroundColor: passengers.length == 0 ? '#df5a68ff' : '#cf2a3a', width: '95%', alignSelf: 'center', borderRadius: 8, paddingVertical: 15, marginTop: 15 }}>
+                            <Text style={{ fontSize: 16, fontWeight: 'bold', textAlign: 'center', color: '#fff' }}>Continue</Text>
+                        </TouchableOpacity>
                     </BottomSheet>
                 )}
                 
@@ -455,8 +392,8 @@ export default function SeatPlan() {
                                 <Text style={{ color: '#fff',fontSize: 14, fontWeight: 'bold'  }}>Add Passes</Text>
                             </TouchableOpacity>
                             <TouchableOpacity style={{ flexDirection: 'row', alignItems: 'center', gap: 3, paddingHorizontal: 8, paddingVertical: 5, borderRadius: 5 }} onPress={() => [setPassengers([]), passesSheetRef.current?.close()]}>
-                                <Ionicons color={'#cf2a3a'} name={'chevron-down'} size={23} />
                                 <Text style={{ color: '#cf2a3a',fontSize: 15, fontWeight: 'bold'  }}>Close</Text>
+                                <Ionicons color={'#cf2a3a'} name={'chevron-down'} size={23} />
                             </TouchableOpacity>
                         </View>
                         <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'flex-end', marginVertical: 15, paddingHorizontal: 10 }}>
@@ -467,7 +404,7 @@ export default function SeatPlan() {
                             <View style={{ flexDirection: 'column', alignItems: 'flex-end' }}>
                                 <Text style={{ fontSize: 9, fontWeight: '900', color: '#cf2a3a' }}>Total Fare:</Text>
                                 <View style={{ borderColor: '#cf2a3a', backgroundColor: '#cf2a3b1a', borderWidth: 2, borderRadius: 5, flexDirection: 'row', alignItems: 'center', paddingHorizontal: 15 }}>
-                                    <Text style={{ fontSize: 16, color: '#cf2a3a' }}>₱</Text>
+                                    <Text style={{ fontSize: 16, fontWeight: 'bold' }}>₱</Text>
                                     <TextInput value={String(totalFare != 0 ? totalFare.toString() : '')} onChangeText={(text) => setTotalFare(Number(text))} placeholder='00.00' style={{ fontWeight: '900', textAlign: 'right' }} keyboardType={'numeric'} />
                                 </View>
                             </View>
