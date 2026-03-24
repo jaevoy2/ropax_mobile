@@ -2,6 +2,7 @@ import { FetchCargoProps } from '@/api/cargoProps';
 import { FetchTotalBookings } from "@/api/totalBookings";
 import { FetchTrips } from "@/api/trips";
 import CargoComponent from "@/components/cargo";
+import PreLoader from '@/components/preloader';
 import { CargoProperties, useCargo } from "@/context/cargoProps";
 import { usePassengers } from "@/context/passenger";
 import { useTrip } from "@/context/trip";
@@ -10,7 +11,7 @@ import { Ionicons, MaterialCommunityIcons } from "@expo/vector-icons";
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { router } from 'expo-router';
 import { useEffect, useRef, useState } from "react";
-import { ActivityIndicator, Alert, Animated, AppState, Dimensions, Modal, RefreshControl, ScrollView, Text, TouchableOpacity, View } from "react-native";
+import { Alert, Animated, AppState, Dimensions, Modal, RefreshControl, ScrollView, Text, TouchableOpacity, View } from "react-native";
 import { Calendar } from 'react-native-calendars';
 import { GestureHandlerRootView, Pressable } from 'react-native-gesture-handler';
 
@@ -431,13 +432,7 @@ export default function ManualBooking() {
                             <Text style={{ fontSize: 18, fontWeight: 'bold' }}>Available Trip</Text>
                             <Text style={{ fontSize: 15, fontWeight: 'bold' }}>{formattedDate.split('(')[0]}</Text>
                         </View>
-                        <Modal visible={loading} transparent animationType="fade">
-                            <View style={{ backgroundColor: '#00000048', flex: 1, justifyContent: 'center', alignItems: 'center' }}>
-                                <View style={{ height: height / 5, width: width - 100, backgroundColor: '#fff', borderRadius: 10, justifyContent :'center' }}>
-                                    <ActivityIndicator size={'large'} color={'#cf2a3a'} />
-                                </View>
-                            </View> 
-                        </Modal>
+                        <PreLoader loading={loading} />
                     </View>
                 )}
 
@@ -447,9 +442,7 @@ export default function ManualBooking() {
                     {bookingType == 'Walk-In' ? (
                         <View style={{ paddingHorizontal: 20, height }}>
                             {contentLoading == true ? (
-                                <View style={{ height: height / 2, justifyContent: 'center' }}>
-                                    <ActivityIndicator size={'large'} color={'#cf2a3a'} />
-                                </View>
+                                <PreLoader loading={contentLoading} />
                             ) : trips && (trips?.length == 0 || !trips.some(t => t.hasDeparted == false)) ? (
                                 <View style={{ height: height / 2, justifyContent: 'center' }}>
                                     <Text style={{ color: '#7A7A85', textAlign: 'center' }}>No Available Trips</Text>
@@ -498,12 +491,10 @@ export default function ManualBooking() {
                     </Animated.View>
                 </>
             )}
-            <Animated.View style={{ height, position: 'absolute', bottom: 0, backgroundColor: '#fff', width: width, transform: [{ translateY }], borderTopRightRadius: 20, borderTopLeftRadius: 20 }}>
+            <Animated.View style={{ height, position: 'absolute', bottom: 0, backgroundColor: '#fff', width: width, transform: [{ translateY }], borderTopRightRadius: 20, borderTopLeftRadius: 20, zIndex: 10 }}>
                 <View style={{ padding: 10 }}>
                     {totalSheetLoading == true ? (
-                        <View style={{ height: '80%', justifyContent: 'center', alignSelf: 'center' }}>
-                            <ActivityIndicator size={'large'} color={'#cf2a3a'} />
-                        </View>
+                        <PreLoader loading={totalSheetLoading} />
                     ) : (
                         <>
                             <View style={{ flexDirection: 'row', alignItems: 'flex-end', justifyContent: 'space-between' }}>

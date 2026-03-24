@@ -567,7 +567,7 @@ export default function CargoComponent({ dateChange }: {dateChange: string} ) {
                                 <View style={{ borderColor: '#B3B3B3', backgroundColor: '#fff', padding: 10, borderRadius: 8, borderWidth: 1, marginTop: 10 }}>
                                     <Text style={{ fontSize: 9, fontWeight: 'bold', color: '#545454' }}>Note:</Text>
                                     <View style={{ borderColor: '#B3B3B3', borderWidth: 1, borderRadius: 5, height: 60 }}>
-                                        <TextInput onChangeText={(text) => setNote(text)} placeholder='Receiver, e.g' style={{ fontSize: 13 }} />
+                                        <TextInput onChangeText={(text) => setNote(text)} placeholder='e.g. Receiver' style={{ fontSize: 13 }} />
                                     </View>
                                 </View>
                                 <TouchableOpacity onPress={() => handleSaveCargo()} disabled={saveCargoLoading} style={{ backgroundColor: '#cf2a3a', width: '100%', alignSelf: 'center', borderRadius: 8, paddingVertical: 15, marginTop: 30 }}>

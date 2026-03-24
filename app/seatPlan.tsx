@@ -1,5 +1,4 @@
 import { FetchTotalBookings } from "@/api/totalBookings";
-import Forms from "@/components/forms";
 import L2Vessel from "@/components/L2Vessel";
 import SRVessel from "@/components/srVessel";
 import { useCargo } from "@/context/cargoProps";
@@ -8,11 +7,11 @@ import { usePassesType } from "@/context/passes";
 import { useTrip } from "@/context/trip";
 import { seatRemoval } from "@/utils/channel";
 import { Ionicons, MaterialCommunityIcons } from "@expo/vector-icons";
-import BottomSheet, { BottomSheetBackdrop, BottomSheetScrollView } from '@gorhom/bottom-sheet';
+import BottomSheet, { BottomSheetBackdrop } from '@gorhom/bottom-sheet';
 import * as Crypto from 'expo-crypto';
 import { router } from "expo-router";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
-import { ActivityIndicator, Alert, Dimensions, Image, KeyboardAvoidingView, Platform, ScrollView, Text, TextInput, TouchableOpacity, View } from "react-native";
+import { Alert, Dimensions, Image, ScrollView, Text, TouchableOpacity, View } from "react-native";
 import { GestureHandlerRootView } from 'react-native-gesture-handler';
 
 
@@ -36,10 +35,8 @@ export default function SeatPlan() {
     const [passesIsHidden, setPassesIsHidden] = useState(false);
 
     const seatSheetRef = useRef<BottomSheet>(null);
-    const passesSheetRef = useRef<BottomSheet>(null);
 
     const seatSnapPoints = useMemo(() => ["26%","35%", "45%", "55%", "65%", "70%", "95%"], []);
-    const passesSnapPoints = useMemo(() => ["90%"], []);
 
     useEffect(() => {
         handleFetchTotalBookings(id)
@@ -71,7 +68,6 @@ export default function SeatPlan() {
     useEffect(() => {
         setTotalFare(computedFare)
     }, [computedFare])
-
     
     const handleSeatSelect = useCallback(() => {
         if(passengers.length == 0) {
@@ -133,7 +129,6 @@ export default function SeatPlan() {
         seatSheetRef.current?.snapToIndex(0);
     }
 
-
     const handlePassesForm = () => {
         setPassesFormLoading(true);
         setPassengers([]);
@@ -142,16 +137,11 @@ export default function SeatPlan() {
 
         setTimeout(() => {
             setPassengers([{ id: temp, passType_id: passesTypeID, passType: passesTypeName, passTypeCode: passesTypeCode }]);
-            passesSheetRef.current?.expand();
             setPassesFormLoading(false);
             
         }, 400);
-    }
 
-    const addPasses = () => {
-        const temp = Crypto.randomUUID();
-
-        setPassengers(prev => [...prev, { id: temp, passType_id: passesTypeID, passType: passesTypeName, passTypeCode: passesTypeCode }]);
+        router.push('/bookingForm')
     }
 
     const handleSave = () => {
@@ -311,9 +301,11 @@ export default function SeatPlan() {
                     <TouchableOpacity onPress={() => {router.back(), handleForceSeatRemoval()}} style={{ zIndex: 1 }}>
                         <Ionicons name={'arrow-back'} size={30} color={'#fff'} />
                     </TouchableOpacity>
-                    <TouchableOpacity disabled={passengers.length > 0 && passengers.some(p => p.hasCargo == false)} onPress={() => handlePassesForm()} style={{ opacity: passesIsHidden == true ?0 : 1 }}>
-                        <MaterialCommunityIcons name={'account-arrow-right'} size={30} color={'#fff'} />
-                    </TouchableOpacity>
+                    {(passengers.length < 1 || passengers.some(p => p.passType == 'Passes')) && (
+                        <TouchableOpacity onPress={() => handlePassesForm()} style={{ opacity: passesIsHidden == true ?0 : 1 }}>
+                            <MaterialCommunityIcons name={'account-arrow-right'} size={30} color={'#fff'} />
+                        </TouchableOpacity>
+                    )}
                 </View>                
 
                 <View style={{ position: 'absolute', paddingTop: 50, width: width, flex: 1 }}>
@@ -382,60 +374,6 @@ export default function SeatPlan() {
                         </TouchableOpacity>
                     </BottomSheet>
                 )}
-                
-
-                {/* Passess accommodation passenger */}
-                <BottomSheet ref={passesSheetRef} snapPoints={passesSnapPoints} index={-1} enableContentPanningGesture={false}>
-                        <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'flex-start', paddingHorizontal: 10 }}>
-                            <TouchableOpacity onPress={addPasses} style={{ flexDirection: 'row', alignItems: 'center', paddingHorizontal: 10, paddingVertical: 8, backgroundColor: '#cf2a3a', borderRadius: 5 }}>
-                                <Ionicons name={'add'} color={'#fff'} size={20} />
-                                <Text style={{ color: '#fff',fontSize: 14, fontWeight: 'bold'  }}>Add Passes</Text>
-                            </TouchableOpacity>
-                            <TouchableOpacity style={{ flexDirection: 'row', alignItems: 'center', gap: 3, paddingHorizontal: 8, paddingVertical: 5, borderRadius: 5 }} onPress={() => [setPassengers([]), passesSheetRef.current?.close()]}>
-                                <Text style={{ color: '#cf2a3a',fontSize: 15, fontWeight: 'bold'  }}>Close</Text>
-                                <Ionicons color={'#cf2a3a'} name={'chevron-down'} size={23} />
-                            </TouchableOpacity>
-                        </View>
-                        <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'flex-end', marginVertical: 15, paddingHorizontal: 10 }}>
-                            <View style={{ flexDirection: 'column', alignItems: 'flex-start' }}>
-                                <Text style={{ fontSize: 11 }}>Reference#:</Text>
-                                <Text style={{ fontWeight: '900', fontSize: 14, color: '#cf2a3a' }}>LMBS000000{year}{origin?.charAt(0)}{destination?.charAt(0)}</Text>
-                            </View>
-                            <View style={{ flexDirection: 'column', alignItems: 'flex-end' }}>
-                                <Text style={{ fontSize: 9, fontWeight: '900', color: '#cf2a3a' }}>Total Fare:</Text>
-                                <View style={{ borderColor: '#cf2a3a', backgroundColor: '#cf2a3b1a', borderWidth: 2, borderRadius: 5, flexDirection: 'row', alignItems: 'center', paddingHorizontal: 15 }}>
-                                    <Text style={{ fontSize: 16, fontWeight: 'bold' }}>₱</Text>
-                                    <TextInput value={String(totalFare != 0 ? totalFare.toString() : '')} onChangeText={(text) => setTotalFare(Number(text))} placeholder='00.00' style={{ fontWeight: '900', textAlign: 'right' }} keyboardType={'numeric'} />
-                                </View>
-                            </View>
-                        </View>
-
-                    <KeyboardAvoidingView style={{ flex: 1, paddingBottom: 100 }} behavior={Platform.OS === 'android' ? "padding" : "padding"}>
-                        <BottomSheetScrollView contentContainerStyle={{ paddingHorizontal: 10, paddingBottom: 10 }} showsVerticalScrollIndicator={false}>
-                            <View style={{ position: 'relative' }}>
-                                {passesFormLoading == true ? (
-                                    <View style={{ height: '80%', justifyContent: 'center', alignItems: 'center',  }}>
-                                        <ActivityIndicator size={'large'} color={'#cf2a3a'} />
-                                    </View>
-                                ) : (
-                                    <View style={{ flex: 1 }}>
-                                        <ScrollView style={{ paddingBottom: 30 }}>
-                                            <Forms errorForm={errorForm} />
-                                        </ScrollView>
-                                    </View>
-                                )}
-                            </View>
-                            <TouchableOpacity onPress={() => handleSave()} style={{ backgroundColor: '#cf2a3a', width: '100%', alignSelf: 'center', borderRadius: 8, paddingVertical: 15 }}>
-                                {saveloading == true ? (
-                                    <ActivityIndicator size='small' color={'#fff'} />
-                                ) : (
-                                    <Text style={{ fontSize: 16, fontWeight: 'bold', textAlign: 'center', color: '#fff' }}>Proceed Payment</Text>
-                                )}
-                            </TouchableOpacity>
-                        </BottomSheetScrollView>
-                    </KeyboardAvoidingView>
-                </BottomSheet>
-
 
             </View>
         </GestureHandlerRootView>

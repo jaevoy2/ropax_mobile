@@ -1,15 +1,17 @@
 import { FetchPaxBookingInfo } from '@/api/paxBookingInfo';
 import { FetchTrips } from '@/api/trips';
+import CancelBooking from '@/components/cancelModal';
+import PreLoader from '@/components/preloader';
 import { useCargo } from '@/context/cargoProps';
 import { usePassengers } from '@/context/passenger';
 import { useTrip } from '@/context/trip';
 import { Ionicons, MaterialCommunityIcons } from '@expo/vector-icons';
 import { router, useFocusEffect, useLocalSearchParams } from 'expo-router';
-import { useCallback, useEffect, useState } from 'react';
-import { ActivityIndicator, Alert, Dimensions, KeyboardAvoidingView, Modal, Platform, Pressable, ScrollView, StyleSheet, Text, TextInput, TouchableOpacity, View } from 'react-native';
+import { useCallback, useState } from 'react';
+import { ActivityIndicator, Alert, Dimensions, KeyboardAvoidingView, Modal, Platform, Pressable, ScrollView, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 import { Calendar } from 'react-native-calendars';
 import { Dropdown } from 'react-native-element-dropdown';
-import { Checkbox } from 'react-native-paper';
+
 import { bookingStatuses } from './(tabs)/manage-booking';
 import { TripProps } from './(tabs)/manual-booking';
 
@@ -18,7 +20,7 @@ import { TripProps } from './(tabs)/manual-booking';
 const { height, width } = Dimensions.get('screen');
 
 
-type PaxInfo = {
+export type PaxInfo = {
     id?: number;
     first_name?: string;
     last_name?: string;
@@ -55,7 +57,7 @@ type PaxInfo = {
     forCancel?: boolean;
 }
 
-type TripInfo = {
+export type TripInfo = {
     vessel: string;
     id: number;
     vesselID: number;
@@ -89,14 +91,15 @@ export default function BookingInfo() {
     const [toggleOption, setToggleOption] = useState(false);
     const [type, setType] = useState('');
     const [totalFare, setTotalFare] = useState(0);
-    const [proceedLoading,  setProceedLoading] = useState(false);
-    const [cancelModal, setCancelModal] = useState(false);
+    const [proceedLoading,  setProceedLoading] = useState(false)
     const [reschedModal, setReschedModal] = useState(false);
-    const [selectAll, setSelectAll] = useState(true);
     const [tripDate, setTripDate] = useState('');
     const [formattedDate, setFormattedDate] = useState('');
+    const [cancelModal, setCancelModal] = useState(false);
     const [reschedLoading, setReschedLoading] = useState(true)
-    const [calendar, setCalendar] = useState(false)
+    const [calendar, setCalendar] = useState(false);
+
+    const hasOnlinePax = paxInfo.some(p => p.station.toLowerCase() == 'online booking');
 
 
     useFocusEffect(
@@ -106,16 +109,6 @@ export default function BookingInfo() {
         }, [])
 
     )
-
-    useEffect(() => {
-        const notForCancel = paxInfo.some(p => p.forCancel != true);
-
-        if(notForCancel) {
-            setSelectAll(false);
-        }else {
-            setSelectAll(true)
-        }
-    }, [paxInfo.some(p => p.forCancel)])
 
     const handleOnResched = () => {
         setReschedModal(true)
@@ -261,7 +254,6 @@ export default function BookingInfo() {
     const handleFetchInfo = async () => {
         try {
             const response = await FetchPaxBookingInfo(Number(bookingId), Number(paxId), String(refNum));
-            console.log(bookingId, paxId, refNum)
 
             if(!response.error) {
                 const paxData: PaxInfo[] = response.data.map((pax: any) => ({
@@ -290,7 +282,7 @@ export default function BookingInfo() {
                     origin: pax.bookings[0].trip_schedule.trip.route.origin,
                     destination: pax.bookings[0].trip_schedule.trip.route.destination,
                     route: `${pax.bookings[0].trip_schedule.trip.route.origin} - ${pax.bookings[0].trip_schedule.trip.route.destination}`,
-                    // station: pax.
+                    station: pax.bookings[0].station.name,
                     mobileCode: pax.bookings[0].trip_schedule.trip.route.mobile_code,
                     webCode: pax.bookings[0].trip_schedule.trip.route.web_code,
                     vessel: pax.bookings[0].trip_schedule.trip.vessel.name,
@@ -350,7 +342,12 @@ export default function BookingInfo() {
             }
 
             setProceedLoading(false);
-            router.push('/seatPlan')
+            
+            if(!paxInfo.some(p => p.passenger_type == 'Passes')) {
+                router.push('/seatPlan')
+            }else {
+                router.push('/bookingForm')
+            }
         }, 600);
         
     }
@@ -363,35 +360,19 @@ export default function BookingInfo() {
         setCancelModal(true)
     }
 
-    const handleSelectAll = () => {
-        setSelectAll(!selectAll);
-
-        setPaxInfo(prev => (
-            prev.map(p => ({ ...p, forCancel: !selectAll }))
-        ))
-    }
-
-    const handleCancelPax = (paxId: number) => {
-        setPaxInfo(prev => (
-            prev.map(p => p.id == paxId ? ({ ...p, forCancel: !p.forCancel }) : p)
-        ))
-    }
-
 
     return (
         <View style={{ flex: 1, backgroundColor: '#fafafa' }}>
             <View style={styles.headerContainer}>
                 <View style={{ flexDirection: 'row', alignItems: 'center', gap: 10 }}>
                     <Pressable onPress={() => router.back()}>
-                        <Ionicons name={'arrow-back'} size={24} color={'#fff'} />
+                        <Ionicons name={'arrow-back'} size={30} color={'#fff'} />
                     </Pressable>
                     <Text style={{ color: '#fff', fontSize: 20, fontWeight: 'bold' }}>Booking Details</Text>
                 </View>
             </View>
             {loading == true ? (
-                <View style={styles.loadingContainer}>
-                    <ActivityIndicator size={'large'} color={'#cf2a3a'} />
-                </View>
+                <PreLoader loading={loading} />
             ) : (
                 <KeyboardAvoidingView behavior={Platform.OS === 'ios' ? 'padding' : 'height'} style={{ flex: 1, paddingVertical: 20, gap: 15 }}>
                     <ScrollView style={{ flex: 1, paddingHorizontal: 20 }} showsVerticalScrollIndicator={false}>
@@ -445,15 +426,15 @@ export default function BookingInfo() {
                                 </View>
                                 <View style={styles.bookingContainer}>
                                     <Text style={{ color: '#646464', fontSize: 13, }}>Vessel</Text>
-                                    <Text style={{ fontSize: 13, fontWeight: '700' }}>{paxInfo.find((p: any) => p.id == Number(paxId) )?.tripId}</Text>
+                                    <Text style={{ fontSize: 13, fontWeight: '700' }}>{paxInfo.find((p: any) => p.id == Number(paxId) )?.vessel}</Text>
                                 </View>
                                 <View style={styles.bookingContainer}>
                                     <Text style={{ color: '#646464', fontSize: 13, }}>Route</Text>
-                                    <Text style={{ fontSize: 13, fontWeight: '700' }}>{paxInfo.find((p: any) => p.id == Number(paxId) )?.id}</Text>
+                                    <Text style={{ fontSize: 13, fontWeight: '700' }}>{paxInfo.find((p: any) => p.id == Number(paxId) )?.route}</Text>
                                 </View>
                                 <View style={styles.bookingContainer}>
                                     <Text style={{ color: '#646464', fontSize: 13, }}>Station</Text>
-                                    <Text style={{ fontSize: 13, fontWeight: '700' }}>{paxInfo.find((p: any) => p.id == Number(paxId) )?.route}</Text>
+                                    <Text style={{ fontSize: 13, fontWeight: '700' }}>{paxInfo.find((p: any) => p.id == Number(paxId) )?.station}</Text>
                                 </View>
                                 <View style={styles.bookingContainer}>
                                     <Text style={{ color: '#646464', fontSize: 13, }}>Departure Date</Text>
@@ -559,11 +540,11 @@ export default function BookingInfo() {
                     <View style={{ paddingVertical: 10, borderTopColor: '#dadada', borderTopWidth: 1 }}>
                         {bookingStatuses?.find(s => s.id == paxInfo[0]?.bookingStatus)?.label.toLowerCase() != 'pending' && bookingStatuses?.find(s => s.id == paxInfo[0]?.bookingStatus)?.label.toLowerCase() != 'cancelled' && (
                             <View style={styles.requestsContainer}>
-                                <Pressable style={[styles.requestsBtn, { backgroundColor: '#FCCA03' }]}>
+                                <Pressable disabled={hasOnlinePax} onPress={() => handleOnResched()} style={[styles.requestsBtn, { opacity: hasOnlinePax ? 0.5 : 1, backgroundColor: '#FCCA03' }]}>
                                     <Ionicons name={'reload'} size={16} />
                                     <Text style={{ fontWeight: '800', fontSize: 13 }}>Reschedule Booking</Text>
                                 </Pressable>
-                                <Pressable onPress={() => handleOnCancelModal()} style={[styles.requestsBtn, { backgroundColor: '#cf2a3a' }]}>
+                                <Pressable disabled={hasOnlinePax} onPress={() => handleOnCancelModal()} style={[styles.requestsBtn, { opacity: hasOnlinePax ? 0.5 : 1, backgroundColor: '#cf2a3a' }]}>
                                     <MaterialCommunityIcons name={'cancel'} color={'#fff'} size={16} />
                                     <Text style={{ color: '#fff', fontWeight: '800', fontSize: 13 }}>Cancel Booking</Text>
                                 </Pressable>
@@ -581,44 +562,10 @@ export default function BookingInfo() {
                     </View>
                 </KeyboardAvoidingView>
             )}
-            <Modal transparent animationType={'fade'} visible={cancelModal}>
-                <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center', backgroundColor: 'rgba(0, 0, 0, 0.5)' }}>
-                    <View style={{ width: '92%', backgroundColor: '#fff', borderRadius: 10, shadowColor: '#000', shadowOffset: { width: 0, height: 2 }, shadowOpacity: 0.25, shadowRadius: 4 }}>
-                        <Text style={{ fontWeight: 'bold', fontSize: 16, marginBottom: 10, paddingHorizontal: 20, paddingVertical: 15, borderBottomColor: '#dadada', borderBottomWidth: 1 }}>Cancellation Request</Text>
-                        <View style={{ paddingHorizontal: 20, }}>
-                            <Text style={{ fontWeight: '600', marginBottom: 5 }}>Reason of Cancellation</Text>
-                            <View style={{ height: 100, borderColor: '#dadada', borderWidth: 1, borderRadius: 8 }}>
-                                <TextInput placeholder='Enter reason' />
-                            </View>
-                        </View>
-                        <View style={{ paddingHorizontal: 20, marginTop: 10 }}>
-                            <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', borderBottomColor: '#dadada', borderBottomWidth: 1 }}>
-                                <Text style={{ color: '#5a5a5a' }}>Passenger/s</Text>
-                                <TouchableOpacity onPress={() => handleSelectAll()} style={{ flexDirection: 'row', alignItems: 'center' }}>
-                                    <Checkbox status={selectAll ? 'checked' : 'unchecked'} color='#cf2a3a' uncheckedColor="#999" />
-                                    <Text style={{ color: selectAll ? '#cf2a3a' : '#999' }}>Select All</Text>
-                                </TouchableOpacity>
-                            </View>
-                            <View style={{ flexDirection: 'row', flexWrap: 'wrap', marginTop: 5 }}>
-                                {paxInfo.map((p: any) => (
-                                    <TouchableOpacity key={p.id} onPress={() => handleCancelPax(p.id)} style={{ flexDirection: 'row', alignItems: 'center' }}>
-                                        <Checkbox status={p.forCancel == true ? 'checked' : 'unchecked'} color='#cf2a3a' uncheckedColor="#999" />
-                                        <Text style={{ color: p.forCancel == true ? '#cf2a3a' : '#999' }}>{`${p.first_name} ${p.last_name}`}</Text>
-                                    </TouchableOpacity>
-                                ))}
-                            </View>
-                        </View>
-                        <View style={{ paddingHorizontal: 20, paddingBottom: 20 }}>
-                            <TouchableOpacity style={{ marginTop: 30, padding: 10, backgroundColor: '#CF2A3A', borderRadius: 5 }}>
-                                <Text style={{ color: '#fff', textAlign: 'center' }}>Submit</Text>
-                            </TouchableOpacity>
-                            <TouchableOpacity onPress={() => setCancelModal(false)} style={{ marginTop: 10, alignSelf: 'center' }}>
-                                <Text style={{ color: '#cf2a3a', textAlign: 'center' }}>Cancel</Text>
-                            </TouchableOpacity>
-                        </View>
-                    </View>
-                </View>
-            </Modal>
+
+            {cancelModal == true && (
+                <CancelBooking cancelModal={cancelModal} setCancelModal={setCancelModal} paxInfo={paxInfo} setPaxInfo={setPaxInfo} />
+            )}
 
             <Modal transparent animationType={'fade'} visible={reschedModal}>
                 <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center', backgroundColor: 'rgba(0, 0, 0, 0.5)' }}>

@@ -1,8 +1,9 @@
 import { FetchManageBookingList } from "@/api/manageBookingList";
+import PreLoader from "@/components/preloader";
 import { Ionicons, MaterialCommunityIcons } from "@expo/vector-icons";
 import { router, useFocusEffect } from "expo-router";
 import React, { useCallback, useState } from "react";
-import { ActivityIndicator, Alert, FlatList, Modal, RefreshControl, Text, TextInput, TouchableOpacity, View } from "react-native";
+import { Alert, FlatList, Modal, RefreshControl, Text, TextInput, TouchableOpacity, View } from "react-native";
 import { Calendar } from "react-native-calendars";
 import { GestureHandlerRootView } from 'react-native-gesture-handler';
 
@@ -218,7 +219,7 @@ export default function ManageBooking() {
 
             <View style={{ justifyContent: 'center', paddingTop: 20, paddingHorizontal: 20, flex: 1 }}>
                 {loading == true ? (
-                    <ActivityIndicator size={'large'} color={'#cf2a3a'} />
+                    <PreLoader loading={loading} />
                 ) : (
                     <>
                         {passengers.length > 0 ? (

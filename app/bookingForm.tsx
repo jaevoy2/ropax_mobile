@@ -1,7 +1,9 @@
 import Forms from "@/components/forms";
 import { usePassengers } from "@/context/passenger";
+import { usePassesType } from "@/context/passes";
 import { useTrip } from "@/context/trip";
 import { Ionicons } from "@expo/vector-icons";
+import * as Crypto from 'expo-crypto';
 import { router } from "expo-router";
 import { useEffect, useState } from "react";
 import { ActivityIndicator, Alert, Dimensions, KeyboardAvoidingView, Platform, ScrollView, StyleSheet, Text, TextInput, TouchableOpacity, View } from "react-native";
@@ -10,11 +12,9 @@ import { ActivityIndicator, Alert, Dimensions, KeyboardAvoidingView, Platform, S
 const { height, width } = Dimensions.get('window')
 
 
-const data = []  //sample errorData
-
-
 export default function BookingForm() {
-    const { passengers } = usePassengers()
+    const { passengers, setPassengers, clearPassengers } = usePassengers();
+    const { passesTypeID, passesTypeCode, passesTypeName } = usePassesType();
     const { totalFare, origin, destination, setTotalFare } = useTrip()
     const [saveloading, setSaveLoading] = useState(false);
     const [errorForm, setErrorForm] = useState<(string | number)[]>([]);
@@ -24,7 +24,21 @@ export default function BookingForm() {
     useEffect(() =>{
         const date = new Date();
         setYear(date.getFullYear().toString().slice(-2));
-    }, [])
+    }, []);
+
+    const addPasses = () => {
+        const temp = Crypto.randomUUID();
+
+        setPassengers(prev => [...prev, {
+            id: temp, passType_id: passesTypeID, passType: passesTypeName, passTypeCode: passesTypeCode
+        }]);
+    }
+
+    const handleClearPasses = () => {
+        if(passengers.some(p => p.passType == 'Passes')) {
+            clearPassengers()
+        }
+    }
 
     const handleSave = () => {
         setSaveLoading(true);
@@ -161,8 +175,8 @@ export default function BookingForm() {
     return (
         <View style={{ height, backgroundColor: '#fdfdfd', paddingBottom: 20 }}>
             <View style={styles.header}>
-                <TouchableOpacity onPress={() => router.back()}>
-                    <Ionicons name={'arrow-back'} size={24} color={'#fff'} />
+                <TouchableOpacity onPress={() => {handleClearPasses(), router.back()}}>
+                    <Ionicons name={'arrow-back'} size={30} color={'#fff'} />
                 </TouchableOpacity>
                 <Text style={styles.title}>Booking Form</Text>
             </View>

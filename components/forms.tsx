@@ -378,7 +378,7 @@ export default function Forms({ errorForm }: FormProps) {
                                 </View>
                             </View>
                             <View style={{ width: '56%', }}>
-                                <Text style={{ fontSize: 9, fontWeight: 'bold', color: '#545454' }}>Gender:</Text>
+                                <Text style={{ fontSize: 12, fontWeight: 'bold', color: '#545454' }}>Gender:</Text>
                                 <View style={{ flexDirection:'row', gap: 5 }}>
                                     {passGender.map((gender) => (
                                         <TouchableOpacity onPress={() => updatePassenger(p.id, 'gender', gender)} key={gender} style={{ backgroundColor: p.gender == gender ? '#cf2a3a' : 'transparent', borderColor: '#cf2a3a', borderWidth: 1, width: '50%', borderRadius: 5, justifyContent :'center', paddingVertical: 12 }}>
@@ -390,13 +390,13 @@ export default function Forms({ errorForm }: FormProps) {
                         </View>
                         <View style={{ marginTop: 5, flexDirection: 'row', gap: 8 }}>
                             <View style={{ width: '40%' }}>
-                                <Text style={{ fontSize: 9, fontWeight: 'bold', color: '#545454' }}>Nationality:</Text>
+                                <Text style={{ fontSize: 12, fontWeight: 'bold', color: '#545454' }}>Nationality:</Text>
                                 <View style={{ borderColor: '#B3B3B3', borderWidth: 1, borderRadius: 5, height: 45, justifyContent: 'center'  }}>
                                     <TextInput value={p.nationality ?? 'Filipino'} onChangeText={(text) => updatePassenger(p.id, 'nationality', text)} defaultValue='Filipino' style={{ fontSize: 13, fontWeight: '600' }} />
                                 </View>
                             </View>
                             <View style={{ width: '57.5%' }}>
-                                <Text style={{ fontSize: 9, fontWeight: 'bold', color: '#545454' }}>Address:</Text>
+                                <Text style={{ fontSize: 12, fontWeight: 'bold', color: '#545454' }}>Address:</Text>
                                 <View style={{ borderColor: '#B3B3B3', borderWidth: 1, borderRadius: 5, height: 45, justifyContent: 'center'  }}>
                                     <TextInput value={p.address ?? ''} onChangeText={(text) => updatePassenger(p.id, 'address', text)} placeholder='Address' style={{ fontSize: 13, fontWeight: '600' }} />
                                 </View>
@@ -404,7 +404,7 @@ export default function Forms({ errorForm }: FormProps) {
                         </View>
                         <View style={{ marginTop: 5, flexDirection: 'row', alignItems: 'flex-end', justifyContent: 'space-between' }}>
                             <View style={{ width: '40%' }}>
-                                <Text style={{ fontSize: 9, fontWeight: 'bold', color: '#545454' }}>Contact#:</Text>
+                                <Text style={{ fontSize: 12, fontWeight: 'bold', color: '#545454' }}>Contact#:</Text>
                                 <View style={{ borderColor: '#B3B3B3', borderWidth: 1, borderRadius: 5, height: 45, justifyContent: 'center'  }}>
                                     <TextInput value={p.contact ?? ''} placeholder='+63' onChangeText={(text) => updatePassenger(p.id, 'contact', text)} style={{ fontSize: 13, fontWeight:'600' }} />
                                 </View>
@@ -460,13 +460,13 @@ export default function Forms({ errorForm }: FormProps) {
                                         </View>
                                         <View style={{ marginTop: 5, flexDirection: 'row', gap: 8, alignItems: 'flex-end' }}>
                                             <View style={{ width: '40%' }}>
-                                                <Text style={{ fontSize: 9, fontWeight: 'bold', color: '#545454' }}>Age:</Text>
+                                                <Text style={{ fontSize: 12, fontWeight: 'bold', color: '#545454' }}>Age:</Text>
                                                 <View style={{ borderColor: '#B3B3B3', borderWidth: 1, borderRadius: 5, height: 45, justifyContent: 'center'  }}>
                                                     <TextInput onChangeText={(text) => updateInfant(p.seatNumber!, index, 'age', Number(text))} keyboardType='numeric' placeholder='Age' style={{ fontSize: 13, fontWeight: '600' }} />
                                                 </View>
                                             </View>
                                             <View style={{ width: '56%', }}>
-                                                <Text style={{ fontSize: 9, fontWeight: 'bold', color: '#545454' }}>Gender:</Text>
+                                                <Text style={{ fontSize: 12, fontWeight: 'bold', color: '#545454' }}>Gender:</Text>
                                                 <View style={{ flexDirection:'row', gap: 5 }}>
                                                     {passGender.map((infntgender) => (
                                                         <TouchableOpacity onPress={() => updateInfant(p.seatNumber!, index, 'gender', infntgender)} key={infntgender} style={{ backgroundColor: p.infant?.[index]?.gender == infntgender ? '#cf2a3a' : 'transparent',
@@ -509,7 +509,7 @@ export default function Forms({ errorForm }: FormProps) {
                                         )}
                                         <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', paddingBottom: 5 }}>
                                             <View style={{ flexDirection: 'column', alignSelf: 'flex-start' }}>
-                                                <Text style={{ fontSize: 9, fontWeight: 'bold', color: '#545454' }}>Amount:</Text>
+                                                <Text style={{ fontSize: 12, fontWeight: 'bold', color: '#545454' }}>Amount:</Text>
                                                 <View style={{ borderColor: '#FFC107', backgroundColor: '#ffc10727', borderWidth: 2, borderRadius: 5, flexDirection: 'row', alignItems: 'center', paddingHorizontal: 15, paddingVertical: 8 }}>
                                                     <Text style={{ fontSize: 16 }}>₱ </Text>
                                                     <Text style={{ fontWeight: 'bold', textAlign: 'right', fontSize: 16 }}>
@@ -644,6 +644,15 @@ export default function Forms({ errorForm }: FormProps) {
                         )}
                     </View>
                 ))}
+
+                {passengers.some(p => p.passType == 'Passes') && (
+                    <View style={{ padding: 10, backgroundColor: '#fff', elevation: 5, borderRadius: 8, borderWidth: 1, borderColor: '#B3B3B3' }}>
+                        <Text style={{ fontSize: 12, fontWeight: 'bold', color: '#545454' }}>Approved by:</Text>
+                        <View style={{ borderColor: '#B3B3B3', borderWidth: 1, borderRadius: 5, height: 45, justifyContent: 'center' }}>
+                            <TextInput placeholder='First Last' style={{ fontSize: 15, fontWeight: '600' }} />
+                        </View>
+                    </View>
+                )}
             </View>
 
         </View>

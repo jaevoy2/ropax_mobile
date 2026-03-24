@@ -148,7 +148,7 @@ export default function PaymentSummary() {
                                                     <View style={{ flexDirection: 'column', width: '65%' }}>
                                                         <Text style={{ fontSize: 14, fontWeight: '700', color: '#cf2a3a' }}>{pax.name}</Text>
                                                         <View style={{ flexDirection: 'row', alignItems: 'center', gap: 5 }}>
-                                                            <Text style={{ fontSize: 10, color: '#646464', fontWeight: '600' }}>{pax?.seatNumber != 'N/A' ? `Seat# ${pax?.seatNumber}` : '---'}</Text>
+                                                            <Text style={{ fontSize: 10, color: '#646464', fontWeight: '600' }}>{pax?.seatNumber != 'N/A' ? `Seat# ${pax?.seatNumber}` : '--'}</Text>
                                                             <Text style={{ fontSize: 10, color: '#646464' }}>|</Text>
                                                             <Text style={{ fontSize: 10, color: '#646464', fontWeight: '600' }}>{pax?.passType}</Text>
                                                             <Text style={{ fontSize: 10, color: '#646464' }}>|</Text>

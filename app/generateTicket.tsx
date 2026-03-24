@@ -1,3 +1,4 @@
+import PreLoader from '@/components/preloader';
 import { useCargo } from '@/context/cargoProps';
 import { usePassengers } from '@/context/passenger';
 import { useTrip } from '@/context/trip';
@@ -7,7 +8,7 @@ import * as MediaLibrary from 'expo-media-library';
 import { router } from 'expo-router';
 import * as Sharing from 'expo-sharing';
 import React, { useEffect, useRef, useState } from 'react';
-import { ActivityIndicator, Alert, Dimensions, Image, Modal, ScrollView, Text, TouchableOpacity, View } from 'react-native';
+import { Alert, Dimensions, Image, ScrollView, Text, TouchableOpacity, View } from 'react-native';
 import QRCode from 'react-native-qrcode-svg';
 import { captureRef } from 'react-native-view-shot';
 
@@ -88,13 +89,8 @@ export default function TicketGenerator() {
 
     return (
         <View style={{ backgroundColor: '#f1f1f1', position: 'relative', height: height }}>
-            <Modal visible={loading} transparent animationType="fade">
-                <View style={{ backgroundColor: '#00000048', flex: 1, justifyContent: 'center', alignItems: 'center' }}>
-                    <View style={{ height: height / 5, width: width - 100, backgroundColor: '#fff', borderRadius: 10, justifyContent :'center' }}>
-                        <ActivityIndicator size={'large'} color={'#cf2a3a'} />
-                    </View>
-                </View>
-            </Modal>
+            <PreLoader loading={loading} />
+
             <View style={{ height: 160, backgroundColor: '#cf2a3a', paddingTop: 50 }}>
                 <Text style={{ fontSize: 15, color: '#fff', fontWeight: 'bold', textAlign: 'center' }}>E-Ticket</Text>
             </View>
@@ -157,10 +153,10 @@ export default function TicketGenerator() {
                                             <Text style={{ fontSize: 14, fontWeight: '700', width: 50, }}>Seat#:</Text>
                                             <Text style={{ fontSize: 14, fontWeight: '700', width: 60, textAlign: 'right' }}>Fare</Text>
                                         </View>
-                                        {passengers.some((p) => p.accommodation == 'Business Class') && (
+                                        {passengers.some((p) => p?.accommodation == 'Business Class' || 'B-Class') && (
                                             <View style={{ marginTop: 5}}>
                                                 <Text style={{ fontSize: 14, fontWeight: '900' }}>B-Class</Text>
-                                                {passengers.filter((p) => p.accommodation == 'Business Class')
+                                                {passengers.filter((p) => p?.accommodation == 'Business Class' || 'B-Class')
                                                 .map((p) => (
                                                     <View key={p.seatNumber} style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' }}>
                                                         <Text style={{ fontSize: 14, width: '40%' }}>{`${p.name?.split(',')[1]?.trim().charAt(0)}. ${p.name?.split(',')[0]}`}</Text>
@@ -171,10 +167,10 @@ export default function TicketGenerator() {
                                                 ))}
                                             </View>
                                         )}
-                                        {passengers.some((p) => p.accommodation == 'Tourist') && (
+                                        {passengers.some((p) => p?.accommodation == 'Tourist') && (
                                             <>
                                                 <Text style={{ fontSize: 14, fontWeight: '900', marginTop: 5, marginBottom: 5 }}>Tourist</Text>
-                                                {passengers.filter((p) => p.accommodation == 'Tourist')
+                                                {passengers.filter((p) => p?.accommodation == 'Tourist')
                                                 .map((p) => (
                                                     <View key={p.seatNumber} style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' }}>
                                                         <Text style={{ fontSize: 14, width: '40%' }}>{`${p.name?.split(',')[1]?.trim().charAt(0)}. ${p.name?.split(',')[0]}`}</Text>
@@ -185,7 +181,7 @@ export default function TicketGenerator() {
                                                 ))}
                                             </>
                                         )}
-                                        {passengers.some((p) => p.accommodation == null) && (
+                                        {passengers.some((p) => p?.accommodation == null) && (
                                             <>
                                                 <Text style={{ fontSize: 14, fontWeight: '900', marginTop: 5, marginBottom: 5 }}>Passes</Text>
                                                 {passengers.filter((p) => p.passType == 'Passes')

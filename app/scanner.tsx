@@ -1,10 +1,11 @@
 import { ValidateQr } from '@/api/validateQr';
+import PreLoader from '@/components/preloader';
 import { Ionicons } from '@expo/vector-icons';
 import { useAudioPlayer } from 'expo-audio';
 import { BarcodeScanningResult, CameraType, CameraView, useCameraPermissions } from 'expo-camera';
 import { router } from 'expo-router';
 import { useEffect, useRef, useState } from 'react';
-import { Alert, Animated, Dimensions, Easing, Modal, SafeAreaView, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
+import { Alert, Animated, Dimensions, Easing, SafeAreaView, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 
 
 const { height, width } = Dimensions.get('screen');
@@ -19,7 +20,6 @@ export default function QRScanner() {
     const [scanned, setScanned] = useState(false);
     const [cameraType, setCameraType] = useState<CameraType>('back');
     const scaleAnim = useRef(new Animated.Value(1)).current;
-    const motionAnim = useRef(new Animated.Value(1)).current;
     const mp3 = require('../assets/audio/beep.wav');
     const audio = useAudioPlayer(mp3)
 
@@ -43,26 +43,6 @@ export default function QRScanner() {
 
         breathe();
     }, [])
-
-    const loadingAnim = () => {
-        Animated.loop(
-            Animated.sequence([
-                Animated.timing(motionAnim, {
-                    toValue: -8,
-                    duration: 800,
-                    easing: Easing.inOut(Easing.ease),
-                    useNativeDriver: true
-                }),
-                Animated.timing(motionAnim, {
-                    toValue: 1,
-                    duration: 800,
-                    easing: Easing.inOut(Easing.ease),
-                    useNativeDriver: true
-                }),
-            ])
-        ).start()
-    }
-
     
     const handleOnScan = (result: BarcodeScanningResult) => {
         if (scanned) return;
@@ -89,7 +69,6 @@ export default function QRScanner() {
             audio.play();
 
             setScreenLoading(true);
-            loadingAnim();
             handleValidateQr(code)
         }
     }
@@ -146,16 +125,7 @@ export default function QRScanner() {
         <View style={styles.container}>
             {permission.granted && (
                 <>
-                    <Modal visible={screenLoading} transparent animationType="fade">
-                        <View style={{ backgroundColor: '#00000048', flex: 1, justifyContent: 'center', alignItems: 'center' }}>
-                            <View style={{ height: height / 5, width: '65%', backgroundColor: '#fff', borderRadius: 10, justifyContent :'center', alignItems: 'center', gap: 8 }}>
-                                <Animated.View style={{ transform: [{ translateY: motionAnim }] }}>
-                                    <Ionicons name={'boat'} size={34} color={'#cf2a3a'} />
-                                </Animated.View>
-                                <Text style={{ color: '#cf2a3a' }}>Loading..</Text>
-                            </View>
-                        </View> 
-                    </Modal>
+                    <PreLoader loading={screenLoading} />
 
                     <View style={styles.header}>
                         <Text style={{ color: '#fff', fontSize: 20, fontWeight: 'bold' }}>QR Scanner</Text>

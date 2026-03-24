@@ -197,7 +197,7 @@ export default function GenSettings() {
             </View>
             <View style={{ padding: 10 }}>
                 <View style={{ paddingHorizontal: 15, paddingVertical: 20, backgroundColor: '#fff', borderColor: '#cf2a3a', borderWidth: 1, borderRadius: 10, marginTop: 5, flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' }}>
-                    <View style={{ flexDirection: 'row', gap: 10, alignItems: 'center' }}>
+                    <View style={{ flexDirection: 'row', gap: 10, alignItems: 'center', width: '50%' }}>
                         {user?.image ? (
                             <Image source={{ uri: `https://lmbs-staging.creativedevlabs.com/storage/${user.image}` }} style={{ borderRadius: 60, height: 50, width: 50 }} />
                         ) : (
