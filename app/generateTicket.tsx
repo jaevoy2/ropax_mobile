@@ -153,10 +153,10 @@ export default function TicketGenerator() {
                                             <Text style={{ fontSize: 14, fontWeight: '700', width: 50, }}>Seat#:</Text>
                                             <Text style={{ fontSize: 14, fontWeight: '700', width: 60, textAlign: 'right' }}>Fare</Text>
                                         </View>
-                                        {passengers.some((p) => p?.accommodation == 'Business Class' || 'B-Class') && (
+                                        {passengers.some((p) => p?.accommodation == 'Business Class' || p?.accommodation == 'B-Class') && (
                                             <View style={{ marginTop: 5}}>
                                                 <Text style={{ fontSize: 14, fontWeight: '900' }}>B-Class</Text>
-                                                {passengers.filter((p) => p?.accommodation == 'Business Class' || 'B-Class')
+                                                {passengers.filter((p) => p?.accommodation == 'Business Class' || p?.accommodation == 'B-Class')
                                                 .map((p) => (
                                                     <View key={p.seatNumber} style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' }}>
                                                         <Text style={{ fontSize: 14, width: '40%' }}>{`${p.name?.split(',')[1]?.trim().charAt(0)}. ${p.name?.split(',')[0]}`}</Text>

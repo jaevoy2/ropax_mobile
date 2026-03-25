@@ -26,11 +26,8 @@ export default function SeatPlan() {
     const { passesTypeID, passesTypeCode, passesTypeName } = usePassesType();
     const { paxCargoProperty } = useCargo();
     const [year, setYear] = useState('');
-    const [formLoading, setFormLoading] = useState(false);
-    const [passesFormLoading, setPassesFormLoading] = useState(false);
     const [isFormVisible, setIsFormVisible] = useState(false);
     const [totalBookings, setTotalBookings] = useState<number>(0);
-    const [saveloading, setSaveLoading] = useState(false);
     const [errorForm, setErrorForm] = useState<(string | number)[]>([]);
     const [passesIsHidden, setPassesIsHidden] = useState(false);
 
@@ -119,160 +116,19 @@ export default function SeatPlan() {
         });
     }
 
-    const handleSeatChange = () => {
-        setFormLoading(true);
-        
-        setTimeout(() => {
-            setIsFormVisible(false);
-            setFormLoading(false);
-        }, 300);
-        seatSheetRef.current?.snapToIndex(0);
-    }
-
-    const handlePassesForm = () => {
-        setPassesFormLoading(true);
+    const handleCreatePasses = () => {
         setPassengers([]);
 
         const temp = Crypto.randomUUID();
 
         setTimeout(() => {
-            setPassengers([{ id: temp, passType_id: passesTypeID, passType: passesTypeName, passTypeCode: passesTypeCode }]);
-            setPassesFormLoading(false);
-            
+            setPassengers([{ 
+                id: temp, passType_id: passesTypeID, passType: passesTypeName, passTypeCode: passesTypeCode
+            }]);
+
         }, 400);
 
         router.push('/bookingForm')
-    }
-
-    const handleSave = () => {
-        setSaveLoading(true);
-        setErrorForm([]);
-
-        setTimeout(() => {
-            const hasEmpty = passengers.find((p) =>
-                !p.name?.trim() || !p.passType?.trim() || !p.age || !p.gender?.trim() 
-            )
-
-            const passesType = passengers.some((p) => p.passType == 'Passes' || p.passTypeCode == 'P');
-
-            const invalidNameFormat = passengers.find((p) => !p.name?.includes(',') );
-            
-            if(!passesType) {
-                if (invalidNameFormat) {
-                    setErrorForm([invalidNameFormat.seatNumber ?? '']);
-                    Alert.alert('Invalid', `Invalid name format for seat number ${invalidNameFormat.seatNumber}`);
-                    setSaveLoading(false);
-                    return;
-                }
-
-                if (hasEmpty) {
-                    setErrorForm([hasEmpty.seatNumber ?? '']);
-                    Alert.alert('Invalid', `Seat number ${hasEmpty.seatNumber} still has some required fields missing.`);
-                    setSaveLoading(false);
-                    return;
-                }
-    
-                const infantFieldError = passengers.find((p) =>
-                    p.infant?.find((i) => !i.name.trim() || !i.gender.trim() || !i.age)
-                )
-                if (infantFieldError) {
-                    setErrorForm(prev => [...prev, infantFieldError!.seatNumber ?? '']);
-                    Alert.alert('Invalid', `Seat number ${infantFieldError.seatNumber} has missing infant details.`);
-                    setSaveLoading(false);
-                    return;
-                }
-    
-                const infantAgeError = passengers.find((p) =>
-                    p.infant?.find((i) => i.age > 2)
-                )
-                if (infantAgeError) {
-                    setErrorForm(prev => [...prev, infantAgeError!.seatNumber ?? '']);
-                    Alert.alert('Check Infant Age', `Please provide a valid age for the infant in seat ${infantAgeError.seatNumber}.`);
-                    setSaveLoading(false);
-                    return;
-                }
-    
-                const childAgeError = passengers.filter((p) => p.passType == 'Child' && (p.age! > 18 || p.age! < 3));
-                if(childAgeError.length > 0) {
-                    setErrorForm(prev => [...prev, ...childAgeError.map(p => p.seatNumber ?? '')]);
-                    childAgeError.forEach((child: any) => {
-                        Alert.alert(
-                            "Invalid Age",
-                            `Passenger in seat ${child.seatNumber} is marked as "Child" but age is ${child.age}.`
-                        );
-                    });
-                    setSaveLoading(false);
-                    return;
-                }
-                
-                const adultAgeError = passengers.filter((p) => p.passType == 'Adult' && (p.age! < 19 || p.age! > 59));
-                if(adultAgeError.length > 0) {
-                    setErrorForm(prev => [...prev, ...adultAgeError.map(p => p.seatNumber ?? '')]);
-                    adultAgeError.forEach((adult: any) => {
-                        Alert.alert(
-                            "Invalid Age",
-                            `Passenger in seat ${adult.seatNumber} is marked as "Adult" but age is ${adult.age}.`
-                        );
-                    });
-                    setSaveLoading(false);
-                    return;
-                }
-    
-                const seniorAgeError = passengers.filter((p) => p.passType == 'Senior' && p.age! < 60);
-                if(seniorAgeError.length > 0) {
-                    setErrorForm(prev => [...prev, ...seniorAgeError.map(p => p.seatNumber ?? '')]);
-                    seniorAgeError.forEach((senior: any) => {
-                        Alert.alert(
-                            "Invalid Age",
-                            `Passenger in seat ${senior.seatNumber} is marked as "Senior" but age is ${senior.age}.`
-                        );
-                    });
-                    setSaveLoading(false);
-                    return;
-                }
-            }
-
-            if (invalidNameFormat) {
-                Alert.alert('Invalid', `A passenger has an invalid name format`);
-                setSaveLoading(false);
-                return;
-            }
-
-            if(passengers.some((p) => p.hasCargo == true &&
-                p.cargo.some(c => c.cargoType == 'Rolling Cargo' && !c.cargoBrand?.trim()))) {
-
-                Alert.alert('Invalid', 'Brand is required.');
-                setSaveLoading(false);
-                return;
-            }
-            
-            if(passengers.some((p) => p.hasCargo == true &&
-                p.cargo.some(c => c.cargoType == 'Rolling Cargo' && !c.cargoSpecification?.trim()))) {
-
-                Alert.alert('Invalid', 'Specification is required.');
-                setSaveLoading(false);
-                return;
-            }
-
-            if(passengers.some((p) => p.hasCargo == true &&
-                p.cargo.some(c => c.cargoType == 'Rolling Cargo' && !c.cargoPlateNo?.trim()))) {
-
-                Alert.alert('Invalid', 'Plate number is required.');
-                setSaveLoading(false);
-                return;
-            }
-
-            if(passengers.some((p) => p.hasCargo == true &&
-                p.cargo.some(c => c.cargoType == 'Parcel' && !c.parcelCategory?.trim()))) {
-
-                Alert.alert('Invalid', 'Paracel category is required.');
-                setSaveLoading(false);
-                return;
-            }
-
-            router.push('/summary');
-            setSaveLoading(false);
-        }, 300);
     }
 
     const renderBottomSheetBackdrop = useCallback(
@@ -302,7 +158,7 @@ export default function SeatPlan() {
                         <Ionicons name={'arrow-back'} size={30} color={'#fff'} />
                     </TouchableOpacity>
                     {(passengers.length < 1 || passengers.some(p => p.passType == 'Passes')) && (
-                        <TouchableOpacity onPress={() => handlePassesForm()} style={{ opacity: passesIsHidden == true ?0 : 1 }}>
+                        <TouchableOpacity onPress={() => handleCreatePasses()} style={{ opacity: passesIsHidden == true ?0 : 1 }}>
                             <MaterialCommunityIcons name={'account-arrow-right'} size={30} color={'#fff'} />
                         </TouchableOpacity>
                     )}
@@ -343,15 +199,7 @@ export default function SeatPlan() {
 
                 {!passengers.some((p) => p.passType == 'Passes') && passengers.some((p) => p.seatNumber != null) && (
                     <BottomSheet ref={seatSheetRef} snapPoints={seatSnapPoints} index={passengers.length > 0 ? 0 : -1} bottomInset={1} backdropComponent={renderBottomSheetBackdrop} enableHandlePanningGesture={false} enableContentPanningGesture={false}  handleIndicatorStyle={{ display: 'none' }} >
-                        <View style={{ flexDirection:'row', justifyContent: 'space-between', alignItems: 'center', paddingTop: 5, paddingHorizontal: 10 }}>
-                            <Text style={{ fontSize: 14, fontWeight: "bold" }}>Seat# selected</Text>
-                            {isFormVisible == true && (
-                                <TouchableOpacity onPress={() => handleSeatChange()} style={{ flexDirection: 'row', alignItems: 'center', gap: 2 }}>
-                                    <Ionicons name="swap-horizontal" size={20} color={'#cf2a3a'} />
-                                    <Text style={{ color: '#cf2a3a', fontSize: 14, fontWeight: 'bold' }}>Change Seat</Text>
-                                </TouchableOpacity>
-                            )}
-                        </View>
+                        <Text style={{ fontSize: 14, fontWeight: "bold", marginLeft: 10 }}>Seat# selected</Text>
                         <View style={{ paddingHorizontal: 10 }}>
                             <View style={{ flexDirection: 'row', flexWrap: 'wrap', gap: 8, borderColor: '#B3B3B3', borderWidth: 1, backgroundColor: '#fff', borderRadius: 8, padding: 8, width: '100%', marginTop: 5 }}>
                                 {passengers.map((p) => (

@@ -15,7 +15,7 @@ const { height, width } = Dimensions.get('window')
 export default function BookingForm() {
     const { passengers, setPassengers, clearPassengers } = usePassengers();
     const { passesTypeID, passesTypeCode, passesTypeName } = usePassesType();
-    const { totalFare, origin, destination, setTotalFare } = useTrip()
+    const { totalFare, approvedBy, origin, destination, setTotalFare } = useTrip()
     const [saveloading, setSaveLoading] = useState(false);
     const [errorForm, setErrorForm] = useState<(string | number)[]>([]);
     const [year, setYear] = useState('');
@@ -52,6 +52,12 @@ export default function BookingForm() {
             const passesType = passengers.some((p) => p.passType == 'Passes' || p.passTypeCode == 'P');
 
             const invalidNameFormat = passengers.find((p) => !p.name?.includes(',') );
+
+            if(passesType && !approvedBy.trim()) {
+                Alert.alert('Invalid', 'Approved by is required.');
+                setSaveLoading(false);
+                return;
+            }
             
             if(!passesType) {
                 if (invalidNameFormat) {

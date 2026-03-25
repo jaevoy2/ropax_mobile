@@ -17,6 +17,7 @@ export type TripContextProps = {
     mobileCode: string;
     refNumber: string;
     isCargoable: number;
+    approvedBy?: string;
     setVessel: React.Dispatch<React.SetStateAction<string>>;
     setRouteID: React.Dispatch<React.SetStateAction<number>>;
     setOrigin: React.Dispatch<React.SetStateAction<string>>;
@@ -33,6 +34,7 @@ export type TripContextProps = {
     setCashTendered: React.Dispatch<React.SetStateAction<number>>;
     setRefNumber: React.Dispatch<React.SetStateAction<string>>;
     setIsCargoable: React.Dispatch<React.SetStateAction<number>>;
+    setApprovedBy: React.Dispatch<React.SetStateAction<string>>;
     clearTrip: () => void;
 }
 
@@ -60,6 +62,7 @@ export const TripProvider = ({ children }: TripProviderProps) => {
     const [departure_time, setDepartureTime] = useState<string>('');
     const [note, setNote] = useState<string>('');
     const [isCargoable, setIsCargoable] = useState<number>(0);
+    const [approvedBy, setApprovedBy] = useState('');
 
     const clearTrip = () => {
         setID(0);
@@ -80,8 +83,10 @@ export const TripProvider = ({ children }: TripProviderProps) => {
     };
 
     return (
-        <TripContext.Provider value={{ id, vessel, routeID, origin, destination, vessel_id, totalFare, note, departure_time, fareChange, code, webCode, mobileCode, cashTendered, refNumber, isCargoable,
-                                    setVessel, setID, setRouteID, setOrigin, setDestination, setVesselID, setTotalFare, setNote, setDepartureTime, setFareChange, setCode, setWebCode, setMobileCode, setCashTendered, setRefNumber, setIsCargoable, clearTrip }}>
+        <TripContext.Provider value={{ id, vessel, routeID, origin, destination, vessel_id, totalFare, note, departure_time,
+                                        fareChange, code, webCode, mobileCode, cashTendered, refNumber, isCargoable, approvedBy,
+                                    setVessel, setID, setRouteID, setOrigin, setDestination, setVesselID, setTotalFare, setNote,setDepartureTime,
+                                    setFareChange, setCode, setWebCode, setMobileCode, setCashTendered, setRefNumber, setIsCargoable, clearTrip, setApprovedBy }}>
             {children}
         </TripContext.Provider>
     );

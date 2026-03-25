@@ -72,6 +72,13 @@ export type TripInfo = {
     isCargoable: number;
 };
 
+export type PercentagesProps = {
+    id: number;
+    situation: string;
+    feePercentage: number;
+    isActive: number;
+}
+
 const tabs = [
     { id: 1, name: 'Passengers' },
     { id: 2, name: 'Cargo' }
@@ -87,6 +94,7 @@ export default function BookingInfo() {
     const [ paxInfo, setPaxInfo ] = useState<PaxInfo[]>([]);
     const [trips, setTrips] = useState<TripProps[] | null>(null);
     const [tripInfo, setTripInfo] = useState<TripInfo | null>(null)
+    const [percentages, setPercentages] = useState<PercentagesProps[]>([])
     const [formTab, setFormTab] = useState('Passengers');
     const [toggleOption, setToggleOption] = useState(false);
     const [type, setType] = useState('');
@@ -175,7 +183,7 @@ export default function BookingInfo() {
                         }
                     ),
                     isCargoable: t.trip.vessel.is_cargoable,
-                    hasDeparted: (verifyTime(t.trip.departure_time, t.specific_days), tripStatus == 'departed' ? true : false)
+                    hasDeparted: (verifyTime(t.trip.departure_time, t.specific_days), tripStatus == 'departed' ? true : false),
                 }))
 
                 setTrips(tripsData);
@@ -200,7 +208,7 @@ export default function BookingInfo() {
             webCode: web_code,
             loading: false,
             departureTime: departureTime,
-            isCargoable: cargoable
+            isCargoable: cargoable,
         });    
     }
 
@@ -299,10 +307,18 @@ export default function BookingInfo() {
                     fare: pax.fares[0]?.fare ? pax.fares[0]?.fare : pax.bookings.find((r: any) => r.pivot)?.pivot?.fare,
                     bookingType: pax.bookings[0].type_id,
                     isCargoable: pax.bookings[0].trip_schedule.trip.vessel.is_cargoable
-                })) 
+                }))
+
+                const cancelPercents: PercentagesProps[] = response.cancellationPercentage.map((percent: any) => ({
+                    id: percent.id,
+                    situation: percent.situation,
+                    feePercentage: percent.fee_percentage,
+                    isActive: percent.is_active
+                }))
 
 
-                setPaxInfo(paxData)
+                setPaxInfo(paxData);
+                setPercentages(cancelPercents)
                 setTotalFare(
                     paxData.reduce((sum, passenger) => sum + Number(passenger?.fare), 0)
                 )
@@ -564,7 +580,7 @@ export default function BookingInfo() {
             )}
 
             {cancelModal == true && (
-                <CancelBooking cancelModal={cancelModal} setCancelModal={setCancelModal} paxInfo={paxInfo} setPaxInfo={setPaxInfo} />
+                <CancelBooking cancelModal={cancelModal} setCancelModal={setCancelModal} paxInfo={paxInfo} setPaxInfo={setPaxInfo} percents={percentages} bookingId={bookingId} />
             )}
 
             <Modal transparent animationType={'fade'} visible={reschedModal}>

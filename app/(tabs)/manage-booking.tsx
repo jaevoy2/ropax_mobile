@@ -226,7 +226,7 @@ export default function ManageBooking() {
                             <>
                                 <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', marginBottom: 10 }}>
                                     <Text style={{ fontWeight: 'bold', fontSize: 18 }}>Bookings</Text>
-                                    {/* <Text style={{ fontSize: 15, fontWeight: 'bold' }}>{formattedDate}</Text> */}
+                                    <Text style={{ fontSize: 15, fontWeight: 'bold' }}>{formattedDate}</Text>
                                 </View>
                                 <FlatList data={[...PassengerLists].reverse()} keyExtractor={(passengers) => String(passengers.id)} showsVerticalScrollIndicator={false}
                                     refreshControl={<RefreshControl refreshing={loading} onRefresh={() => handleRefresh()} colors={['#cf2a3a']} />}

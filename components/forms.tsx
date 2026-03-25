@@ -1,9 +1,11 @@
 import { FetchPassengerType } from '@/api/passengerType';
 import { PaxCargoProperties, useCargo } from '@/context/cargoProps';
+import { usePassesType } from '@/context/passes';
 import { useTrip } from '@/context/trip';
 import { Ionicons } from '@expo/vector-icons';
+import * as Crypto from 'expo-crypto';
 import React, { useCallback, useEffect, useMemo, useState } from 'react';
-import { Alert, Text, TextInput, TouchableOpacity, View } from 'react-native';
+import { Alert, Pressable, Text, TextInput, TouchableOpacity, View } from 'react-native';
 import { Dropdown } from 'react-native-element-dropdown';
 import { Checkbox } from 'react-native-paper';
 import { InfantProps, PassengerProps, usePassengers } from '../context/passenger';
@@ -30,8 +32,9 @@ type PaxFareProps = {
 }
 
 export default function Forms({ errorForm }: FormProps) {
-    const { vessel_id, routeID, isCargoable, departure_time, id } = useTrip();
+    const { vessel_id, routeID, isCargoable, departure_time, approvedBy, setApprovedBy } = useTrip();
     const { passengers, setPassengers, updatePassenger, updateInfant, updateCargo } = usePassengers();
+    const { passesTypeID, passesTypeCode, passesTypeName } = usePassesType();
     const [typeLoading, setTypeLoading] = useState(true);
     const { cargoProperties } = useCargo();
     const [passengerType, setPassengerType] = useState<PassTypeProps[] | null>(null);
@@ -130,7 +133,6 @@ export default function Forms({ errorForm }: FormProps) {
     }
 
     const addPaxCargo = (indentifier: string | number, newCargo: PaxCargoProperties) => {
-        console.log()
         setPassengers((prev) => 
             prev.map((p, index) => {
                 if(p.seatNumber !== indentifier && index !== indentifier) return p;
@@ -175,10 +177,19 @@ export default function Forms({ errorForm }: FormProps) {
 
     }
 
-    // const handlePassesRemove = (passIndex: number) => {
+    const handleAddPasses = () => {
+        const temp = Crypto.randomUUID()
 
-    // }
+        setPassengers(prev => [
+            ...prev, { id: temp, passType_id: passesTypeID, passType: passesTypeName, passTypeCode: passesTypeCode }
+        ]);
+    }
 
+    const handlePassesRemove = (passId: string) => {
+        setPassengers(prev => prev.filter(
+            p => p.id != passId
+        ))
+    }
 
     const handleOnPaxTypeSelect = (passenger: PassengerProps, typeID: number, paxType: string, paxTypeCode: string) => {        
         const prop = paxFares?.find(
@@ -319,7 +330,7 @@ export default function Forms({ errorForm }: FormProps) {
                 {passengers.map((p, index) => (
                     <View key={p.id} style={{ position: 'relative', borderColor: errorForm.includes(p.seatNumber ?? '') ? '#cf2a3a' : '#B3B3B3', borderWidth: 1, borderRadius: 8, paddingHorizontal: 10, paddingVertical: 10, backgroundColor: '#fff', elevation: 5 }}>
                         {passengers.some((p) => p.passType == 'Passes' && index != 0) && (
-                            <TouchableOpacity style={{ alignSelf: 'flex-end', top: -5, flexDirection:'row', alignItems: 'center' }}>
+                            <TouchableOpacity onPress={() => handlePassesRemove(p.id)} style={{ alignSelf: 'flex-end', flexDirection:'row', alignItems: 'center' }}>
                                 <Ionicons name='close' size={20} color={'#cf2a3a'} />
                                 <Text style={{ color: '#cf2a3a', fontWeight: 'bold' }}>Remove</Text>
                             </TouchableOpacity>
@@ -649,9 +660,16 @@ export default function Forms({ errorForm }: FormProps) {
                     <View style={{ padding: 10, backgroundColor: '#fff', elevation: 5, borderRadius: 8, borderWidth: 1, borderColor: '#B3B3B3' }}>
                         <Text style={{ fontSize: 12, fontWeight: 'bold', color: '#545454' }}>Approved by:</Text>
                         <View style={{ borderColor: '#B3B3B3', borderWidth: 1, borderRadius: 5, height: 45, justifyContent: 'center' }}>
-                            <TextInput placeholder='First Last' style={{ fontSize: 15, fontWeight: '600' }} />
+                            <TextInput onChangeText={(text) => setApprovedBy(text)} value={approvedBy} placeholder='First Last' style={{ fontSize: 15, fontWeight: '600' }} />
                         </View>
                     </View>
+                )}
+
+                {passengers.some(p => p.passType == 'Passes') && (
+                    <Pressable onPress={() => handleAddPasses()} style={{ flexDirection: 'row', alignItems: 'center', alignSelf: 'center', paddingVertical: 10, paddingHorizontal: 15, borderRadius: 8, backgroundColor: '#cf2a3a', elevation: 2 }}>
+                        <Ionicons name={'add'} color={'#fff'} size={20} />
+                        <Text style={{ color: '#fff', fontWeight: '600' }}>Add Passes</Text>
+                    </Pressable>
                 )}
             </View>
 
