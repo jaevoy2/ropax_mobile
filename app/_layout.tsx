@@ -5,6 +5,7 @@ import { PassesTypeProvider } from "@/context/passes";
 import { TripProvider } from "@/context/trip";
 import { Stack } from "expo-router";
 import { StatusBar } from "react-native";
+import { AutocompleteDropdownContextProvider } from 'react-native-autocomplete-dropdown';
 
 export default function RootLayout() {
   return (
@@ -13,6 +14,7 @@ export default function RootLayout() {
           <PassengerProvider>
             <ExpenseProvider>
               <PassesTypeProvider>
+                <AutocompleteDropdownContextProvider>
                   <StatusBar barStyle={'light-content'} backgroundColor={'transparent'} translucent />
           
                   <Stack>
@@ -30,6 +32,7 @@ export default function RootLayout() {
                       <Stack.Screen name="addExpenses" options={{ headerShown: false }} />
 
                   </Stack>
+                </AutocompleteDropdownContextProvider>
               </PassesTypeProvider>
             </ExpenseProvider>
           </PassengerProvider>

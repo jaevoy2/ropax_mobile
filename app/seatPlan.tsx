@@ -15,6 +15,7 @@ import { Alert, Dimensions, Image, ScrollView, Text, TouchableOpacity, View } fr
 import { GestureHandlerRootView } from 'react-native-gesture-handler';
 
 
+
 const { width, height } = Dimensions.get('window');
 const deck = require('@/assets/images/deck.png');
 const icon = require('@/assets/images/logo_icon.png');
@@ -26,14 +27,22 @@ export default function SeatPlan() {
     const { passesTypeID, passesTypeCode, passesTypeName } = usePassesType();
     const { paxCargoProperty } = useCargo();
     const [year, setYear] = useState('');
-    const [isFormVisible, setIsFormVisible] = useState(false);
     const [totalBookings, setTotalBookings] = useState<number>(0);
     const [errorForm, setErrorForm] = useState<(string | number)[]>([]);
     const [passesIsHidden, setPassesIsHidden] = useState(false);
-
+    const passengersRef = useRef(passengers);
     const seatSheetRef = useRef<BottomSheet>(null);
 
-    const seatSnapPoints = useMemo(() => ["26%","35%", "45%", "55%", "65%", "70%", "95%"], []);
+    const seatSnapPoints = useMemo(() => ["30%"], []);
+    const sheetIndex = useMemo(() => passengers.length > 0 ? 0 : -1, [passengers.length]);
+
+    const hasPasses = useMemo(() => passengers.some(p => p.passType == 'Passes'), [passengers]);
+    const hasSeat = useMemo(() => passengers.some(p => p.seatNumber != null), [passengers]);
+
+
+    useEffect(() => {
+        passengersRef.current = passengers;
+    }, [passengers]);
 
     useEffect(() => {
         handleFetchTotalBookings(id)
@@ -42,7 +51,7 @@ export default function SeatPlan() {
     }, []);
 
     useEffect(() => {
-        if(passengers && passengers.some(p => p.seatNumber != null)) {
+        if(passengers && hasSeat) {
             setPassesIsHidden(true)
         }else {
             setPassesIsHidden(false);
@@ -62,6 +71,7 @@ export default function SeatPlan() {
 
     }, [passengers, paxCargoProperty]);
 
+
     useEffect(() => {
         setTotalFare(computedFare)
     }, [computedFare])
@@ -70,7 +80,14 @@ export default function SeatPlan() {
         if(passengers.length == 0) {
             seatSheetRef.current?.snapToIndex(0);
         }
-    }, [passengers])
+    }, [])
+
+
+    const vesselComponent = useMemo(() => (
+        vessel == 'Mbca Leopards Sea Runner' || vessel == 'Sea Runner'
+            ? <SRVessel onSeatSelect={handleSeatSelect} />
+            : <L2Vessel onSeatSelect={handleSeatSelect} />
+    ), [vessel, handleSeatSelect]);
 
     const handleRemoveSeat =  useCallback((seat: number | string, paxId: string | number) => {
         if (!seat) return;
@@ -154,10 +171,10 @@ export default function SeatPlan() {
         <GestureHandlerRootView style={{ flex: 1, backgroundColor: '#cf2a3a' }}>
             <View style={{ height: '100%', overflow: 'hidden' }}>
                 <View style={{ height: 100, flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', paddingHorizontal: 20, paddingTop: 20 }}>
-                    <TouchableOpacity onPress={() => {router.back(), handleForceSeatRemoval()}} style={{ zIndex: 1 }}>
+                    <TouchableOpacity onPress={() => {router.back(); handleForceSeatRemoval()}} style={{ zIndex: 1 }}>
                         <Ionicons name={'arrow-back'} size={30} color={'#fff'} />
                     </TouchableOpacity>
-                    {(passengers.length < 1 || passengers.some(p => p.passType == 'Passes')) && (
+                    {(passengers.length < 1 || hasPasses) && (
                         <TouchableOpacity onPress={() => handleCreatePasses()} style={{ opacity: passesIsHidden == true ?0 : 1 }}>
                             <MaterialCommunityIcons name={'account-arrow-right'} size={30} color={'#fff'} />
                         </TouchableOpacity>
@@ -173,55 +190,51 @@ export default function SeatPlan() {
                             <View style={{ height: 300, width: '95%', zIndex: 5, position: 'absolute', alignSelf: 'center', alignItems: 'center', }}>
                                 <Image source={icon} style={{ width: 41, height: 40, marginTop: 40 }} />
                                 <Image source={text_logo} style={{ width: 120, height: 28, marginTop: 10 }} />
-                                <Text style={{ fontSize: 15, fontWeight: '900', color: '#cf2a3a', marginTop: 20 }}>{totalBookings} TOTAL PAYING PASSENGERS</Text>
+                                <Text style={{ fontSize: 13, fontWeight: '900', color: '#fff', marginTop: 20, textAlign: 'center' }}>{totalBookings} TOTAL PAYING PASSENGERS</Text>
                                 <View style={{ width: '80%', backgroundColor: '#FAFAFA', marginTop: 20, borderRadius: 10, paddingVertical: 30, paddingHorizontal: 10, flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' }}>
                                     <View style={{ flexDirection: 'row', gap: 3, alignItems: 'center' }}>
                                         <Ionicons name={'boat'} size={16} color={'#fff'} style={{ padding: 3, backgroundColor: '#cf2a3a', borderRadius: 5 }} />
                                         <Text style={{ fontSize: 12, fontWeight: 'bold' }}>{origin}</Text>
                                     </View>
-                                    <Ionicons name={'arrow-forward-circle'} color={'#cf2a3a'} size={25} />
+                                    <Ionicons name={'arrow-forward'} color={'#cf2a3a'} size={25} />
                                     <View style={{ flexDirection: 'row', gap: 3, alignItems: 'center' }}>
                                         <Ionicons name={'location'} size={15} color={'#fff'} style={{ padding: 3, backgroundColor: '#cf2a3a', borderRadius: 5 }} />
                                         <Text style={{ fontSize: 12, fontWeight: 'bold' }}>{destination}</Text>
                                     </View>
                                 </View>
                                 <View style={{ alignSelf: 'center' }}>
-                                    {vessel == 'Mbca Leopards Sea Runner' || vessel == 'Sea Runner' ? (
-                                        <SRVessel onSeatSelect={handleSeatSelect} />
-                                    ) : (
-                                        <L2Vessel onSeatSelect={handleSeatSelect} />
-                                    )}
+                                    {vesselComponent}
                                 </View>
                             </View>
                         </ScrollView>
                     </View>
                 </View>
 
-                {!passengers.some((p) => p.passType == 'Passes') && passengers.some((p) => p.seatNumber != null) && (
-                    <BottomSheet ref={seatSheetRef} snapPoints={seatSnapPoints} index={passengers.length > 0 ? 0 : -1} bottomInset={1} backdropComponent={renderBottomSheetBackdrop} enableHandlePanningGesture={false} enableContentPanningGesture={false}  handleIndicatorStyle={{ display: 'none' }} >
-                        <Text style={{ fontSize: 14, fontWeight: "bold", marginLeft: 10 }}>Seat# selected</Text>
-                        <View style={{ paddingHorizontal: 10 }}>
-                            <View style={{ flexDirection: 'row', flexWrap: 'wrap', gap: 8, borderColor: '#B3B3B3', borderWidth: 1, backgroundColor: '#fff', borderRadius: 8, padding: 8, width: '100%', marginTop: 5 }}>
-                                {passengers.map((p) => (
-                                    <View key={p.id} style={{ position: 'relative' }}>
-                                        {isFormVisible == false && (
-                                            <TouchableOpacity onPress={() => handleRemoveSeat(p.seatNumber, p.id)} style={{ position: 'absolute', top: -8, right: -4, zIndex: 3 }}>
-                                                <Ionicons name="remove-circle" size={20} color={'#cf2a3a'} />
+                <BottomSheet ref={seatSheetRef} snapPoints={seatSnapPoints} index={sheetIndex } bottomInset={1} backdropComponent={renderBottomSheetBackdrop} enableHandlePanningGesture={false} enableContentPanningGesture={false}  handleIndicatorStyle={{ display: 'none' }} >
+                    <Text style={{ fontSize: 14, fontWeight: "bold", marginLeft: 20 }}>Seat# selected</Text>
+                    <View style={{ paddingHorizontal: 10 }}>
+                        <View style={{ height: 90, borderColor: '#B3B3B3', borderWidth: 1, backgroundColor: '#fff', borderRadius: 8, paddingHorizontal: 8, width: '100%', marginTop: 5 }}>
+                            <ScrollView style={{ flex: 1, paddingTop: 10, paddingBottom: 20 }}>
+                                <View style={{ flexDirection: 'row', flexWrap: 'wrap', gap: 12 }}>
+                                    {passengers.map((p) => (
+                                        <View key={p.id} style={{ position: 'relative' }}>
+                                            <TouchableOpacity onPress={() => handleRemoveSeat(p.seatNumber, p.id)} style={{ position: 'absolute', top: -10, right: -9, zIndex: 3 }}>
+                                                <Ionicons name="remove-circle" size={28} color={'#cf2a3a'} />
                                             </TouchableOpacity>
-                                        )}
-                                        <TouchableOpacity style={{ borderColor: errorForm.includes(p.seatNumber!) ? '#cf2a3a' : '#000', backgroundColor: errorForm.includes(p.seatNumber!) ? '#cf2a3b3d' : 'transparent', borderWidth: 1, borderRadius: 5, width: 45, height: 45, justifyContent: 'center' }}>
-                                            <Text style={{ textAlign: 'center', fontWeight: 'bold', fontSize: 16 }}>{p.seatNumber}</Text>
-                                        </TouchableOpacity>
-                                    </View>
-                                ))}
-                            </View>
+                                            <TouchableOpacity style={{ borderColor: errorForm.includes(p.seatNumber!) ? '#cf2a3a' : '#000', backgroundColor: errorForm.includes(p.seatNumber!) ? '#cf2a3b3d' : 'transparent', borderWidth: 1, borderRadius: 5, width: 50, height: 50, justifyContent: 'center' }}>
+                                                <Text style={{ textAlign: 'center', fontWeight: 'bold', fontSize: 16 }}>{p.seatNumber}</Text>
+                                            </TouchableOpacity>
+                                        </View>
+                                    ))}
+                                </View>
+                            </ScrollView>
                         </View>
+                    </View>
 
-                        <TouchableOpacity onPress={() => router.push('/bookingForm')} disabled={passengers.length == 0} style={{ backgroundColor: passengers.length == 0 ? '#df5a68ff' : '#cf2a3a', width: '95%', alignSelf: 'center', borderRadius: 8, paddingVertical: 15, marginTop: 15 }}>
-                            <Text style={{ fontSize: 16, fontWeight: 'bold', textAlign: 'center', color: '#fff' }}>Continue</Text>
-                        </TouchableOpacity>
-                    </BottomSheet>
-                )}
+                    <TouchableOpacity onPress={() => router.push('/bookingForm')} disabled={passengers.length == 0} style={{ backgroundColor: passengers.length == 0 ? '#df5a68ff' : '#cf2a3a', width: '95%', alignSelf: 'center', borderRadius: 8, paddingVertical: 15, marginTop: 15 }}>
+                        <Text style={{ fontSize: 16, fontWeight: 'bold', textAlign: 'center', color: '#fff' }}>Continue</Text>
+                    </TouchableOpacity>
+                </BottomSheet>
 
             </View>
         </GestureHandlerRootView>

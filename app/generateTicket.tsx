@@ -148,21 +148,21 @@ export default function TicketGenerator() {
                                 
                                     <View style={{ paddingVertical: 5 }}>
                                         <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', marginBottom: 3, borderBottomColor: '#9B9B9B', borderBottomWidth: 1, paddingBottom: 5 }}>
-                                            <Text style={{ fontSize: 14, width: '40%', fontWeight: '700' }}>Name:</Text>
-                                            <Text style={{ fontSize: 14, width: 50, fontWeight: '700' }}>Type:</Text>
-                                            <Text style={{ fontSize: 14, fontWeight: '700', width: 50, }}>Seat#:</Text>
-                                            <Text style={{ fontSize: 14, fontWeight: '700', width: 60, textAlign: 'right' }}>Fare</Text>
+                                            <Text style={{ fontSize: 13, width: '40%', fontWeight: '700' }}>Name:</Text>
+                                            <Text style={{ fontSize: 13, width: 50, fontWeight: '700' }}>Type:</Text>
+                                            <Text style={{ fontSize: 13, fontWeight: '700', width: 50, }}>Seat#:</Text>
+                                            <Text style={{ fontSize: 13, fontWeight: '700', width: 60, textAlign: 'right' }}>Fare</Text>
                                         </View>
-                                        {passengers.some((p) => p?.accommodation == 'Business Class' || p?.accommodation == 'B-Class') && (
+                                        {passengers.some((p) => p?.accommodation == 'Business Class' || p?.accommodation == 'B-Class' || p?.accommodation == 'B Class') && (
                                             <View style={{ marginTop: 5}}>
                                                 <Text style={{ fontSize: 14, fontWeight: '900' }}>B-Class</Text>
-                                                {passengers.filter((p) => p?.accommodation == 'Business Class' || p?.accommodation == 'B-Class')
+                                                {passengers.filter((p) => p?.accommodation == 'Business Class' || p?.accommodation == 'B-Class' || p?.accommodation == 'B Class')
                                                 .map((p) => (
                                                     <View key={p.seatNumber} style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' }}>
-                                                        <Text style={{ fontSize: 14, width: '40%' }}>{`${p.name?.split(',')[1]?.trim().charAt(0)}. ${p.name?.split(',')[0]}`}</Text>
-                                                        <Text style={{ fontSize: 14, width: 50 }}>{p.passTypeCode}</Text>
-                                                        <Text style={{ fontSize: 14, width: 50 }}>{`${p.seatNumber}`}</Text>
-                                                        <Text style={{ fontSize: 14, width: 60, textAlign: 'right' }}>₱ {p.fare.toLocaleString('en-PH', { minimumFractionDigits: 2,  maximumFractionDigits: 2})}</Text>
+                                                        <Text style={{ fontSize: 13, width: '40%' }}>{`${p.name?.split(',')[1]?.trim().charAt(0)}. ${p.name?.split(',')[0]}`}</Text>
+                                                        <Text style={{ fontSize: 13, width: 50 }}>{p.passTypeCode}</Text>
+                                                        <Text style={{ fontSize: 13, width: 50 }}>{`${p.seatNumber}`}</Text>
+                                                        <Text style={{ fontSize: 13, width: 70, textAlign: 'right' }}>₱ {p.fare.toLocaleString('en-PH', { minimumFractionDigits: 2,  maximumFractionDigits: 2})}</Text>
                                                     </View>
                                                 ))}
                                             </View>
@@ -173,10 +173,10 @@ export default function TicketGenerator() {
                                                 {passengers.filter((p) => p?.accommodation == 'Tourist')
                                                 .map((p) => (
                                                     <View key={p.seatNumber} style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' }}>
-                                                        <Text style={{ fontSize: 14, width: '40%' }}>{`${p.name?.split(',')[1]?.trim().charAt(0)}. ${p.name?.split(',')[0]}`}</Text>
-                                                        <Text style={{ fontSize: 14, width: 50 }}>{p.passTypeCode}</Text>
-                                                        <Text style={{ fontSize: 14, width: 50 }}>{`${p.seatNumber}`}</Text>
-                                                        <Text style={{ fontSize: 14, width: 60, textAlign: 'right' }}>₱ {p.fare.toLocaleString('en-PH', { minimumFractionDigits: 2,  maximumFractionDigits: 2})}</Text>
+                                                        <Text style={{ fontSize: 13, width: '40%' }}>{`${p.name?.split(',')[1]?.trim().charAt(0)}. ${p.name?.split(',')[0]}`}</Text>
+                                                        <Text style={{ fontSize: 13, width: 50 }}>{p.passTypeCode}</Text>
+                                                        <Text style={{ fontSize: 13, width: 50 }}>{`${p.seatNumber}`}</Text>
+                                                        <Text style={{ fontSize: 13, width: 70, textAlign: 'right' }}>₱ {p.fare.toLocaleString('en-PH', { minimumFractionDigits: 2,  maximumFractionDigits: 2})}</Text>
                                                     </View>
                                                 ))}
                                             </>
@@ -187,10 +187,10 @@ export default function TicketGenerator() {
                                                 {passengers.filter((p) => p.passType == 'Passes')
                                                 .map((p, index) => (
                                                     <View key={index} style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' }}>
-                                                        <Text style={{ fontSize: 14, width: '40%' }}>{`${p.name?.split(',')[1]?.trim().charAt(0)}. ${p.name?.split(',')[0]}`}</Text>
-                                                        <Text style={{ fontSize: 14, width: 50 }}>{p.passTypeCode}</Text>
-                                                        <Text style={{ fontSize: 14, width: 50 }}>{`${p.seatNumber ?? 'N/A'}`}</Text>
-                                                        <Text style={{ fontSize: 14, width: 60, textAlign: 'right' }}>₱ {p.fare.toLocaleString('en-PH', { minimumFractionDigits: 2,  maximumFractionDigits: 2})}</Text>
+                                                        <Text style={{ fontSize: 13, width: '40%' }}>{`${p.name?.split(',')[1]?.trim().charAt(0)}. ${p.name?.split(',')[0]}`}</Text>
+                                                        <Text style={{ fontSize: 13, width: 50 }}>{p.passTypeCode}</Text>
+                                                        <Text style={{ fontSize: 13, width: 50 }}>{`${p.seatNumber ?? 'N/A'}`}</Text>
+                                                        <Text style={{ fontSize: 13, width: 70, textAlign: 'right' }}>₱ {p.fare.toLocaleString('en-PH', { minimumFractionDigits: 2,  maximumFractionDigits: 2})}</Text>
                                                     </View>
                                                 ))}
                                             </>
@@ -199,10 +199,10 @@ export default function TicketGenerator() {
                                             p.hasInfant && p.infant?.map((i, index) => (
                                                 <View key={`${passIndex}-${index}`} style={{ marginBottom: 3 }}>
                                                     <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' }}>
-                                                        <Text style={{ fontSize: 14, width: '40%' }}>{`${i.name?.split(',')[1]?.trim().charAt(0)}. ${i.name?.split(',')[0]}`}</Text>
-                                                        <Text style={{ fontSize: 14, width: 50 }}>I</Text>
-                                                        <Text style={{ fontSize: 14, width: 50 }}>N/A</Text>
-                                                        <Text style={{ fontSize: 14, width: 60, textAlign: 'right' }}>₱ 00.00</Text>
+                                                        <Text style={{ fontSize: 13, width: '40%' }}>{`${i.name?.split(',')[1]?.trim().charAt(0)}. ${i.name?.split(',')[0]}`}</Text>
+                                                        <Text style={{ fontSize: 13, width: 50 }}>I</Text>
+                                                        <Text style={{ fontSize: 13, width: 50 }}>N/A</Text>
+                                                        <Text style={{ fontSize: 13, width: 70, textAlign: 'right' }}>₱ 00.00</Text>
                                                     </View>
                                                 </View>
                                             ))
@@ -217,15 +217,15 @@ export default function TicketGenerator() {
                                                 p.cargo.map(c => (
                                                     <View key={`${c.id}-${c.cargoBrand}`} style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' }}>
                                                         <View style={{ flexDirection: 'row', gap: 3 }}>
-                                                            <Text style={{ fontSize: 14, color: '#4b4b4bff' }}>{`${c.quantity}x`}</Text>
-                                                            <Text style={{ fontSize: 14, color: '#4b4b4bff' }}>
+                                                            <Text style={{ fontSize: 13, color: '#4b4b4bff' }}>{`${c.quantity}x`}</Text>
+                                                            <Text style={{ fontSize: 13, color: '#4b4b4bff' }}>
                                                                 { c.cargoType == 'Rolling Cargo' ? `${c.cargoBrand} ${c.cargoSpecification}` : c.parcelCategory}
                                                             </Text>
-                                                            <Text style={{ fontSize: 14, color: '#4b4b4bff' }}>{`(${c.cargoType})`}</Text>
+                                                            <Text style={{ fontSize: 13, color: '#4b4b4bff' }}>{`(${c.cargoType})`}</Text>
                                                         </View>
                                                         <View style={{ flexDirection: 'row', alignItems: 'center', gap: 2 }}>
-                                                            <Text style={{ fontSize: 14 }}>₱ </Text>
-                                                            <Text style={{ fontSize: 14 }}>{c.cargoAmount.toLocaleString('en-PH', { minimumFractionDigits: 2,  maximumFractionDigits: 2})}</Text>
+                                                            <Text style={{ fontSize: 13 }}>₱ </Text>
+                                                            <Text style={{ fontSize: 13 }}>{c.cargoAmount.toLocaleString('en-PH', { minimumFractionDigits: 2,  maximumFractionDigits: 2})}</Text>
                                                         </View>
                                                     </View>
                                                 )) : []

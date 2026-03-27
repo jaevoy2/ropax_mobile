@@ -6,7 +6,7 @@ import { seatSelection } from '@/utils/channel';
 import { supabase } from '@/utils/supabase';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import * as Crypto from 'expo-crypto';
-import React, { useCallback, useEffect, useMemo, useState } from 'react';
+import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { Alert, Dimensions, Text, TouchableOpacity, View } from 'react-native';
 
 const { height, width } = Dimensions.get('window');
@@ -15,6 +15,8 @@ const seatColumn1 = ['A', 'B', 'E', 'F', 'I', 'J'];
 const seatColumn2 = ['K', 'L'];
 const seatColumn3 = ['C', 'D', 'G', 'H', 'M', 'N'];
 const touristSeat = [1, 2, 3, 4, 5, 6, 7, 8, 57, 58, 59, 60, 61, 62, 63, 64];
+
+const touristSet = new Set(touristSeat);
 
 interface SeatProps { 
     passengerSeats: Set<number | string>;
@@ -60,19 +62,20 @@ const SeatPlan: React.FC<SeatProps> = React.memo(({ start, limit, passengerSeats
 
 
     return (
-        <View style={{ flexDirection: 'row', flexWrap: 'wrap', gap: 2, justifyContent: 'center' }}>
+        <View style={{ flexDirection: 'row', flexWrap: 'wrap', gap: 4, justifyContent: 'center' }}>
             {items.map((seat) => {
                 const booked = bookedSeatMap[seat];
                 const isPassenger = passengerSeats.has(seat);
+                const inChannel = seatChannel?.has(String(seat)) ?? false;
                 
                 return (
-                    <TouchableOpacity disabled={!!booked || isPassenger || seatChannel.has(String(seat))} onPress={() => onSeatSelect?.(seat, type, accomm_id)} key={seat}
-                    style={{  paddingVertical: 2, width: 32, height: 32, borderColor: '#A9A9B2', borderWidth: 1, borderRadius: 3, 
+                    <TouchableOpacity disabled={!!booked || isPassenger || inChannel} onPress={() => onSeatSelect?.(seat, type, accomm_id)} key={seat}
+                    style={{ justifyContent: 'center', paddingVertical: 2, width: 33, height: 33, borderColor: '#A9A9B2', borderWidth: 1, borderRadius: 3, 
                     backgroundColor: 
-                        booked ? booked?.station?.color : isPassenger ? '#BA68C8' : touristSeat.includes(seat) && !seatChannel.has(String(seat)) ? '#E6E2C6' : seatChannel.has(String(seat)) ? '#e6d1e9ff' : 'transparent'
+                        booked ? booked?.station?.color : isPassenger ? '#BA68C8' : touristSet.has(seat) && !seatChannel?.has(String(seat)) ? '#E6E2C6' : inChannel ? '#e6d1e9ff' : 'transparent'
                     }}>
-                        <Text style={{ fontSize: 16, textAlign: 'center', fontWeight: 'bold', 
-                            color: booked || isPassenger || seatChannel.has(String(seat)) ? '#fff' : '#000' }}>
+                        <Text style={{ fontSize: 14, textAlign: 'center', fontWeight: 'bold', 
+                            color: booked || isPassenger || inChannel ? '#fff' : '#000' }}>
                             {booked?.passTypeCode ?? seat}
                         </Text>
                     </TouchableOpacity>
@@ -114,16 +117,26 @@ const SRVessel = ({ onSeatSelect }: SRVesselProps) => {
     const [accommodations, setAccommodations] = useState<AccomsProps[] | null>(null);
     const { passengers, setPassengers } = usePassengers();
     const [seatSelectionChannel, setSeatSelectionChannel] = useState<string[]>([]);
+    const stationRef = useRef<{ id: string; color: string } | null>(null);
+    
+
+    useEffect(() => {
+        const loadStation = async () => {
+            const id = await AsyncStorage.getItem('stationID');
+            const color = await AsyncStorage.getItem('stationColor');
+            stationRef.current = { id: id ?? '', color: color ?? '' };
+        };
+        loadStation();
+    }, [])
 
     const assignseat = useCallback(async (seat: number | string, type: string, accomm_id: number) => {
-        const stationId = await AsyncStorage.getItem('stationID');
-        const stationColor = await AsyncStorage.getItem('stationColor');
+        const { id: stationId, color: stationColor } = stationRef.current ?? {};
 
         try {
             const { error } = await seatSelection(seat, id, Number(stationId), stationColor);
             
             if(error) {
-                Alert.alert('Invalid', 'The seat is already been taken. Please select other seat number.');
+                Alert.alert('Error', 'Seat selection failed. Please try again later.');
             }
 
             const tempId = Crypto.randomUUID();
@@ -145,6 +158,7 @@ const SRVessel = ({ onSeatSelect }: SRVesselProps) => {
             Alert.alert('Error', error.message);
         }
     }, [id, setPassengers, onSeatSelect])
+
 
     useEffect(() => {
         const fetchAccom = async () => {
@@ -189,6 +203,7 @@ const SRVessel = ({ onSeatSelect }: SRVesselProps) => {
         fetchAccom();
     }, [])
 
+    
     useEffect(() => {
         const channel = async () => {
             const { data } = await supabase.from('seats_selections').select('*').eq('trip_id', id);
@@ -233,10 +248,10 @@ const SRVessel = ({ onSeatSelect }: SRVesselProps) => {
         return map;
     }, [bookedSeats]);
 
-    const passengerSeats = useMemo(() => new Set(passengers.map((p) => p.seatNumber)), [passengers])
     const TouristAccoms = useMemo(() => accommodations?.find((accom) => accom?.name == 'Tourist'), [accommodations]);
     const BClassAccomms = useMemo(() => accommodations?.find((accom) => bClassNames.includes(accom?.name)), [accommodations]);
-    const seatChannel = useMemo(() => new Set(seatSelectionChannel), [seatSelectionChannel])
+    const passengerSeats = useMemo(() => new Set(passengers.map(p => p.seatNumber)), [passengers]);
+    const seatChannel = useMemo(() => new Set(seatSelectionChannel.map(String)), [seatSelectionChannel]);
 
     return (
         <View style={{ width: '100%', height: height + 290, backgroundColor: '#f0f0f0', marginTop: 20, paddingTop: 10, borderRadius: 50,  }}>
@@ -247,16 +262,17 @@ const SRVessel = ({ onSeatSelect }: SRVesselProps) => {
                     {seatColumn1.map((seat) =>{
                         const booked = bookedSeatMap[seat];
                         const isPassenger = passengerSeats.has(seat)
+                        const inChannel = seatChannel?.has(String(seat)) ?? false;
 
                         return ( 
-                            <TouchableOpacity disabled={passengerSeats.has(String(seat)) || bookedSeats.some((s) => s.seat_no == seat) || seatChannel.has(String(seat))}
+                            <TouchableOpacity disabled={!!booked || isPassenger || inChannel}
                             onPress={() => assignseat?.(seat, BClassAccomms?.name, BClassAccomms?.id)} key={seat} 
                             style={{ paddingVertical: 3, width: '35%', borderColor: '#A9A9B2', borderWidth: 1, borderRadius: 3, 
                             backgroundColor: 
-                                booked ? booked?.station?.color : isPassenger ? '#BA68C8' : seatChannel.has(String(seat)) ? '#e6d1e9ff' : seat == 'A' || seat == 'B' && !seatChannel.has(String(seat)) ? '#E6E2C6' : 'transparent'
+                                booked ? booked?.station?.color : isPassenger ? '#BA68C8' : inChannel ? '#e6d1e9ff' : seat == 'A' || seat == 'B' ? '#E6E2C6' : 'transparent'
                             }}> 
                                 <Text style={{ textAlign: 'center', fontWeight: 'bold', 
-                                    color: booked || isPassenger || seatChannel.has(String(seat)) ? '#fff' : '#000' }}>
+                                    color: booked || isPassenger || inChannel ? '#fff' : '#000' }}>
                                     {booked?.passTypeCode ?? seat}
                                 </Text> 
                             </TouchableOpacity>
@@ -270,16 +286,20 @@ const SRVessel = ({ onSeatSelect }: SRVesselProps) => {
                     {seatColumn2.map((seat) =>{
                         const booked = bookedSeatMap[seat];
                         const isPassenger = passengerSeats.has(seat)
+                        const inChannel = seatChannel?.has(String(seat))
 
                         return ( 
-                            <TouchableOpacity disabled={passengerSeats.has(String(seat)) || bookedSeats.some((s) => s.seat_no == seat) || seatChannel.has(String(seat))}
+                            <TouchableOpacity disabled={!!booked || isPassenger || inChannel}
                             onPress={() => assignseat?.(seat, BClassAccomms?.name, BClassAccomms?.id)} key={seat} 
                             style={{ paddingVertical: 3, width: '35%', borderColor: '#A9A9B2', borderWidth: 1, borderRadius: 3, 
                             backgroundColor: 
-                                booked ? booked?.station?.color : isPassenger  ? '#BA68C8' : !seatChannel.has(String(seat)) ? '#E6E2C6' : '#e6d1e9ff'
+                                booked ? booked?.station?.color :
+                                isPassenger  ? '#BA68C8' :
+                                !inChannel ? '#E6E2C6' :
+                                '#e6d1e9ff'
                             }}> 
                                 <Text style={{ textAlign: 'center', fontWeight: 'bold', 
-                                    color: booked || isPassenger || seatChannel.has(String(seat)) ? '#fff' : '#000' }}>
+                                    color: booked || isPassenger || inChannel ? '#fff' : '#000' }}>
                                     {booked?.passTypeCode ?? seat}
                                 </Text> 
                             </TouchableOpacity>
@@ -291,16 +311,17 @@ const SRVessel = ({ onSeatSelect }: SRVesselProps) => {
                     {seatColumn3.map((seat) =>{
                         const booked = bookedSeatMap[seat];
                         const isPassenger = passengerSeats.has(seat)
+                        const inChannel = seatChannel?.has(String(seat))
 
                         return ( 
-                            <TouchableOpacity disabled={passengerSeats.has(String(seat)) || bookedSeats.some((s) => s.seat_no == seat) || seatChannel.has(String(seat))}
+                            <TouchableOpacity disabled={!!booked || !!bookedSeatMap[seat] || inChannel}
                             onPress={() => assignseat?.(seat, BClassAccomms?.name, BClassAccomms?.id)} key={seat} 
                             style={{ paddingVertical: 3, width: '35%', borderColor: '#A9A9B2', borderWidth: 1, borderRadius: 3, 
                             backgroundColor: 
-                                booked ? booked?.station?.color : isPassenger ? '#BA68C8' : seatChannel.has(String(seat)) ? '#e6d1e9ff' : seat == "C" || seat == "D" ? '#E6E2C6' : 'transparent'
+                                booked ? booked?.station?.color : isPassenger ? '#BA68C8' : inChannel ? '#e6d1e9ff' : seat == "C" || seat == "D" ? '#E6E2C6' : 'transparent'
                             }}> 
                                 <Text style={{ textAlign: 'center', fontWeight: 'bold', 
-                                    color: booked || isPassenger || seatChannel.has(String(seat)) ? '#fff' : '#000' }}>
+                                    color: booked || isPassenger || inChannel ? '#fff' : '#000' }}>
                                     {booked?.passTypeCode ?? seat}
                                 </Text> 
                             </TouchableOpacity>
@@ -321,7 +342,7 @@ const SRVessel = ({ onSeatSelect }: SRVesselProps) => {
                         <SeatPlan passengerSeats={passengerSeats} seatChannel={seatChannel} start={5} limit={56} bookedSeats={bookedSeats} skipPattern={true} onSeatSelect={assignseat} type={TouristAccoms?.name} accomm_id={TouristAccoms?.id} />
                     </View>
                 </View>
-                <View style={{ marginTop: 10, flexDirection: 'row', gap: 10, justifyContent: 'space-between', width: '100%' }}>
+                <View style={{ marginTop: 20, flexDirection: 'row', gap: 10, justifyContent: 'space-between', width: '100%' }}>
                     <View style={{ width: '46%' }}>
                         <Text style={{ fontWeight: 'bold', textAlign: 'center', fontSize: 12, marginBottom: 4 }}>Senior/PWD</Text>
                         <SeatPlan passengerSeats={passengerSeats} seatChannel={seatChannel} start={57} limit={108} bookedSeats={bookedSeats} skipPattern={true} onSeatSelect={assignseat} type={TouristAccoms?.name} accomm_id={TouristAccoms?.id} />
@@ -331,7 +352,7 @@ const SRVessel = ({ onSeatSelect }: SRVesselProps) => {
                         <SeatPlan passengerSeats={passengerSeats} seatChannel={seatChannel} start={61} limit={112} bookedSeats={bookedSeats} skipPattern={true} onSeatSelect={assignseat} type={TouristAccoms?.name} accomm_id={TouristAccoms?.id} />
                     </View>
                 </View>
-                <View style={{ marginTop: 10, flexDirection: 'row', gap: 10, justifyContent: 'center',}}>
+                <View style={{ marginTop: 20, flexDirection: 'row', gap: 10, justifyContent: 'center',}}>
                     <View style={{ width: '60%' }}>
                         <SeatPlan passengerSeats={passengerSeats} seatChannel={seatChannel} start={113} limit={134} bookedSeats={bookedSeats} onSeatSelect={assignseat} type={TouristAccoms?.name} accomm_id={TouristAccoms?.id} />
                     </View>

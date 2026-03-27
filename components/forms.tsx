@@ -4,8 +4,9 @@ import { usePassesType } from '@/context/passes';
 import { useTrip } from '@/context/trip';
 import { Ionicons } from '@expo/vector-icons';
 import * as Crypto from 'expo-crypto';
-import React, { useCallback, useEffect, useMemo, useState } from 'react';
-import { Alert, Pressable, Text, TextInput, TouchableOpacity, View } from 'react-native';
+import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import { Alert, Dimensions, Platform, Pressable, Text, TextInput, TouchableOpacity, View } from 'react-native';
+import { AutocompleteDropdown } from 'react-native-autocomplete-dropdown';
 import { Dropdown } from 'react-native-element-dropdown';
 import { Checkbox } from 'react-native-paper';
 import { InfantProps, PassengerProps, usePassengers } from '../context/passenger';
@@ -31,35 +32,53 @@ type PaxFareProps = {
     accommodation_type_id: number;
 }
 
+type PaxListProps = {
+    id: string;
+    first_name: string;
+    last_name: string;
+    gender: string;
+    age: number;
+    address: string;
+    nationality: string;
+    contact_number: string;
+    passenger_type: {
+        id: number;
+        name: string;
+        passenger_types_code: string;
+        fareId: number;
+    }
+}
+
 export default function Forms({ errorForm }: FormProps) {
-    const { vessel_id, routeID, isCargoable, departure_time, approvedBy, setApprovedBy } = useTrip();
+    const { vessel_id, routeID, isCargoable, approvedBy, setApprovedBy } = useTrip();
     const { passengers, setPassengers, updatePassenger, updateInfant, updateCargo } = usePassengers();
     const { passesTypeID, passesTypeCode, passesTypeName } = usePassesType();
     const [typeLoading, setTypeLoading] = useState(true);
     const { cargoProperties } = useCargo();
     const [passengerType, setPassengerType] = useState<PassTypeProps[] | null>(null);
-    const [paxFares, setPaxFares] = useState<PaxFareProps[] | null>(null)
+    const [paxFares, setPaxFares] = useState<PaxFareProps[] | null>(null);
+    const [paxlists, setPaxLists] = useState<PaxListProps[]>([]);
+    
+    const dropdownController = useRef<{ [key: string]: any }>({});
+    const searchRefs = useRef<{ [key: string]: any }>({});
+
+    const InfantDropController = useRef<{ [key: string]: any }>({});
+    const infantSearchRefs = useRef<{ [key: string]: any }>({});
+
 
     useEffect(() => {
-        const departureTime = new Date(`1970-01-01T${departure_time}`).toLocaleTimeString(
-            'en-US', {
-                hour: 'numeric',
-                minute: '2-digit',
-                hour12: true
-            });
-
-        const passengerType = async () => {
+        const paxTypeAndLists = async () => {
             try {
-                const passTypesAndFares = await FetchPassengerType();
+                const passTypesFaresAndLists = await FetchPassengerType();
 
-                if(!passTypesAndFares.error) {
-                    const types: PassTypeProps[] = passTypesAndFares.types.map((type: any) => ({
+                if(!passTypesFaresAndLists.error) {
+                    const types: PassTypeProps[] = passTypesFaresAndLists.types.map((type: any) => ({
                         id: type.id,
                         name: type.name,
                         code: type?.passenger_types_code
                     }));
 
-                    const paxFares: PaxFareProps[] = passTypesAndFares.fares.map((fare: any) => ({
+                    const paxFares: PaxFareProps[] = passTypesFaresAndLists.fares.map((fare: any) => ({
                         id: fare.id,
                         fare: fare.fare,
                         routes_id: fare.routes_id,
@@ -67,6 +86,22 @@ export default function Forms({ errorForm }: FormProps) {
                         vessel_id: fare.vessel_id,
                         accommodation_type_id: fare.accommodation_type_id
                     }));
+
+
+                    const lists: PaxListProps[] = passTypesFaresAndLists.passengers.map((pax: any) => ({
+                        id: pax.id,
+                        first_name: pax.first_name,
+                        last_name: pax.last_name,
+                        gender: pax.gender,
+                        age: pax.age,
+                        address: pax.addresss,
+                        nationality: pax.nationality,
+                        contact_number: pax.contact_number,
+                        passenger_type: pax.passenger_type,
+                        // fare: pax.passenger_type.fares.fare,
+                    }));
+
+                    setPaxLists(lists)
 
                     setPassengerType(types);
                     setPaxFares(paxFares)
@@ -78,8 +113,148 @@ export default function Forms({ errorForm }: FormProps) {
             }
         }
 
-        passengerType();
+        paxTypeAndLists();
     }, []);
+
+    const formattedPaxList = useMemo(() => {
+        const list = paxlists.filter(p => p.passenger_type.name != 'Infant')
+        .map(p => ({
+            id: p.id,
+            title: `${p.last_name}, ${p.first_name}`
+        }));
+
+        return list
+    }, [paxlists]);
+
+    const formattedInfantList = useMemo(() => {
+        const list = paxlists.filter(p => p.passenger_type.name == 'Infant')
+        .map(p => ({
+            id: p.id,
+            title: `${p.last_name}, ${p.first_name}`
+        }));
+
+        return list;
+    }, [paxlists])
+
+    const [suggestions, setSuggestions] = useState<{ [key: string]: any[] }>({});
+    const [infantSuggestions, setInfantSuggestions] = useState<{ [key: string]: any[] }>({});
+    
+
+    const handleOnSearch = useCallback((text: string, paxId: string | number) => {
+        const paxsSuggestions = formattedPaxList.filter(p => 
+            p.title.toLowerCase().includes(text.toLowerCase())
+        )
+
+        setSuggestions(prev => ({
+            ...prev,
+            [paxId]: paxsSuggestions
+        }))
+    }, [formattedPaxList])
+
+    /////////////////////////
+    const handleOnInfantSearch = useCallback((text: string, paxId: string | number) => {
+        const paxsSuggestions = formattedInfantList.filter(p => 
+            p.title.toLowerCase().includes(text.toLowerCase())
+        )
+
+        setInfantSuggestions(prev => ({
+            ...prev,
+            [paxId]: paxsSuggestions
+        }))
+    }, [formattedInfantList])
+    
+
+    const handleOnAutoComplete = (itemId: string, targetPaxId: string | number, targetAccomId: number, ) => {
+        const paxOnList = paxlists.find(p => p.id == itemId);
+        if (!paxOnList) return;
+
+        const paxFareOnList = paxFares.find(f => 
+            f.accommodation_type_id == targetAccomId &&
+            f.passenger_type_id == paxOnList.passenger_type.id &&
+            f.vessel_id == vessel_id &&
+            f.routes_id == routeID
+        )?.fare;
+
+        setPassengers(prev => 
+            prev.map(p => 
+                p.id != targetPaxId ? p : 
+                {
+                    ...p,
+                    id: paxOnList.id,
+                    pax_id: paxOnList.id,
+                    name: `${paxOnList.last_name}, ${paxOnList.first_name}`,
+                    age: paxOnList.age,
+                    passType: paxOnList.passenger_type.name,
+                    passType_id: paxOnList.passenger_type.id,
+                    passTypeCode: paxOnList.passenger_type.passenger_types_code,
+                    gender: paxOnList.gender,
+                    nationality: paxOnList.nationality ?? 'Filipino',
+                    address: paxOnList.address ?? '',
+                    contact_number: paxOnList.contact_number ?? '',
+                    fare: paxFareOnList
+                }
+            )
+        )
+    }
+
+    ////////////////////////
+    const handleOnInfantAutoComplete = (itemId: string, targetPaxId: string | number, targetAccomId: number, infantIndex) => {
+        const paxOnList = paxlists.find(p => p.id == itemId);
+        if (!paxOnList) return;
+
+        const paxFareOnList = paxFares.find(f => 
+            f.accommodation_type_id == targetAccomId &&
+            f.passenger_type_id == paxOnList.passenger_type.id &&
+            f.vessel_id == vessel_id &&
+            f.routes_id == routeID
+        ).fare
+
+        setPassengers(prev => 
+            prev.map(p => {
+                if(p.id != targetPaxId && p.hasInfant != true) return p;
+
+
+            })
+        )
+    }
+
+    const handleClearAutoComplete = (paxId: number | string) => {
+        setPassengers(prev => 
+            prev.map(p => 
+                p.id != paxId ? p :
+                {
+                    ...p,
+                    pax_id: '',
+                    name: '',
+                    age: null,
+                    passType: '',
+                    passType_id: null,
+                    passTypeCode: '',
+                    gender: '',
+                    nationality: 'Filipino',
+                    address: '',
+                    contact_number: '',
+                    fare: null
+                }
+            )
+        )
+    }
+
+    ///////////////////////
+    const handleInfantClearAutoComplete = (paxId: number | string, infantIndex: number) => {
+        setPassengers(prev => 
+            prev.map(p => {
+                if(p.id != paxId && p.hasInfant != true) return p;
+                
+                p.infant.map((inf, index) => {
+                    
+                })
+            })
+        )
+    }
+
+
+
 
     const hasInfantChecker = (seat: number | string, passIndex: number, hasInfantValue: boolean, type_id: number) => {
         const hasPasses = passengers.some((p) => p.passType == 'Passes');
@@ -330,9 +505,8 @@ export default function Forms({ errorForm }: FormProps) {
                 {passengers.map((p, index) => (
                     <View key={p.id} style={{ position: 'relative', borderColor: errorForm.includes(p.seatNumber ?? '') ? '#cf2a3a' : '#B3B3B3', borderWidth: 1, borderRadius: 8, paddingHorizontal: 10, paddingVertical: 10, backgroundColor: '#fff', elevation: 5 }}>
                         {passengers.some((p) => p.passType == 'Passes' && index != 0) && (
-                            <TouchableOpacity onPress={() => handlePassesRemove(p.id)} style={{ alignSelf: 'flex-end', flexDirection:'row', alignItems: 'center' }}>
-                                <Ionicons name='close' size={20} color={'#cf2a3a'} />
-                                <Text style={{ color: '#cf2a3a', fontWeight: 'bold' }}>Remove</Text>
+                            <TouchableOpacity onPress={() => handlePassesRemove(p.id)} style={{ position: 'absolute', right: -5, top: -15 }}>
+                                <Ionicons name={'close-circle'} size={40} color={'#cf2a3a'} />
                             </TouchableOpacity>
                         )}
                         <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' }}>
@@ -366,7 +540,7 @@ export default function Forms({ errorForm }: FormProps) {
                                             {paxsengerTypes.map((type) => (
                                                 <TouchableOpacity onPress={() => handleOnPaxTypeSelect(p, type.id, type.name, type.code)}
                                                 key={type.id} style={{ backgroundColor: p.passType == type.name ? '#cf2a3a' : 'transparent', borderColor: '#cf2a3a', borderWidth: 1, paddingVertical: 9, paddingHorizontal: 18, borderRadius: 5  }}>
-                                                    <Text style={{ textAlign: 'center', fontSize: 13, color: p.passType == type.name ? '#fff' : '#cf2a3a', fontWeight: '600' }}>{type.name}</Text>
+                                                    <Text style={{ textAlign: 'center', fontSize: 14, color: p.passType == type.name ? '#fff' : '#cf2a3a', fontWeight: '600' }}>{type.name}</Text>
                                                 </TouchableOpacity>
                                             ))}
                                         </>
@@ -375,27 +549,86 @@ export default function Forms({ errorForm }: FormProps) {
                                 </View>
                             </View>
                         )}
-                        <View style={{ marginTop: 10 }}>
+                        <View style={{ marginTop: 20 }}>
                             <Text style={{ fontSize: 12, fontWeight: 'bold', color: '#545454' }}>Full Name:</Text>
-                            <View style={{ borderColor: '#B3B3B3', borderWidth: 1, borderRadius: 5, height: 45, justifyContent: 'center' }}>
-                                <TextInput value={p.name ?? ''} onChangeText={(text) => updatePassenger(p.id, 'name', text)} placeholder='Last Name, First Name' style={{ fontSize: 15, fontWeight: '600' }} />
+                            <View style={{ borderWidth: 1, borderColor: '#B3B3B3', borderRadius: 5, height: 45, justifyContent: 'center' }}>
+                                <AutocompleteDropdown
+                                    key={p.id}
+                                    ref={ref => {
+                                        if (ref) {
+                                            searchRefs.current[p.id] = ref;
+                                        }
+                                    }}
+                                    controller={controller => {
+                                        if (controller) {
+                                            dropdownController.current[p.id] = controller;
+
+                                            if (p.name) {
+                                                controller.setInputText(p.name);
+                                            }
+                                        }
+                                    }}
+                                    direction={Platform.select({ android: 'down' })}
+                                    onClear={() => handleClearAutoComplete(p.id)}
+                                    dataSet={suggestions[p.id] ?? formattedPaxList}
+                                    closeOnBlur={true}
+                                    onSelectItem={item => {
+                                        item && handleOnAutoComplete(item.id, p.id, p.accommodationID)
+                                    }}
+                                    onChangeText={(text) => handleOnSearch(text.trim(), p.id)}
+                                    debounce={600}
+                                    suggestionsListContainerStyle={{
+                                        backgroundColor: '#f0f0f0'
+                                    }}
+                                    suggestionsListMaxHeight={Dimensions.get('window').height * 0.3}
+                                    useFilter={false}
+                                    textInputProps={{
+                                        placeholder: 'Last Name, First Name',
+                                        autoCorrect: false,
+                                        autoCapitalize: 'none',
+                                        style: {
+                                            backgroundColor: '#fff',
+                                            color: '#000',
+                                            borderWidth: 1,
+                                            borderColor: 'transparent',
+                                            borderRadius: 2,
+                                            fontWeight: '600',
+                                            fontSize: 14,
+                                            paddingHorizontal: 5,
+                                        }
+                                    }}
+                                    rightButtonsContainerStyle={{
+                                        right: 8,
+                                        backgroundColor: '#fff',
+                                        alignSelf: 'center',
+                                    }}
+                                    inputContainerStyle={{
+                                        borderRadius: 0,
+                                        borderColor: '#B3B3B3'
+                                    }}
+                                    trimSearchText={true}
+                                    containerStyle={{ flexGrow: 1, flexShrink: 1 }}
+                                    showChevron={false}
+                                    renderItem={(formattedPaxList) => <Text style={{ color: '#000', backgroundColor: '#f0f0f0', padding: 15, borderRadius: 5 }}>{formattedPaxList.title}</Text>}
+                                />
                             </View>
                         </View>
                         <View style={{ marginTop: 5, flexDirection: 'row', gap: 8, alignItems: 'flex-end' }}>
                             <View style={{ width: '40%' }}>
                                 <Text style={{ fontSize: 12, fontWeight: 'bold', color: '#545454' }}>Age:</Text>
                                 <View style={{ borderColor: '#B3B3B3', borderWidth: 1, borderRadius: 5, height: 45, justifyContent: 'center' }}>
-                                    <TextInput value={String(p?.age ?? '')} onChangeText={(text) => updatePassenger(p.id, 'age', Number(text))} keyboardType='numeric' placeholder='Age' style={{ fontSize: 15, fontWeight: '600' }} />
+                                    <TextInput value={String(p?.age ?? '')} onChangeText={(text) => updatePassenger(p.id, 'age', Number(text))} keyboardType='numeric' placeholder='Age' style={{ fontSize: 16, fontWeight: '600' }} />
                                 </View>
                             </View>
                             <View style={{ width: '56%', }}>
                                 <Text style={{ fontSize: 12, fontWeight: 'bold', color: '#545454' }}>Gender:</Text>
                                 <View style={{ flexDirection:'row', gap: 5 }}>
                                     {passGender.map((gender) => (
-                                        <TouchableOpacity onPress={() => updatePassenger(p.id, 'gender', gender)} key={gender} style={{ backgroundColor: p.gender == gender ? '#cf2a3a' : 'transparent', borderColor: '#cf2a3a', borderWidth: 1, width: '50%', borderRadius: 5, justifyContent :'center', paddingVertical: 12 }}>
-                                            <Text style={{ textAlign: 'center', fontSize: 14, color: p.gender == gender ? '#fff' : '#cf2a3a' }}>{gender}</Text>
+                                        <TouchableOpacity onPress={() => updatePassenger(p.id, 'gender', gender)} key={gender} style={{ backgroundColor: p.gender == gender ? '#cf2a3a' : 'transparent', borderColor: '#cf2a3a', borderWidth: 1, width: '50%',
+                                            borderRadius: 5, justifyContent :'center', paddingVertical: 12 }}>
+                                            <Text style={{ textAlign: 'center', fontSize: 14, fontWeight: '600', color: p.gender == gender ? '#fff' : '#cf2a3a' }}>{gender}</Text>
                                         </TouchableOpacity>
-                                    ))}
+                                    ))} 
                                 </View>
                             </View>
                         </View>
@@ -403,34 +636,34 @@ export default function Forms({ errorForm }: FormProps) {
                             <View style={{ width: '40%' }}>
                                 <Text style={{ fontSize: 12, fontWeight: 'bold', color: '#545454' }}>Nationality:</Text>
                                 <View style={{ borderColor: '#B3B3B3', borderWidth: 1, borderRadius: 5, height: 45, justifyContent: 'center'  }}>
-                                    <TextInput value={p.nationality ?? 'Filipino'} onChangeText={(text) => updatePassenger(p.id, 'nationality', text)} defaultValue='Filipino' style={{ fontSize: 13, fontWeight: '600' }} />
+                                    <TextInput value={p.nationality ?? 'Filipino'} onChangeText={(text) => updatePassenger(p.id, 'nationality', text)} defaultValue='Filipino' style={{ fontSize: 16, fontWeight: '600' }} />
                                 </View>
                             </View>
                             <View style={{ width: '57.5%' }}>
                                 <Text style={{ fontSize: 12, fontWeight: 'bold', color: '#545454' }}>Address:</Text>
                                 <View style={{ borderColor: '#B3B3B3', borderWidth: 1, borderRadius: 5, height: 45, justifyContent: 'center'  }}>
-                                    <TextInput value={p.address ?? ''} onChangeText={(text) => updatePassenger(p.id, 'address', text)} placeholder='Address' style={{ fontSize: 13, fontWeight: '600' }} />
+                                    <TextInput value={p.address ?? ''} onChangeText={(text) => updatePassenger(p.id, 'address', text)} placeholder='Address' style={{ fontSize: 16, fontWeight: '600' }} />
                                 </View>
                             </View>
                         </View>
                         <View style={{ marginTop: 5, flexDirection: 'row', alignItems: 'flex-end', justifyContent: 'space-between' }}>
-                            <View style={{ width: '40%' }}>
+                            <View style={{ width: '45%' }}>
                                 <Text style={{ fontSize: 12, fontWeight: 'bold', color: '#545454' }}>Contact#:</Text>
                                 <View style={{ borderColor: '#B3B3B3', borderWidth: 1, borderRadius: 5, height: 45, justifyContent: 'center'  }}>
-                                    <TextInput value={p.contact ?? ''} placeholder='+63' onChangeText={(text) => updatePassenger(p.id, 'contact', text)} style={{ fontSize: 13, fontWeight:'600' }} />
+                                    <TextInput value={p.contact ?? ''} placeholder='+63' keyboardType={'numeric'} onChangeText={(text) => updatePassenger(p.id, 'contact', text)} style={{ fontSize: 16, fontWeight:'600' }} />
                                 </View>
                             </View>
                             <View style={{ flexDirection: 'row' }}>
                                 <TouchableOpacity disabled={p.passType == 'Child'} onPress={() => hasInfantChecker(p.seatNumber!, index, p.hasInfant!, passengerType?.find((i) => i.name == 'Infant')?.id ?? 0 )}
                                     style={{ flexDirection: 'row', alignItems: 'center', marginTop: 15 }}>
                                     <Checkbox status={p.hasInfant ? 'checked' : 'unchecked'} color='#cf2a3a' uncheckedColor="#999" />
-                                    <Text style={{ fontSize: 13 }}>Infant</Text>
+                                    <Text style={{ fontSize: 16 }}>Infant</Text>
                                 </TouchableOpacity>
                                 {isCargoable != 0 && (
                                     <TouchableOpacity onPress={() => hasCargoChecker(p.seatNumber!, index )}
                                         style={{ flexDirection: 'row', alignItems: 'center', marginTop: 15 }}>
                                         <Checkbox status={p.hasCargo ? 'checked' : 'unchecked'} color='#cf2a3a' uncheckedColor="#999" />
-                                        <Text style={{ fontSize: 13 }}>Cargo</Text>
+                                        <Text style={{ fontSize: 16 }}>Cargo</Text>
                                     </TouchableOpacity>
                                 )}
                             </View>
@@ -439,7 +672,7 @@ export default function Forms({ errorForm }: FormProps) {
                         {p.hasInfant && (
                             <View style={{ marginTop: 30 }}>
                                 <View style={{ flexDirection: 'row', alignItems: 'flex-end', justifyContent: 'space-between', borderBottomWidth: 1, borderBottomColor: '#949494', paddingBottom: 8 }}>
-                                    <Text style={{ fontSize: 16, fontWeight: '900', color: '#cf2a3a', marginBottom: 5 }}>Infant Details</Text>
+                                    <Text style={{ fontSize: 18, fontWeight: '900', color: '#cf2a3a', marginBottom: 5 }}>Infant Details</Text>
                                     <TouchableOpacity onPress={() => {
                                         const hasPasses = passengers.some(p => p.passType == 'Passes');
                                         if(!hasPasses) {
@@ -448,7 +681,7 @@ export default function Forms({ errorForm }: FormProps) {
                                             addInfant(index, {name: '', gender: '', age: 0, passType_id: passengerType?.find((i) => i.name == 'Infant')?.id! })
                                         } 
                                     }}
-                                        style={{ backgroundColor: '#cf2a3a', borderColor: '#cf2a3a', borderWidth: 1, padding: 5, borderRadius: 5, flexDirection: 'row', gap: 5, alignItems: 'center' }}>
+                                        style={{ backgroundColor: '#cf2a3a', borderColor: '#cf2a3a', borderWidth: 1, padding: 8, elevation: 3, borderRadius: 5, flexDirection: 'row', gap: 5, alignItems: 'center' }}>
                                         <Text style={{ color: '#fff', fontWeight: 600 }}>Add Infant</Text>
                                         <Ionicons name={'add-circle'} size={20} color={'#fff'} />
                                     </TouchableOpacity>
@@ -457,7 +690,7 @@ export default function Forms({ errorForm }: FormProps) {
                                     <View key={`${p.name}-${index}`}>
                                         <View style={{ marginTop: 30 }}>
                                             <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' }}>
-                                                <Text style={{ fontSize: 9, fontWeight: 'bold', color: '#545454' }}>Full Name:</Text>
+                                                <Text style={{ fontSize: 13, fontWeight: 'bold', color: '#545454' }}>Full Name:</Text>
                                                 {index != 0 && (
                                                     <TouchableOpacity onPress={() => removeInfant(p.seatNumber!, index)} style={{ flexDirection: 'row', alignItems: 'center' }}>
                                                         <Ionicons name={'close'} size={20} color={'#cf2a3a'} />
@@ -466,23 +699,80 @@ export default function Forms({ errorForm }: FormProps) {
                                                 )}
                                             </View>
                                             <View style={{ borderColor: '#B3B3B3', borderWidth: 1, borderRadius: 5, height: 45, justifyContent: 'center'  }}>
-                                                <TextInput onChangeText={(text) => updateInfant(p.seatNumber!, index, 'name', text)} placeholder='Last Name, First Name' style={{ fontSize: 13, fontWeight: '600' }} />
+                                                <AutocompleteDropdown
+                                                    key={`${p.id}-${index}`}
+                                                    ref={ref => {
+                                                        if (ref) {
+                                                            infantSearchRefs.current[p.id] = ref;
+                                                        }
+                                                    }}
+                                                    controller={controller => {
+                                                        if (controller) {
+                                                            InfantDropController.current[p.id] = controller;
+
+                                                            if (p.name) {
+                                                                controller.setInputText(p.name);
+                                                            }
+                                                        }
+                                                    }}
+                                                    direction={Platform.select({ android: 'down' })}
+                                                    onClear={() => handleInfantClearAutoComplete(p.pax_id, index)}
+                                                    dataSet={infantSuggestions[`${p.id}-${index}`] ?? formattedInfantList}
+                                                    closeOnBlur={true}
+                                                    // onSelectItem={item => {
+                                                    //     item && handleOnAutoComplete(item.id, p.id, p.accommodationID)
+                                                    // }}
+                                                    onChangeText={(text) => handleOnInfantSearch(text.trim(), p.id)}
+                                                    debounce={600}
+                                                    suggestionsListContainerStyle={{
+                                                        backgroundColor: '#f0f0f0'
+                                                    }}
+                                                    suggestionsListMaxHeight={Dimensions.get('window').height * 0.3}
+                                                    useFilter={false}
+                                                    textInputProps={{
+                                                            placeholder: 'Last Name, First Name',
+                                                            autoCorrect: false,
+                                                            autoCapitalize: 'none',
+                                                            style: {
+                                                            backgroundColor: '#fff',
+                                                            color: '#000',
+                                                            borderWidth: 1,
+                                                            borderColor: 'transparent',
+                                                            borderRadius: 2,
+                                                            fontWeight: '600',
+                                                            paddingHorizontal: 5
+                                                        }
+                                                    }}
+                                                    rightButtonsContainerStyle={{
+                                                        right: 8,
+                                                        backgroundColor: '#fff',
+                                                        alignSelf: 'center',
+                                                    }}
+                                                    inputContainerStyle={{
+                                                        borderRadius: 0,
+                                                        borderColor: '#B3B3B3'
+                                                    }}
+                                                    trimSearchText={true}
+                                                    containerStyle={{ flexGrow: 1, flexShrink: 1 }}
+                                                    showChevron={false}
+                                                    renderItem={(formattedPaxList) => <Text style={{ color: '#000', backgroundColor: '#f0f0f0', padding: 15, borderRadius: 5 }}>{formattedPaxList.title}</Text>}
+                                                />
                                             </View>
                                         </View>
                                         <View style={{ marginTop: 5, flexDirection: 'row', gap: 8, alignItems: 'flex-end' }}>
                                             <View style={{ width: '40%' }}>
-                                                <Text style={{ fontSize: 12, fontWeight: 'bold', color: '#545454' }}>Age:</Text>
+                                                <Text style={{ fontSize: 13, fontWeight: 'bold', color: '#545454' }}>Age:</Text>
                                                 <View style={{ borderColor: '#B3B3B3', borderWidth: 1, borderRadius: 5, height: 45, justifyContent: 'center'  }}>
                                                     <TextInput onChangeText={(text) => updateInfant(p.seatNumber!, index, 'age', Number(text))} keyboardType='numeric' placeholder='Age' style={{ fontSize: 13, fontWeight: '600' }} />
                                                 </View>
                                             </View>
                                             <View style={{ width: '56%', }}>
-                                                <Text style={{ fontSize: 12, fontWeight: 'bold', color: '#545454' }}>Gender:</Text>
+                                                <Text style={{ fontSize: 13, fontWeight: 'bold', color: '#545454' }}>Gender:</Text>
                                                 <View style={{ flexDirection:'row', gap: 5 }}>
                                                     {passGender.map((infntgender) => (
                                                         <TouchableOpacity onPress={() => updateInfant(p.seatNumber!, index, 'gender', infntgender)} key={infntgender} style={{ backgroundColor: p.infant?.[index]?.gender == infntgender ? '#cf2a3a' : 'transparent',
-                                                            borderColor: '#cf2a3a', borderWidth: 1, width: '50%', borderRadius: 5, justifyContent :'center', paddingVertical: 8 }}>
-                                                            <Text style={{ textAlign: 'center', fontSize: 14, color: p.infant?.[index]?.gender == infntgender ? '#fff' : '#cf2a3a' }}>{infntgender}</Text>
+                                                            borderColor: '#cf2a3a', borderWidth: 1, width: '50%', borderRadius: 5, justifyContent :'center', paddingVertical: 12 }}>
+                                                            <Text style={{ textAlign: 'center', fontSize: 14, fontWeight: '600', color: p.infant?.[index]?.gender == infntgender ? '#fff' : '#cf2a3a' }}>{infntgender}</Text>
                                                         </TouchableOpacity>
                                                     ))}
                                                 </View>
@@ -672,7 +962,6 @@ export default function Forms({ errorForm }: FormProps) {
                     </Pressable>
                 )}
             </View>
-
         </View>
     )
 }

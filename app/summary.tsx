@@ -132,7 +132,7 @@ export default function PaymentSummary() {
                                         </View>
                                     </View>
                                     <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' }}>
-                                        <Text style={{ color: '#646464', fontSize: 14, }}>Change</Text>
+                                        <Text style={{ color: '#cf2a3a', fontSize: 16, fontWeight: '700' }}>Change</Text>
                                         <Text style={{ fontSize: 20, fontWeight: '800', color: '#cf2a3a' }}>₱ {cashTendered != 0 ? fareChange?.toFixed(2) : '00.00'}</Text>
                                     </View>
                                 </View>

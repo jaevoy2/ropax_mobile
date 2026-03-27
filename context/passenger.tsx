@@ -2,6 +2,7 @@ import React, { createContext, useContext, useState } from "react";
 import { PaxCargoProperties } from "./cargoProps";
 
 export type InfantProps = {
+    pax_id?: string;
     passType_id?: number;
     name: string;
     age: number;
@@ -9,6 +10,7 @@ export type InfantProps = {
 }
 
 export type PassengerProps = {
+    pax_id?: string;
     id: string;
     accommodation?: string;
     accommodationID?: number | null;
