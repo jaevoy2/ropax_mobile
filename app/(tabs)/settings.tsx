@@ -195,7 +195,7 @@ export default function GenSettings() {
                     < Ionicons name="log-out-outline" size={30} color={'#fff'} />
                 </TouchableOpacity>
             </View>
-            <View style={{ padding: 10 }}>
+            <View style={{ paddingVertical: 10, paddingHorizontal: 20 }}>
                 <View style={{ paddingHorizontal: 15, paddingVertical: 20, backgroundColor: '#fff', borderColor: '#cf2a3a', borderWidth: 1, borderRadius: 10, marginTop: 5, flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' }}>
                     <View style={{ flexDirection: 'row', gap: 10, alignItems: 'center', width: '50%' }}>
                         {user?.image ? (
@@ -204,8 +204,8 @@ export default function GenSettings() {
                             <Image source={defaultImg} style={{ borderRadius: 60, height: 50, width: 50 }} />
                         )}
                         <View>
-                            <Text style={{ fontWeight: '900', fontSize: 18, color: '#cf2a3a' }}>{user?.name}</Text>
-                            <Text style={{ fontSize: 10, color: '#cf2a3a' }}>{user?.role}</Text>
+                            <Text style={{ fontWeight: '900', fontSize: 14, color: '#cf2a3a' }}>{user?.name}</Text>
+                            <Text style={{ fontSize: 12, color: '#cf2a3a' }}>{user?.role}</Text>
                         </View>
                     </View>
                     <View style={{ flexDirection: 'column', alignItems: 'flex-end', marginTop: 10 }}>
@@ -217,7 +217,7 @@ export default function GenSettings() {
                         )}
                     </View>
                 </View>
-                <TouchableOpacity onPress={fetchStations} style={{ paddingHorizontal: 15, paddingVertical: 20, borderRadius: 10, backgroundColor: '#fff', marginTop: 30, flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' }}>
+                <TouchableOpacity onPress={fetchStations} style={{ elevation: 5, paddingHorizontal: 15, paddingVertical: 20, borderRadius: 10, backgroundColor: '#fff', marginTop: 20, flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' }}>
                     <View style={{ flexDirection: 'row', gap: 10, alignItems: 'center' }}>
                         <MaterialCommunityIcons name="store" size={35} color={'#cf2a3a'} />
                         <View>

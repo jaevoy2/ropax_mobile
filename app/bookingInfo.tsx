@@ -393,45 +393,21 @@ export default function BookingInfo() {
                 <KeyboardAvoidingView behavior={Platform.OS === 'ios' ? 'padding' : 'height'} style={{ flex: 1, paddingVertical: 20, gap: 15 }}>
                     <ScrollView style={{ flex: 1, paddingHorizontal: 20 }} showsVerticalScrollIndicator={false}>
                         <View style={[styles.card, { padding: 10, gap: 12 }]}>
-                            <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' }}>
-                                <View style={{ flexDirection: 'row', alignItems: 'center', gap: 10 }}>
-                                    <Ionicons name={'person'} color={'#fff'} size={22} style={{ padding: 10, backgroundColor: '#cf2a3a', borderRadius: 50 }} />
-                                    <View style={{ width: '55%' }}>
-                                        <Text style={{ fontWeight: '600', fontSize: 16 }}>{`${paxInfo.find((p: any) => p.id == Number(paxId))?.first_name} ${paxInfo.find((p: any) => p.id == Number(paxId))?.last_name}`}</Text>
-                                        <Text style={{ color: '#cf2a3a', fontSize: 10, fontWeight: '900' }}>{paxInfo.find((p: any) => p.id == Number(paxId))?.referenceNumber}</Text>
-                                    </View>
-                                </View>
-                                <View style={{ flexDirection: 'column', alignItems: 'flex-end', gap: 3 }}>
-                                    <Text style={{ color: '#646464', fontSize: 9, fontWeight: '700' }}>Booking status</Text>
-                                    <View style={{ flexDirection: 'row', alignItems: 'center', gap: 3, borderColor: bookingStatuses?.find(s => s.id == paxInfo[0]?.bookingStatus)?.color ?? 'transparent',
-                                            backgroundColor: bookingStatuses?.find(s => s.id == paxInfo[0]?.bookingStatus)?.bgColor ?? 'transparent', borderWidth: 1, padding: 3, borderRadius: 5 }}>
-                                        <MaterialCommunityIcons name={bookingStatuses?.find(s => s.id == paxInfo[0]?.bookingStatus)?.icon as any ?? ''} size={14} color={bookingStatuses.find(s => s.id == paxInfo[0]?.bookingStatus)?.color ?? 'transparent'} />
-                                        <Text style={{ fontWeight: '800', color: bookingStatuses?.find(s => s.id == paxInfo[0]?.bookingStatus)?.color ?? 'transparent', fontSize: 10 }}>{bookingStatuses?.find(s => s.id == paxInfo[0]?.bookingStatus)?.label ?? ''}</Text>
+                            <View style={{ flexDirection: 'row', alignItems: 'center', gap: 15 }}>
+                                <Ionicons name={'boat'} color={'#fff'} size={28} style={{ padding: 10, backgroundColor: '#cf2a3a', borderRadius: 50 }} />
+                                <View>
+                                    <Text style={{ color: '#cf2a3a', fontSize: 17, fontWeight: '900' }}>{paxInfo.find((p: any) => p.id == Number(paxId))?.referenceNumber}</Text>
+                                    
+                                    <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', width: '89%', backgroundColor: '#f0f0f0', paddingHorizontal: 8, paddingVertical: 5, marginTop: 3, borderRadius: 3 }}>
+                                        <Text style={{ color: '#646464', fontSize: 12, fontWeight: '700' }}>Booking status: </Text>
+                                        <View style={{ flexDirection: 'row', alignItems: 'center', gap: 3 }}>
+                                            <MaterialCommunityIcons name={bookingStatuses?.find(s => s.id == paxInfo[0]?.bookingStatus)?.icon as any ?? ''} size={14} color={bookingStatuses.find(s => s.id == paxInfo[0]?.bookingStatus)?.color ?? 'transparent'} />
+                                            <Text style={{ fontWeight: '800', color: bookingStatuses?.find(s => s.id == paxInfo[0]?.bookingStatus)?.color ?? 'transparent', fontSize: 12 }}>{bookingStatuses?.find(s => s.id == paxInfo[0]?.bookingStatus)?.label ?? ''}</Text>
+                                        </View>
                                     </View>
                                 </View>
                             </View>
-                            <View style={styles.fareContainer}>
-                                <View style={{ flexDirection: 'row', alignItems: 'center', gap: 10 }}>
-                                    <View style={{ flexDirection: 'column' }}>
-                                        <Text style={{ color: '#646464', fontSize: 8 }}>Seat#</Text>
-                                        <Text style={{ fontWeight: '700', fontSize: 12 }}>{paxInfo.find((p: any) => p.id == Number(paxId))?.seatNumber ?? '--'}</Text>
-                                    </View>
-                                    <Text style={{ fontSize: 22, color: '#b6b6b6' }}>|</Text>
-                                    <View style={{ flexDirection: 'column' }}>
-                                        <Text style={{ color: '#646464', fontSize: 8 }}>Type</Text>
-                                        <Text style={{ fontWeight: '700', fontSize: 12 }}>{paxInfo.find((p: any) => p.id == Number(paxId))?.passenger_type}</Text>
-                                    </View>
-                                    <Text style={{ fontSize: 22, color: '#b6b6b6' }}>|</Text>
-                                    <View style={{ flexDirection: 'column' }}>
-                                        <Text style={{ color: '#646464', fontSize: 8 }}>Accommodation</Text>
-                                        <Text style={{ fontWeight: '700', fontSize: 12 }}>{paxInfo.find((p: any) => p.id == Number(paxId))?.accommodation}</Text>
-                                    </View>
-                                </View>
-                                <View style={{ flexDirection: 'column', alignItems: 'flex-end' }}>
-                                    <Text style={{ color: '#646464', fontSize: 10 }}>Fare</Text>
-                                    <Text style={{ color: '#cf2a3a', fontWeight: '800', fontSize: 16 }}>₱ {Number(paxInfo.find((p: any) => p.id == Number(paxId))?.fare).toFixed(2)}</Text>
-                                </View>
-                            </View>
+
                         </View>
                         <View style={styles.card}>
                             <Text style={{ fontWeight: 'bold', padding: 10, borderBottomColor: '#dadada', borderBottomWidth: 1, }}>Booking Information</Text>

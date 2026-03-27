@@ -3,7 +3,6 @@ import { usePassengers } from "@/context/passenger";
 import { usePassesType } from "@/context/passes";
 import { useTrip } from "@/context/trip";
 import { Ionicons } from "@expo/vector-icons";
-import * as Crypto from 'expo-crypto';
 import { router } from "expo-router";
 import { useEffect, useState } from "react";
 import { ActivityIndicator, Alert, Dimensions, KeyboardAvoidingView, Platform, ScrollView, StyleSheet, Text, TextInput, TouchableOpacity, View } from "react-native";
@@ -25,14 +24,6 @@ export default function BookingForm() {
         const date = new Date();
         setYear(date.getFullYear().toString().slice(-2));
     }, []);
-
-    const addPasses = () => {
-        const temp = Crypto.randomUUID();
-
-        setPassengers(prev => [...prev, {
-            id: temp, passType_id: passesTypeID, passType: passesTypeName, passTypeCode: passesTypeCode
-        }]);
-    }
 
     const handleClearPasses = () => {
         if(passengers.some(p => p.passType == 'Passes')) {
@@ -197,7 +188,7 @@ export default function BookingForm() {
                         <Text style={{ fontSize: 9, fontWeight: '900', color: '#cf2a3a' }}>Total Fare:</Text>
                         <View style={{ borderColor: '#cf2a3a', backgroundColor: '#cf2a3b1a', borderWidth: 2, borderRadius: 5, flexDirection: 'row', alignItems: 'center', paddingHorizontal: 15 }}>
                             <Text style={{ fontSize: 18, fontWeight: 'bold' }}>₱</Text>
-                            <TextInput value={String(totalFare != 0 ? totalFare.toString() : '')} onChangeText={(text) => setTotalFare(Number(text))} placeholder='00.00' style={{ fontWeight: '900', textAlign: 'right', fontSize: 18 }} keyboardType={'numeric'} />
+                            <TextInput value={String(totalFare != 0 ? totalFare.toFixed(2) : '')} onChangeText={(text) => setTotalFare(Number(text))} placeholder='00.00' style={{ fontWeight: '900', textAlign: 'right', fontSize: 18 }} keyboardType={'numeric'} />
                         </View>
                     </View>
                 </View>
