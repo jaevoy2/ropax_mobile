@@ -103,7 +103,7 @@ export default function CancelBooking({ cancelModal, setCancelModal, paxInfo, se
             <Modal transparent animationType={'fade'} visible={cancelModal}>
                 <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center', backgroundColor: 'rgba(0, 0, 0, 0.5)' }}>
                     <View style={{ width: '92%', backgroundColor: '#fff', borderRadius: 10, shadowColor: '#000', shadowOffset: { width: 0, height: 2 }, shadowOpacity: 0.25, shadowRadius: 4 }}>
-                        <Text style={{ fontWeight: 'bold', fontSize: 16, marginBottom: 10, paddingHorizontal: 20, paddingVertical: 15, borderBottomColor: '#dadada', borderBottomWidth: 1 }}>Cancellation Request</Text>
+                        <Text style={{ fontWeight: 'bold', fontSize: 16, marginBottom: 10, paddingHorizontal: 20, paddingVertical: 15, borderBottomColor: '#dadada', borderBottomWidth: 1 }}>Cancellation Booking</Text>
                         <View style={{ paddingHorizontal: 20, }}>
                             {/* <View style={{ flexDirection: 'row', opacity: 0.5, width: '90%' }}>
                                 <Text style={{ marginBottom: 5, fontSize: 13 }}>Note: </Text>

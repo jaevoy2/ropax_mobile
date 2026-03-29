@@ -366,13 +366,13 @@ export default function CargoComponent({ dateChange }: {dateChange: string} ) {
                     <View style={{ paddingHorizontal: 20 }}>
                         {trips?.filter(t => t.hasDeparted == false).map((trip) => (
                             <TouchableOpacity onPress={() => handleTripSelect(trip.vessel, trip.trip_id, trip.route_id, trip.route_origin, trip.route_destination, trip.mobile_code, trip.code, trip.web_code, trip.departure_time, trip.vessel_id)}
-                                key={trip.trip_id} style={{ position: 'relative', paddingHorizontal: 15, paddingVertical: 20, backgroundColor: '#fff', borderRadius: 10, marginTop: 12, flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', elevation: 5 }}>
-                                <View style={{ position: 'absolute', height: '200%', borderTopLeftRadius: 10, borderBottomLeftRadius: 10, width: 5, backgroundColor: '#cf2a3a' }} />
-                                <View style={{ width: '80%' }}>
+                                key={trip.trip_id} style={{ elevation: 5, backgroundColor: '#fff', borderRadius: 10, marginTop: 12, flexDirection: 'row', alignItems: 'center' }}>
+                                <View style={{ height: '100%', borderTopLeftRadius: 10, borderBottomLeftRadius: 10, width: 5, backgroundColor: '#cf2a3a' }} />
+                                <View style={{ width: '78%', paddingHorizontal: 15, paddingVertical: 20 }}>
                                     <Text style={{ fontWeight: 'bold', fontSize: 13, color: '#cf2a3a' }}>{`${trip.departure}`}</Text>
                                     <Text style={{ fontWeight: 'bold', fontSize: 13 }}>{`${trip.route_origin}  >  ${trip.route_destination} [ ${trip.vessel} ]`}</Text>
                                 </View>
-                                <Ionicons name="chevron-forward" size={18} />
+                                <Ionicons name="chevron-forward" size={18} style={{ marginLeft: 30 }} />
                             </TouchableOpacity>
                         ))}
                     </View>

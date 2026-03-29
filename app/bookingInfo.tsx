@@ -457,7 +457,7 @@ export default function BookingInfo() {
                             <View style={[styles.card,  { marginTop: 10 }]}>
                                 <Text style={{ padding: 10, borderBottomColor: '#dadada', borderBottomWidth: 1, fontWeight: 'bold' }}>Passenger/s</Text>
                                 {paxInfo.map((pax: any) =>(
-                                    <View key={pax.id} style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', padding: 10 }}>
+                                    <View key={pax.id} style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', width: width * 0.83, padding: 10 }}>
                                         <View style={{ flexDirection: 'row', alignItems: 'center' }}>
                                             <Ionicons name={'person'} color={'#fff'} size={18} style={{ padding: 10, backgroundColor: '#cf2a3a', borderRadius: 50, marginRight: 10 }} />
                                             <View style={{ flexDirection: 'column', width: '65%' }}>
@@ -534,11 +534,11 @@ export default function BookingInfo() {
                             <View style={styles.requestsContainer}>
                                 <Pressable disabled={hasOnlinePax} onPress={() => handleOnResched()} style={[styles.requestsBtn, { opacity: hasOnlinePax ? 0.5 : 1, backgroundColor: '#FCCA03' }]}>
                                     <Ionicons name={'reload'} size={16} />
-                                    <Text style={{ fontWeight: '800', fontSize: 13 }}>Reschedule Booking</Text>
+                                    <Text style={{ fontWeight: '800', fontSize: 12 }}>Reschedule Booking</Text>
                                 </Pressable>
                                 <Pressable disabled={hasOnlinePax} onPress={() => handleOnCancelModal()} style={[styles.requestsBtn, { opacity: hasOnlinePax ? 0.5 : 1, backgroundColor: '#cf2a3a' }]}>
                                     <MaterialCommunityIcons name={'cancel'} color={'#fff'} size={16} />
-                                    <Text style={{ color: '#fff', fontWeight: '800', fontSize: 13 }}>Cancel Booking</Text>
+                                    <Text style={{ color: '#fff', fontWeight: '800', fontSize: 12 }}>Cancel Booking</Text>
                                 </Pressable>
                             </View>
                         )}

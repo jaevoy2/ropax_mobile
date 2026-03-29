@@ -103,42 +103,42 @@ export default function PaymentSummary() {
                 </TouchableOpacity>
                 <Text style={{ fontSize: 18, color: '#fff', fontWeight: 'bold', textAlign: 'center' }}>Payment Summary</Text>
             </View>
+            <View style={{ padding: 10 }}>
+                <View style={{ borderColor: "#dadada", borderWidth: 1, padding: 10, borderRadius: 8, flexDirection: 'row', gap: 8, alignItems: 'center' }}>
+                    <Ionicons name={'boat'} color={'#fff'} size={28} style={{ backgroundColor: '#cf2a3a', padding: 10, borderRadius: 50 }} />
+                    <View style={{ flexDirection: 'column' }}>
+                        <Text style={{ color: '#cf2a3a', fontSize: 16, fontWeight: '900', marginTop: -5 }}>{vessel}</Text>
+                        <Text style={{ color: '#747373ff', fontSize: 11, fontWeight: '600' }}>{timeWithRoute}</Text>
+                    </View>
+                </View>
+                <View style={{ borderColor: "#dadada", borderWidth: 1, borderRadius: 8, marginTop: 15 }}>
+                    <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', gap: 3, backgroundColor: '#cf2a3b27', borderTopRightRadius: 6, borderTopLeftRadius: 6, padding: 10  }}>
+                        <View>
+                            <Text style={{ fontWeight: 'bold', color: '#cf2a3a' }}>Payment</Text>
+                            <Text style={{ fontSize: 9, fontWeight: '600', color: '#cf2a3a' }}>Payment must be settled before departure.</Text>
+                        </View>
+                        <Ionicons name={'alert-circle'} color={'#cf2a3a'} size={24} />
+                    </View>
+                    <View style={{ paddingHorizontal: 10, paddingVertical: 15, gap: 10 }}>
+                        <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' }}>
+                            <Text style={{ color: '#646464', fontSize: 13, }}>Cash Tendered</Text>
+                            <View style={{ flexDirection: 'row', alignItems: 'center', gap: 5, borderBottomColor: "#cf2a3a", borderBottomWidth: 1 }}>
+                                <Text style={{ fontSize: 20, fontWeight: '600' }}>₱</Text>
+                                <TextInput onChangeText={(text) => setPassCashTendered(Number(text))} keyboardType={'numeric'} placeholder='0.00' style={{ width: 100, fontSize: 20, height: 45, fontWeight: 'bold', backgroundColor: '#fafafa', textAlign: 'right', paddingHorizontal: 3, borderColor: '#fafafa' }} />
+                            </View>
+                        </View>
+                        <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' }}>
+                            <Text style={{ color: '#cf2a3a', fontSize: 16, fontWeight: '700' }}>Change</Text>
+                            <Text style={{ fontSize: 20, fontWeight: '800', color: '#cf2a3a' }}>₱ {cashTendered != 0 ? fareChange?.toFixed(2) : '00.00'}</Text>
+                        </View>
+                    </View>
+                </View>
+            </View>
             <KeyboardAvoidingView behavior={Platform.OS === 'android' ? 'padding' : 'height'} style={{ flex: 1, paddingBottom: 10 }}>
-                <View style={{ flex: 1 }}>
+                <View style={{ height: height * 0.4 }}>
                     <ScrollView style={{ flex: 1 }}>
-                        <View style={{ paddingHorizontal: 10, paddingTop: 20 }}>
-                            <View style={{ borderColor: "#dadada", borderWidth: 1, padding: 10, borderRadius: 8, flexDirection: 'row', gap: 8, alignItems: 'center', paddingBottom: 10 }}>
-                                <Ionicons name={'boat'} color={'#fff'} size={28} style={{ backgroundColor: '#cf2a3a', padding: 10, borderRadius: 50 }} />
-                                <View style={{ flexDirection: 'column' }}>
-                                    <Text style={{ color: '#cf2a3a', fontSize: 16, fontWeight: '900', marginTop: -5 }}>{vessel}</Text>
-                                    <Text style={{ color: '#747373ff', fontSize: 11, fontWeight: '600' }}>{timeWithRoute}</Text>
-                                </View>
-                            </View>
-
-                            <View style={{ borderColor: "#dadada", borderWidth: 1, borderRadius: 8, marginTop: 15 }}>
-                                <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', gap: 3, backgroundColor: '#cf2a3b27', borderTopRightRadius: 6, borderTopLeftRadius: 6, padding: 10  }}>
-                                    <View>
-                                        <Text style={{ fontWeight: 'bold', color: '#cf2a3a' }}>Payment</Text>
-                                        <Text style={{ fontSize: 9, fontWeight: '600', color: '#cf2a3a' }}>Payment must be settled before departure.</Text>
-                                    </View>
-                                    <Ionicons name={'alert-circle'} color={'#cf2a3a'} size={24} />
-                                </View>
-                                <View style={{ paddingHorizontal: 10, paddingVertical: 15, gap: 10 }}>
-                                    <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' }}>
-                                        <Text style={{ color: '#646464', fontSize: 13, }}>Cash Tendered</Text>
-                                        <View style={{ flexDirection: 'row', alignItems: 'center', gap: 5, borderBottomColor: "#cf2a3a", borderBottomWidth: 1 }}>
-                                            <Text style={{ fontSize: 20, fontWeight: '600' }}>₱</Text>
-                                            <TextInput onChangeText={(text) => setPassCashTendered(Number(text))} keyboardType={'numeric'} placeholder='0.00' style={{ width: 100, fontSize: 20, height: 45, fontWeight: 'bold', backgroundColor: '#fafafa', textAlign: 'right', paddingHorizontal: 3, borderColor: '#fafafa' }} />
-                                        </View>
-                                    </View>
-                                    <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' }}>
-                                        <Text style={{ color: '#cf2a3a', fontSize: 16, fontWeight: '700' }}>Change</Text>
-                                        <Text style={{ fontSize: 20, fontWeight: '800', color: '#cf2a3a' }}>₱ {cashTendered != 0 ? fareChange?.toFixed(2) : '00.00'}</Text>
-                                    </View>
-                                </View>
-                            </View>
-
-                            <View style={{ marginTop: 15, borderColor: "#dadada", borderWidth: 1, borderRadius: 8 }}>
+                        <View style={{ paddingHorizontal: 10 }}>
+                            <View style={{ borderColor: "#dadada", borderWidth: 1, borderRadius: 8 }}>
                                 {passengers.length > 0 ? (
                                     <>
                                         <Text style={{ padding: 10, borderBottomColor: '#dadada', borderBottomWidth: 1, fontWeight: 'bold' }}>Passenger/s</Text>

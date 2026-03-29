@@ -1,6 +1,5 @@
 import Forms from "@/components/forms";
 import { usePassengers } from "@/context/passenger";
-import { usePassesType } from "@/context/passes";
 import { useTrip } from "@/context/trip";
 import { Ionicons } from "@expo/vector-icons";
 import { router } from "expo-router";
@@ -12,8 +11,7 @@ const { height, width } = Dimensions.get('window')
 
 
 export default function BookingForm() {
-    const { passengers, setPassengers, clearPassengers } = usePassengers();
-    const { passesTypeID, passesTypeCode, passesTypeName } = usePassesType();
+    const { passengers, clearPassengers } = usePassengers();
     const { totalFare, approvedBy, origin, destination, setTotalFare } = useTrip()
     const [saveloading, setSaveLoading] = useState(false);
     const [errorForm, setErrorForm] = useState<(string | number)[]>([]);
@@ -42,7 +40,7 @@ export default function BookingForm() {
 
             const passesType = passengers.some((p) => p.passType == 'Passes' || p.passTypeCode == 'P');
 
-            const invalidNameFormat = passengers.find((p) => !p.name?.includes(',') );
+            const invalidNameFormat = passengers.find((p) => !p?.name?.includes(',') );
 
             if(passesType && !approvedBy.trim()) {
                 Alert.alert('Invalid', 'Approved by is required.');
@@ -66,7 +64,7 @@ export default function BookingForm() {
                 }
     
                 const infantFieldError = passengers.find((p) =>
-                    p.infant?.find((i) => !i.name.trim() || !i.gender.trim() || !i.age)
+                    p.infant?.find((i) => !i?.name.trim() || !i.gender.trim() || !i.age)
                 )
                 if (infantFieldError) {
                     setErrorForm(prev => [...prev, infantFieldError!.seatNumber ?? '']);
@@ -193,7 +191,7 @@ export default function BookingForm() {
                     </View>
                 </View>
                 <KeyboardAvoidingView style={{ flex: 1, paddingBottom: 100 }} behavior={Platform.OS === 'android' ? 'padding' : 'height'}>
-                    <ScrollView style={{ paddingHorizontal: 10, paddingBottom: 20, marginBottom: 15 }}>
+                    <ScrollView keyboardShouldPersistTaps="handled" style={{ paddingHorizontal: 10, paddingBottom: 20, marginBottom: 15 }}>
                         <Forms errorForm={errorForm} />
                     </ScrollView>
 
