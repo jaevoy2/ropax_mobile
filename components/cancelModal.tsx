@@ -7,10 +7,12 @@ import { Checkbox } from 'react-native-paper';
 
 
 export default function CancelBooking({ cancelModal, setCancelModal, paxInfo, setPaxInfo, percents, bookingId }: 
-        { cancelModal: boolean; setCancelModal: React.Dispatch<React.SetStateAction<boolean>>; 
-            paxInfo: PaxInfo[]; setPaxInfo: React.Dispatch<React.SetStateAction<PaxInfo[]>> 
-            percents,
-            bookingId
+        { cancelModal: boolean;
+        setCancelModal: React.Dispatch<React.SetStateAction<boolean>>; 
+        paxInfo: PaxInfo[];
+        setPaxInfo: React.Dispatch<React.SetStateAction<PaxInfo[]>> 
+        percents,
+        bookingId
         }) {
 
     const [selectAll, setSelectAll] = useState(true);

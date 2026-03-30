@@ -23,7 +23,7 @@ type PaxBookingProps = {
 export const bookingStatuses = [
     { id: 0, label: 'Pending', color: '#ffc107', bgColor: 'rgba(255, 193, 7, 0.15)', icon: 'clock-time-eight' },
     { id: 1, label: 'Confirmed', color: '#19B87E', bgColor: '#19b87e34', icon: 'check-decagram' },
-    { id: 2, label: 'Onboard', color: '#6c757d', bgColor: 'rgba(108, 117, 125, 0.15)', icon: 'trending-up' },
+    { id: 2, label: 'Onboard', color: '#19B87E', bgColor: '#19b87e34', icon: 'trending-up' },
     { id: 3, label: 'Completed', color: '#19B87E', bgColor: '#19b87e34', icon: 'sail-boat' },
     { id: 4, label: 'Expired' , color: '#ffc107', bgColor: 'rgba(255, 193, 7, 0.15)', icon: 'alert' },
     { id: 5, label: 'Refunded', color: '#0dcaf0', bgColor: 'rgba(13, 202, 240, 0.15)', icon: 'cash-check' },

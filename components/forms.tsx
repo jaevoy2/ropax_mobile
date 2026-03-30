@@ -61,9 +61,11 @@ export default function Forms({ errorForm }: FormProps) {
     const [paxlists, setPaxLists] = useState<PaxListProps[]>([]);
     
     const dropdownController = useRef<{ [key: string]: any }>({});
+    const initializedRefs = useRef<{ [key: string]: boolean }>({});
     const searchRefs = useRef<{ [key: string]: any }>({});
 
     const InfantDropController = useRef<{ [key: string]: any }>({});
+    const initializedInfantRefs = useRef<{ [key: string]: boolean }>({});
     const infantSearchRefs = useRef<{ [key: string]: any }>({});
 
     const hasPasses = passengers.some((p) => p.passType == 'Passes');
@@ -73,7 +75,6 @@ export default function Forms({ errorForm }: FormProps) {
         const paxTypeAndLists = async () => {
             try {
                 const passTypesFaresAndLists = await FetchPassengerType();
-                console.log(passTypesFaresAndLists)
 
                 if(!passTypesFaresAndLists.error) {
                     const types: PassTypeProps[] = passTypesFaresAndLists.types.map((type: any) => ({
@@ -614,8 +615,9 @@ export default function Forms({ errorForm }: FormProps) {
                                                 if (controller) {
                                                     dropdownController.current[p.id] = controller;
 
-                                                    if (p.name) {
+                                                    if (p.name && !initializedRefs.current[p.id]) {
                                                         controller.setInputText(p.name);
+                                                        initializedRefs.current[p.id] = true;
                                                     }
                                                 }
                                             }}
@@ -634,7 +636,7 @@ export default function Forms({ errorForm }: FormProps) {
                                                 handleOnSearch(text.trim(), p.id);
                                                 updatePassenger(p.id, 'name', text)
                                             }}
-                                            debounce={600}
+                                            debounce={300}
                                             suggestionsListContainerStyle={{
                                                 backgroundColor: '#f0f0f0'
                                             }}
@@ -767,13 +769,14 @@ export default function Forms({ errorForm }: FormProps) {
                                                                 if (controller) {
                                                                     InfantDropController.current[`${p.id}-${index}`] = controller;
 
-                                                                    if (i.name) {
+                                                                    if (i.name && !initializedInfantRefs.current[`${p.id}-${index}`]) {
                                                                         controller.setInputText(i.name);
+                                                                        initializedInfantRefs.current[`${p.id}-${index}`] = true;
                                                                     }
                                                                 }
                                                             }}
                                                             direction={Platform.select({ android: 'down' })}
-                                                            onClear={() => handleInfantClearAutoComplete(p.pax_id, index)}
+                                                            onClear={() => handleInfantClearAutoComplete(p.pax_id, index)} 
                                                             dataSet={infantSuggestions[`${p.id}-${index}`] ?? formattedInfantList}
                                                             closeOnBlur={true}
                                                             flatListProps={{
@@ -787,7 +790,7 @@ export default function Forms({ errorForm }: FormProps) {
                                                                 handleOnInfantSearch(text.trim(), p.id);
                                                                 updateInfant(p.id, index, 'name', text)
                                                             }}
-                                                            debounce={600}
+                                                            debounce={300}
                                                             suggestionsListContainerStyle={{
                                                                 backgroundColor: '#f0f0f0'
                                                             }}

@@ -1,5 +1,7 @@
+import { FetchAccommodations } from '@/api/accommodations';
 import { FetchTotalBookings } from "@/api/totalBookings";
 import L2Vessel from "@/components/L2Vessel";
+import SeatAccommAlert from "@/components/seatAccommAlert";
 import SRVessel from "@/components/srVessel";
 import { useCargo } from "@/context/cargoProps";
 import { usePassengers } from "@/context/passenger";
@@ -21,11 +23,19 @@ const deck = require('@/assets/images/deck.png');
 const icon = require('@/assets/images/logo_icon.png');
 const text_logo = require('@/assets/images/logo.png');
 
+
+export type AccomsProps = {
+    id: number;
+    name?: string;
+    code: string;
+}
+
 export default function SeatPlan() {
     const { passengers, setPassengers } = usePassengers();
     const { id, vessel, destination, origin, setTotalFare, totalFare } = useTrip();
     const { passesTypeID, passesTypeCode, passesTypeName } = usePassesType();
     const { paxCargoProperty } = useCargo();
+    const [accommodations, setAccommodations] = useState<AccomsProps[] | null>(null);
     const [year, setYear] = useState('');
     const [totalBookings, setTotalBookings] = useState<number>(0);
     const [errorForm, setErrorForm] = useState<(string | number)[]>([]);
@@ -39,12 +49,17 @@ export default function SeatPlan() {
     const hasPasses = useMemo(() => passengers.some(p => p.passType == 'Passes'), [passengers]);
     const hasSeat = useMemo(() => passengers.some(p => p.seatNumber != null), [passengers]);
 
-
     useEffect(() => {
         passengersRef.current = passengers;
     }, [passengers]);
 
     useEffect(() => {
+        if(accommodations) {
+            return;
+        }else {
+            fetchAccom();
+        }
+
         handleFetchTotalBookings(id)
         const date = new Date();
         setYear(date.getFullYear().toString().slice(-2));
@@ -82,12 +97,31 @@ export default function SeatPlan() {
         }
     }, [])
 
+    const fetchAccom = async () => {
+        try {
+            const accomType = await FetchAccommodations();
+
+            if(!accomType.error) {
+                const accomms: AccomsProps[] = accomType.data.map((a: any) => ({
+                    id: a?.id,
+                    name: a.name,
+                    code: a.code
+                }));
+
+                setAccommodations(accomms);
+            }
+        }catch(error: any) {
+            Alert.alert('Error', error.message)
+        }
+    }
 
     const vesselComponent = useMemo(() => (
         vessel == 'Mbca Leopards Sea Runner' || vessel == 'Sea Runner'
-            ? <SRVessel onSeatSelect={handleSeatSelect} />
+            ? <SRVessel onSeatSelect={handleSeatSelect} accommodations={accommodations} />
             : <L2Vessel onSeatSelect={handleSeatSelect} />
     ), [vessel, handleSeatSelect]);
+
+
 
     const handleRemoveSeat =  useCallback((seat: number | string, paxId: string | number) => {
         if (!seat) return;
@@ -179,7 +213,9 @@ export default function SeatPlan() {
                             <MaterialCommunityIcons name={'account-arrow-right'} size={30} color={'#fff'} />
                         </TouchableOpacity>
                     )}
-                </View>                
+                </View>        
+
+                <SeatAccommAlert setPassengers={setPassengers} accommodations={accommodations} />
 
                 <View style={{ position: 'absolute', paddingTop: 50, width: width, flex: 1 }}>
                     <Text style={{ color: '#fff', fontSize: 16, fontWeight: 'bold', alignSelf: 'center', textAlign: 'center' }}>{vessel}</Text>
@@ -187,11 +223,14 @@ export default function SeatPlan() {
                     <View style={{ paddingTop: 10, height: height - 60 }}>
                         <ScrollView style={{ height: '100%' }} contentContainerStyle={{ paddingBottom: 20 }}>
                             <Image source={deck} style={{ opacity: 0.5, width: '100%', height: height + 620, alignSelf: 'center', tintColor: '#ffffff' }} />
+
                             <View style={{ height: 300, width: '95%', zIndex: 5, position: 'absolute', alignSelf: 'center', alignItems: 'center', }}>
                                 <Image source={icon} style={{ width: 41, height: 40, marginTop: 40 }} />
                                 <Image source={text_logo} style={{ width: 120, height: 28, marginTop: 10 }} />
+
                                 <Text style={{ fontSize: 13, fontWeight: '900', color: '#fff', marginTop: 20, textAlign: 'center' }}>{totalBookings} TOTAL PAYING PASSENGERS</Text>
-                                <View style={{ width: '80%', backgroundColor: '#FAFAFA', marginTop: 20, borderRadius: 10, paddingVertical: 30, paddingHorizontal: 10, flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' }}>
+
+                                <View style={{ width: '80%', backgroundColor: '#FAFAFA', marginTop: 20, borderTopLeftRadius: 30, borderTopRightRadius: 30, borderBottomLeftRadius: 5, borderBottomRightRadius: 5, paddingVertical: 30, paddingHorizontal: 10, flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' }}>
                                     <View style={{ flexDirection: 'row', gap: 3, alignItems: 'center' }}>
                                         <Ionicons name={'boat'} size={16} color={'#fff'} style={{ padding: 3, backgroundColor: '#cf2a3a', borderRadius: 5 }} />
                                         <Text style={{ fontSize: 12, fontWeight: 'bold' }}>{origin}</Text>
@@ -202,6 +241,7 @@ export default function SeatPlan() {
                                         <Text style={{ fontSize: 12, fontWeight: 'bold' }}>{destination}</Text>
                                     </View>
                                 </View>
+
                                 <View style={{ alignSelf: 'center' }}>
                                     {vesselComponent}
                                 </View>
@@ -231,7 +271,7 @@ export default function SeatPlan() {
                         </View>
                     </View>
 
-                    <TouchableOpacity onPress={() => router.push('/bookingForm')} disabled={passengers.length == 0} style={{ backgroundColor: passengers.length == 0 ? '#df5a68ff' : '#cf2a3a', width: '95%', alignSelf: 'center', borderRadius: 8, paddingVertical: 15, marginTop: 15 }}>
+                    <TouchableOpacity onPress={() => router.push('/bookingForm')} disabled={passengers.some(p => p.seatNumber == '')} style={{ backgroundColor: passengers.some(p => p.seatNumber == '') ? '#df5a68ff' : '#cf2a3a', width: '95%', alignSelf: 'center', borderRadius: 8, paddingVertical: 15, marginTop: 15 }}>
                         <Text style={{ fontSize: 16, fontWeight: 'bold', textAlign: 'center', color: '#fff' }}>Continue</Text>
                     </TouchableOpacity>
                 </BottomSheet>

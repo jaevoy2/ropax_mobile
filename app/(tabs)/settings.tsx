@@ -2,12 +2,19 @@ import { SaveStation } from "@/api/saveStation";
 import { FetchStation } from "@/api/station";
 import { Ionicons, MaterialCommunityIcons } from "@expo/vector-icons";
 import AsyncStorage from "@react-native-async-storage/async-storage";
+import * as FileSystem from 'expo-file-system';
+import * as MediaLibrary from 'expo-media-library';
 import { router } from "expo-router";
-import { useEffect, useState } from "react";
-import { ActivityIndicator, Alert, Dimensions, Image, Modal, Text, TouchableOpacity, View } from "react-native";
+import * as Sharing from 'expo-sharing';
+import { useEffect, useRef, useState } from "react";
+import { ActivityIndicator, Alert, Dimensions, Image, Modal, Text as RNText, Text, TouchableOpacity, View } from "react-native";
+import { captureRef } from 'react-native-view-shot';
 
 const { height, width } = Dimensions.get('window');
 const defaultImg = require('@/assets/images/default.jpg');
+const logo_text = require('@/assets/images/logo.png');
+const logo_icon = require('@/assets/images/logo_icon.png');
+
 
 type UserProp = {
     id: number;
@@ -33,6 +40,7 @@ export default function GenSettings() {
     const [saveSpinner, setSaveSpinner] = useState(false);
     const [loading, setLoading] = useState(false);
     const [user, setUser] = useState<UserProp | null>(null);
+    const viewRef = useRef<View | null>(null);
 
     useEffect(() => {
         const loadUserData = async () => {
@@ -130,6 +138,69 @@ export default function GenSettings() {
 
     }
 
+    const handleTestPrint = async () => {
+        if(!viewRef.current) {
+            Alert.alert('Error', 'View not available for snapshot');
+            return;
+        }
+
+        try {
+            const { status } = await MediaLibrary.requestPermissionsAsync();
+            if(!status) {
+                Alert.alert('Permission Denied', 'Permission to access media library is required to save the image.');
+                return;
+            }
+
+            const snapshotUri: string = await captureRef(viewRef, {
+                format: 'png',
+                quality: 1,
+                width: 384
+            });
+
+            const cacheUri: string = `${FileSystem.cacheDirectory}.ticket.png`;
+            await FileSystem.copyAsync({ from: snapshotUri, to: cacheUri });
+
+            await Sharing.shareAsync(cacheUri, {
+                dialogTitle: "Print with RawBT",
+                mimeType: "image/png",
+            });
+        }catch(error) {
+            Alert.alert('Error', String(error));
+        }
+    }
+
+
+    const SamplePrint = () => (
+        <View >
+            <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' }}>
+                <View style={{ flexDirection: 'row', alignItems: 'center', gap: 5 }}>
+                    <Image source={logo_icon} style={{ width: 38, height: 37 }} />
+                    <Image source={logo_text} style={{ width: 105, height: 25 }} />
+                </View>
+                <View style={{ flexDirection: 'column', alignItems: 'flex-end' }}>
+                    <RNText style={{ color: '#cf2a3a', fontSize: 19, fontWeight: '900' }}>TICKET</RNText>
+                    <RNText style={{ fontSize: 10, marginTop: -3, fontWeight: 'bold' }}>Test print.</RNText>
+                </View>
+            </View>
+            <View style={{ borderBottomWidth: 1, borderBlockColor: '#9B9B9B', paddingVertical: 5, gap: 5 }}>
+                <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', paddingHorizontal: 10 }}>
+                    <View style={{ flexDirection: 'column', alignItems: 'center' }}>
+                        <RNText style={{ fontSize: 35, fontWeight: '900', color: '#cf2a3a' }}>HIL</RNText>
+                        <RNText style={{ fontSize: 13, color: '#cf2a3a', marginTop: -5 }}>HILONGOS</RNText>
+                    </View>
+                    <MaterialCommunityIcons name='sail-boat' size={25} color={'#cf2a3a'}  />
+                    <View style={{ flexDirection: 'column', alignItems: 'center' }}>
+                        <RNText style={{ fontSize: 35, fontWeight: '900', color: '#cf2a3a' }}>UBY</RNText>
+                        <RNText style={{ fontSize: 13, color: '#cf2a3a', marginTop: -5 }}>UBAY</RNText>
+                    </View>
+                </View>
+                <View style={{ alignItems: 'center' }}>
+                    <RNText style={{ fontSize: 14, color: '#cf2a3a', fontWeight: 'bold' }}>THIS IS A TEST PRINT</RNText>
+                </View>
+            </View>
+        </View>
+    )
+
     return (
         <View>
             <Modal visible={modal} transparent animationType="fade">
@@ -189,6 +260,10 @@ export default function GenSettings() {
                 </View>
             </Modal>
 
+            <View ref={viewRef} collapsable={false} style={{ backgroundColor: '#fff', left: 0, top: -9999, position: 'absolute', width: 384, borderRadius: 10, padding: 10 }}>
+                <SamplePrint />
+            </View>
+
             <View style={{ paddingTop: 30, height: 100, backgroundColor: '#cf2a3a', paddingHorizontal: 20, flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' }}>
                 <Text style={{ color: '#fff', fontSize: 20, fontWeight: 'bold' }}>Settings</Text>
                 <TouchableOpacity onPress={() => setModal(true)}>
@@ -223,6 +298,16 @@ export default function GenSettings() {
                         <View>
                             <Text style={{ fontWeight: 'bold', fontSize: 16, color: '#cf2a3a' }}>Station</Text>
                             <Text style={{ fontSize: 12, color: '#666' }}>Select ticketing station</Text>
+                        </View>
+                    </View>
+                    <Ionicons name="chevron-forward" size={18} color={'#cf2a3a'} />
+                </TouchableOpacity>
+                <TouchableOpacity onPress={() => handleTestPrint()} style={{ elevation: 5, paddingHorizontal: 15, paddingVertical: 20, borderRadius: 10, backgroundColor: '#fff', marginTop: 10, flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' }}>
+                    <View style={{ flexDirection: 'row', gap: 10, alignItems: 'center' }}>
+                        <MaterialCommunityIcons name={'printer'} size={35} color={'#cf2a3a'} />
+                        <View>
+                            <Text style={{ fontWeight: 'bold', fontSize: 16, color: '#cf2a3a' }}>Test Print</Text>
+                            <Text style={{ fontSize: 12, color: '#666' }}>Print testing</Text>
                         </View>
                     </View>
                     <Ionicons name="chevron-forward" size={18} color={'#cf2a3a'} />

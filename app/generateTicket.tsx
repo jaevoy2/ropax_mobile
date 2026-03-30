@@ -26,6 +26,9 @@ export default function TicketGenerator() {
     const viewRef = useRef<View | null>(null);
     const [loading, setLoading] = useState(false);
 
+    const payingPaxCount = passengers.filter(p => p.passType != 'Infant' || 'Passes');
+    const passesCount = passengers.filter(p => p.passType == 'Passes');
+
     useEffect(() => {
         const date = new Date();
         setTripDate(date.toLocaleDateString('en-US', { month: '2-digit', day: '2-digit', year: 'numeric' }));
@@ -68,8 +71,8 @@ export default function TicketGenerator() {
 
             // Share (first time shows chooser, then RawBT can be set as default)
             await Sharing.shareAsync(cacheUri, {
-            dialogTitle: "Print with RawBT",
-            mimeType: "image/png",
+                dialogTitle: "Print with RawBT",
+                mimeType: "image/png",
             });
         } catch (error) {
             Alert.alert('Error', String(error))
@@ -91,38 +94,38 @@ export default function TicketGenerator() {
 
     const TermsAndConditions = () => (
         <View style={{ flexDirection: 'column', gap: 10, marginBottom: 10, marginTop: 15 }}>
-            <Text style={{ fontSize: 14, fontWeight: '900', marginTop: 10 }}>TERMS AND CONDITIONS</Text>
+            <Text style={{ fontSize: 15, fontWeight: '900', marginTop: 10 }}>TERMS AND CONDITIONS</Text>
             <View style={{ flexDirection: 'row', alignItems: 'flex-start', gap: 10, width: '95%' }}>
                 <Ionicons name={'ellipse'} size={6} color={'#000'} style={{ marginTop: 8 }} />
-                <Text style={{ fontWeight: '500' }}>Boarding gates will be strictly closed in 30 minutes before departure time.</Text>
+                <Text style={{ fontWeight: '500', fontSize: 15 }}>Boarding gates will be strictly closed in 30 minutes before departure time.</Text>
             </View>
             <View style={{ flexDirection: 'row', alignItems: 'flex-start', gap: 10, width: '95%' }}>
                 <Ionicons name={'ellipse'} size={6} color={'#000'} style={{ marginTop: 8 }} />
-                <Text style={{ fontWeight: '500' }}>Passengers listed on this itenerary should present valid IDs with their names on it.</Text>
+                <Text style={{ fontWeight: '500', fontSize: 15 }}>Passengers listed on this itenerary should present valid IDs with their names on it.</Text>
             </View>
             <View>
                 <View style={{ flexDirection: 'row', alignItems: 'flex-start', gap: 10, width: '95%' }}>
                     <Ionicons name={'ellipse'} size={6} color={'#000'} style={{ marginTop: 8 }} />
-                    <Text style={{ fontWeight: '500' }}>For refunds or resheduling:</Text>
+                    <Text style={{ fontWeight: '500', fontSize: 15 }}>For refunds or rescheduling:</Text>
                 </View>
                 <View style={{ marginLeft: 15 }}>
                     <View style={{ flexDirection: 'row', alignItems: 'flex-start', gap: 10 }}>
                         <Ionicons name={'ellipse'} size={6} color={'#000'} style={{ marginTop: 7 }} />
-                        <Text style={{ fontWeight: '500' }}>Before Departure -  Refund 10%</Text>
+                        <Text style={{ fontWeight: '500', fontSize: 15 }}>Before Departure - Refund 10%</Text>
                     </View>
                     <View style={{ flexDirection: 'row', alignItems: 'flex-start', gap: 10 }}>
                         <Ionicons name={'ellipse'} size={6} color={'#000'} style={{ marginTop: 7 }} />
-                        <Text style={{ fontWeight: '500' }}>After Departure/No Show - Refund 20%</Text>
+                        <Text style={{ fontWeight: '500', fontSize: 15 }}>After Departure/No Show - Refund 20%</Text>
                     </View>
                 </View>
             </View>
             <View style={{ flexDirection: 'row', alignItems: 'flex-start', gap: 10, width: '95%' }}>
                 <Ionicons name={'ellipse'} size={6} color={'#000'} style={{ marginTop: 8 }} />
-                <Text style={{ fontWeight: '600' }}>Service Fee is non-refundable.</Text>
+                <Text style={{ fontWeight: '600', fontSize: 15 }}>Service Fee is non-refundable.</Text>
             </View>
             <View style={{ flexDirection: 'row', alignItems: 'flex-start', gap: 10, width: '95%' }}>
                 <Ionicons name={'ellipse'} size={6} color={'#000'} style={{ marginTop: 8 }} />
-                <Text style={{ fontWeight: '600' }}>Sailing schedule of the vessel may be changed or cancelled without prior notice.</Text>
+                <Text style={{ fontWeight: '600', fontSize: 15 }}>Sailing schedule of the vessel may be changed or cancelled without prior notice.</Text>
             </View>
         </View>
     )
@@ -140,8 +143,8 @@ export default function TicketGenerator() {
                         <Image source={logo_text} style={{ width: 105, height: 25 }} />
                     </View>
                     <View style={{ flexDirection: 'column', alignItems: 'flex-end' }}>
-                        <Text style={{ color: '#cf2a3a', fontSize: 19, fontWeight: '900' }}>E-TICKET</Text>
-                        <Text style={{ fontSize: 10, marginTop: -3, fontWeight: 'bold' }}>This is NOT an official receipt.</Text>
+                        <Text style={{ color: '#cf2a3a', fontSize: 19, fontWeight: '900' }}>TICKET</Text>
+                        <Text style={{ fontSize: 11, marginTop: -3, fontWeight: 'bold' }}>This is NOT an official receipt.</Text>
                     </View>
                 </View>
                 <View style={{ borderBottomWidth: 1, borderBlockColor: '#9B9B9B', paddingVertical: 5, gap: 5 }}>
@@ -157,23 +160,23 @@ export default function TicketGenerator() {
                         </View>
                     </View>
                     <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' }}>
-                        <Text style={{ fontSize: 15 }}>Vessel:</Text>
-                        <Text style={{ fontSize: 15 }}>{vessel}</Text>
+                        <Text style={{ fontSize: 16 }}>Vessel:</Text>
+                        <Text style={{ fontSize: 16 }}>{vessel}</Text>
                     </View>
                     <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' }}>
-                        <Text style={{ fontSize: 15 }}>Trip Date:</Text>
-                        <Text style={{ fontSize: 15 }}>{tripDate}</Text>
+                        <Text style={{ fontSize: 16 }}>Trip Date:</Text>
+                        <Text style={{ fontSize: 16 }}>{tripDate}</Text>
                     </View>
                     <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' }}>
-                        <Text style={{ fontSize: 15 }}>Depart Time:</Text>
-                        <Text style={{ fontSize: 15 }}>{time}</Text>
+                        <Text style={{ fontSize: 16 }}>Depart Time:</Text>
+                        <Text style={{ fontSize: 16 }}>{time}</Text>
                     </View>
                 </View>
                 {passengers.length> 0 ? (
                     <>
                         <View style={{ borderBottomColor: '#9B9B9B', borderBottomWidth: 1, }}>
                             <View style={{ flexDirection: 'column', alignItems: 'center', justifyContent: 'center', paddingVertical: 10, borderBottomWidth: 1, borderBlockColor: '#9B9B9B' }}>
-                                <Text style={{ fontWeight: '900', fontSize: 18, color: '#cf2a3a' }}>{refNumber}</Text>
+                                <Text style={{ fontWeight: '700', fontSize: 19, color: '#cf2a3a' }}>{refNumber}</Text>
                                 {refNumber && (
                                     <QRCode value={refNumber} size={200} backgroundColor='#fff' color='#000' />
                                 )}
@@ -181,10 +184,10 @@ export default function TicketGenerator() {
                         
                             <View style={{ paddingVertical: 5 }}>
                                 <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', marginBottom: 3, borderBottomColor: '#9B9B9B', borderBottomWidth: 1, paddingBottom: 5 }}>
-                                    <Text style={{ fontSize: 14, width: '40%', fontWeight: '700' }}>Name:</Text>
-                                    <Text style={{ fontSize: 14, width: 50, fontWeight: '700' }}>Type:</Text>
-                                    <Text style={{ fontSize: 14, fontWeight: '700', width: 52, }}>Seat#:</Text>
-                                    <Text style={{ fontSize: 14, fontWeight: '700', width: 60, textAlign: 'right' }}>Fare</Text>
+                                    <Text style={{ fontSize: 15, width: '40%', fontWeight: '700' }}>Name</Text>
+                                    <Text style={{ fontSize: 15, width: 50, fontWeight: '700' }}>Type</Text>
+                                    <Text style={{ fontSize: 15, fontWeight: '700', width: 53, }}>Seat#</Text>
+                                    <Text style={{ fontSize: 15, fontWeight: '700', width: 60, textAlign: 'right' }}>Fare</Text>
                                 </View>
                                 {passengers.some((p) => p?.accommodation == 'Business Class' || p?.accommodation == 'B-Class' || p?.accommodation == 'B Class') && (
                                     <View style={{ marginTop: 5}}>
@@ -192,10 +195,10 @@ export default function TicketGenerator() {
                                         {passengers.filter((p) => p?.accommodation == 'Business Class' || p?.accommodation == 'B-Class' || p?.accommodation == 'B Class')
                                         .map((p) => (
                                             <View key={p.seatNumber} style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' }}>
-                                                <Text style={{ fontSize: 14, width: '40%' }}>{`${p.name?.split(',')[1]?.trim().charAt(0)}. ${p.name?.split(',')[0]}`}</Text>
-                                                <Text style={{ fontSize: 14, width: 50, textAlign: 'center' }}>{p.passTypeCode}</Text>
-                                                <Text style={{ fontSize: 14, width: 50, textAlign: 'center' }}>{`${p.seatNumber}`}</Text>
-                                                <Text style={{ fontSize: 14, width: 70, textAlign: 'right' }}>₱ {p.fare.toLocaleString('en-PH', { minimumFractionDigits: 2,  maximumFractionDigits: 2})}</Text>
+                                                <Text style={{ fontSize: 15, width: '40%' }}>{`${p.name?.split(',')[1]?.trim().charAt(0)}. ${p.name?.split(',')[0]}`}</Text>
+                                                <Text style={{ fontSize: 15, width: 50, textAlign: 'center' }}>{p.passTypeCode}</Text>
+                                                <Text style={{ fontSize: 15, width: 50, textAlign: 'center' }}>{`${p.seatNumber}`}</Text>
+                                                <Text style={{ fontSize: 15, width: 72, textAlign: 'right' }}>₱ {p.fare.toLocaleString('en-PH', { minimumFractionDigits: 2,  maximumFractionDigits: 2})}</Text>
                                             </View>
                                         ))}
                                     </View>
@@ -206,10 +209,10 @@ export default function TicketGenerator() {
                                         {passengers.filter((p) => p?.accommodation == 'Tourist')
                                         .map((p) => (
                                             <View key={p.seatNumber} style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' }}>
-                                                <Text style={{ fontSize: 14, width: '40%' }}>{`${p.name?.split(',')[1]?.trim().charAt(0)}. ${p.name?.split(',')[0]}`}</Text>
-                                                <Text style={{ fontSize: 14, width: 50, textAlign: 'center' }}>{p.passTypeCode}</Text>
-                                                <Text style={{ fontSize: 14, width: 50, textAlign: 'center' }}>{`${p.seatNumber}`}</Text>
-                                                <Text style={{ fontSize: 14, width: 70, textAlign: 'right' }}>₱ {p.fare.toLocaleString('en-PH', { minimumFractionDigits: 2,  maximumFractionDigits: 2})}</Text>
+                                                <Text style={{ fontSize: 15, width: '40%' }}>{`${p.name?.split(',')[1]?.trim().charAt(0)}. ${p.name?.split(',')[0]}`}</Text>
+                                                <Text style={{ fontSize: 15, width: 50, textAlign: 'center' }}>{p.passTypeCode}</Text>
+                                                <Text style={{ fontSize: 15, width: 50, textAlign: 'center' }}>{`${p.seatNumber}`}</Text>
+                                                <Text style={{ fontSize: 15, width: 72, textAlign: 'right' }}>₱ {p.fare.toLocaleString('en-PH', { minimumFractionDigits: 2,  maximumFractionDigits: 2})}</Text>
                                             </View>
                                         ))}
                                     </>
@@ -220,10 +223,10 @@ export default function TicketGenerator() {
                                         {passengers.filter((p) => p.passType == 'Passes')
                                         .map((p, index) => (
                                             <View key={index} style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' }}>
-                                                <Text style={{ fontSize: 14, width: '40%' }}>{`${p.name?.split(',')[1]?.trim().charAt(0)}. ${p.name?.split(',')[0]}`}</Text>
-                                                <Text style={{ fontSize: 14, width: 50, textAlign: 'center' }}>{p.passTypeCode}</Text>
-                                                <Text style={{ fontSize: 14, width: 50, textAlign: 'center' }}>{`${p.seatNumber ?? 'N/A'}`}</Text>
-                                                <Text style={{ fontSize: 14, width: 70, textAlign: 'right' }}>₱ {p.fare.toLocaleString('en-PH', { minimumFractionDigits: 2,  maximumFractionDigits: 2})}</Text>
+                                                <Text style={{ fontSize: 15, width: '40%' }}>{`${p.name?.split(',')[1]?.trim().charAt(0)}. ${p.name?.split(',')[0]}`}</Text>
+                                                <Text style={{ fontSize: 15, width: 50, textAlign: 'center' }}>{p.passTypeCode}</Text>
+                                                <Text style={{ fontSize: 15, width: 50, textAlign: 'center' }}>{`${p.seatNumber ?? 'N/A'}`}</Text>
+                                                <Text style={{ fontSize: 15, width: 72, textAlign: 'right' }}>₱ {p.fare.toLocaleString('en-PH', { minimumFractionDigits: 2,  maximumFractionDigits: 2})}</Text>
                                             </View>
                                         ))}
                                     </>
@@ -232,14 +235,21 @@ export default function TicketGenerator() {
                                     p.hasInfant && p.infant?.map((i, index) => (
                                         <View key={`${passIndex}-${index}`} style={{ marginBottom: 3 }}>
                                             <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' }}>
-                                                <Text style={{ fontSize: 14, width: '40%' }}>{`${i.name?.split(',')[1]?.trim().charAt(0)}. ${i.name?.split(',')[0]}`}</Text>
-                                                <Text style={{ fontSize: 14, width: 50, textAlign: 'center' }}>I</Text>
-                                                <Text style={{ fontSize: 14, width: 50, textAlign: 'center' }}>N/A</Text>
-                                                <Text style={{ fontSize: 14, width: 70, textAlign: 'right' }}>₱ 0.00</Text>
+                                                <Text style={{ fontSize: 15, width: '40%' }}>{`${i.name?.split(',')[1]?.trim().charAt(0)}. ${i.name?.split(',')[0]}`}</Text>
+                                                <Text style={{ fontSize: 15, width: 50, textAlign: 'center' }}>I</Text>
+                                                <Text style={{ fontSize: 15, width: 50, textAlign: 'center' }}>N/A</Text>
+                                                <Text style={{ fontSize: 15, width: 72, textAlign: 'right' }}>₱ 0.00</Text>
                                             </View>
                                         </View>
                                     ))
                                 )}
+                                <View style={{ paddingTop: 5, marginTop: 10 }}>
+                                    {passesCount.length < 1 ? (
+                                        <Text style={{ fontSize: 15, fontWeight: '600', flexDirection: 'column' }}>TOTAL PAYING PASSENGER/S: {payingPaxCount.length}</Text>
+                                    ) : (
+                                        <Text style={{ fontSize: 15, fontWeight: '600', flexDirection: 'column' }}>TOTAL PASSES PASSENGER/S: {payingPaxCount.length}</Text>
+                                    )}
+                                </View>
                             </View>
                         </View>
                         {passengers.some(p => p.hasCargo) && (
@@ -289,18 +299,18 @@ export default function TicketGenerator() {
                         </View>
                     </View>
                 )}
-                <View style={{ borderBottomColor: note ? '#9B9B9B' : 'transparent', borderBottomWidth: note ? 1 : 0, paddingVertical: 10 }}>
+                <View style={{ borderBottomColor: note ? '#9B9B9B' : 'transparent', borderBottomWidth: note ? 1 : 0, paddingVertical: 12 }}>
                     <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' }}>
-                        <Text style={{ fontSize: 15, fontWeight: '900' }}>Total Amount:</Text>
-                        <Text style={{ fontSize: 15, fontWeight: '900', color: '#cf2a3a' }}>₱ {totalFare.toLocaleString('en-PH', { minimumFractionDigits: 2,  maximumFractionDigits: 2 })}</Text>
+                        <Text style={{ fontSize: 16, fontWeight: '700' }}>Total Amount:</Text>
+                        <Text style={{ fontSize: 16, fontWeight: '700', color: '#cf2a3a' }}>₱ {totalFare.toLocaleString('en-PH', { minimumFractionDigits: 2,  maximumFractionDigits: 2 })}</Text>
                     </View>
                     <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' }}>
-                        <Text style={{ fontSize: 14 }}>Cash Tendered:</Text>
-                        <Text style={{ fontSize: 14 }}>₱ {cashTendered.toLocaleString('en-PH', { minimumFractionDigits: 2,  maximumFractionDigits: 2 })}</Text>
+                        <Text style={{ fontSize: 16 }}>Cash Tendered:</Text>
+                        <Text style={{ fontSize: 16 }}>₱ {cashTendered.toLocaleString('en-PH', { minimumFractionDigits: 2,  maximumFractionDigits: 2 })}</Text>
                     </View>
                     <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' }}>
-                        <Text style={{ fontSize: 14 }}>Change:</Text>
-                        <Text style={{ fontSize: 14 }}>₱ {fareChange.toLocaleString('en-PH', { minimumFractionDigits: 2,  maximumFractionDigits: 2 })}</Text>
+                        <Text style={{ fontSize: 16 }}>Change:</Text>
+                        <Text style={{ fontSize: 16 }}>₱ {fareChange.toLocaleString('en-PH', { minimumFractionDigits: 2,  maximumFractionDigits: 2 })}</Text>
                     </View>
                 </View>
                 {note &&(
@@ -316,7 +326,7 @@ export default function TicketGenerator() {
             
             <View>
                 <View style={{ height: 160, backgroundColor: '#cf2a3a', paddingTop: 50 }}>
-                    <Text style={{ fontSize: 15, color: '#fff', fontWeight: 'bold', textAlign: 'center' }}>E-Ticket</Text>
+                    <Text style={{ fontSize: 15, color: '#fff', fontWeight: 'bold', textAlign: 'center' }}>Ticket</Text>
                 </View>
                 <TouchableOpacity onPress={() => clearAll()} style={{ position: 'absolute', top: 50, right: 20, flexDirection: 'row', alignItems: 'center', gap: 5 }}>
                     <Ionicons name='checkmark-done' color={'#fff'} size={20} />
@@ -331,8 +341,8 @@ export default function TicketGenerator() {
                                     <Image source={logo_text} style={{ width: 105, height: 25 }} />
                                 </View>
                                 <View style={{ flexDirection: 'column', alignItems: 'flex-end' }}>
-                                    <Text style={{ color: '#cf2a3a', fontSize: 17, fontWeight: '900' }}>E-TICKET</Text>
-                                    <Text style={{ fontSize: 9, marginTop: -3, fontWeight: 'bold' }}>This is NOT an official receipt.</Text>
+                                    <Text style={{ color: '#cf2a3a', fontSize: 17, fontWeight: '900' }}>TICKET</Text>
+                                    <Text style={{ fontSize: 8, marginTop: -3, fontWeight: 'bold' }}>This is NOT an official receipt.</Text>
                                 </View>
                             </View>
                             <View style={{ borderBottomWidth: 1, borderBlockColor: '#9B9B9B', paddingVertical: 5, gap: 5 }}>
@@ -342,7 +352,7 @@ export default function TicketGenerator() {
                                         <Text style={{ fontSize: 10, color: '#cf2a3a', marginTop: -5 }}>{origin}</Text>
                                     </View>
                                     <View style={{ flexDirection: 'row', alignItems: 'center' }}>
-                                        <Text>---</Text>
+                                        <Text style={{ color: '#cf2a3a' }}>---</Text>
                                         <MaterialCommunityIcons name='sail-boat' size={25} color={'#cf2a3a'}  />
                                     </View>
                                     <View style={{ flexDirection: 'column', alignItems: 'center' }}>

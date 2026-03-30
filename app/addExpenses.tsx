@@ -6,7 +6,6 @@ import { useExpense } from '@/context/expense';
 import { Ionicons } from '@expo/vector-icons';
 import { CameraType, CameraView, useCameraPermissions } from 'expo-camera';
 import * as FileSystem from 'expo-file-system';
-import { LinearGradient } from 'expo-linear-gradient';
 import { router } from 'expo-router';
 import { useEffect, useMemo, useRef, useState } from 'react';
 import { ActivityIndicator, Alert, Dimensions, Image, Modal, ScrollView, StyleSheet, Text, TextInput, TouchableOpacity, View } from 'react-native';
@@ -459,7 +458,7 @@ export default function AddExpenses() {
                                             </View>
                                             <View style={{ marginTop: 5 }}>
                                                 <Text style={{ fontSize: 10, fontWeight: 'bold', color: '#545454' }}>Image</Text>
-                                                <TouchableOpacity disabled={e.image_uri != null} onPress={() => handleOnCapture(e.id)} style={{ borderColor: '#b3b3b3', borderWidth: 1, borderRadius: 5, height: 90, justifyContent: 'center', position: 'relative' }}>
+                                                {/* <TouchableOpacity disabled={e.image_uri != null} onPress={() => handleOnCapture(e.id)} style={{ borderColor: '#b3b3b3', borderWidth: 1, borderRadius: 5, height: 90, justifyContent: 'center', position: 'relative' }}>
                                                     {e.image_uri == null ? (
                                                         <View style={{ backgroundColor: '#f8f8f8', borderRadius: 5, height: '100%', justifyContent: 'center' }}>
                                                             <Text style={{ textAlign: 'center', color: '#a3a3a3' }}>Tap to capture image.</Text>
@@ -485,7 +484,7 @@ export default function AddExpenses() {
                                                             />
                                                         </>
                                                     )}
-                                                </TouchableOpacity>
+                                                </TouchableOpacity> */}
                                             </View>
                                         </View>
                                     ))}

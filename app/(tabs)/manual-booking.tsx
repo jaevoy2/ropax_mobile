@@ -462,7 +462,7 @@ export default function ManualBooking() {
                                     ))}
                                     {trips && trips.some(t => t.hasDeparted == true) && (
                                         <>
-                                            <Text style={{ color: '#7A7A85', marginTop: 25, fontWeight: 'bold' }}>Departed</Text>
+                                            <Text style={{ color: '#7A7A85', marginTop: 40, fontWeight: 'bold' }}>Departed</Text>
                                             {trips && trips.filter(t => t.hasDeparted == true).map((trip) => (
                                                 <View key={trip.trip_id} style={{ paddingHorizontal: 15, paddingVertical: 20, backgroundColor: '#fff', opacity: 0.5, borderRadius: 10, marginTop: 12, flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' }}>
                                                     <View>
