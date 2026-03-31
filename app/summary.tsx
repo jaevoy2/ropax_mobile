@@ -153,8 +153,6 @@ export default function PaymentSummary() {
                                                             <Text style={{ fontSize: 10, color: '#646464', fontWeight: '600' }}>{pax?.passType}</Text>
                                                             <Text style={{ fontSize: 10, color: '#646464' }}>|</Text>
                                                             <Text style={{ fontSize: 10, color: '#646464', fontWeight: '600' }}>{pax?.accommodation}</Text>
-                                                            <Text style={{ fontSize: 10, color: '#646464' }}>|</Text>
-                                                            <Text style={{ fontSize: 10, color: '#646464', fontWeight: '600' }}>{pax?.passType}</Text>
                                                         </View>
                                                     </View>
                                                     <View style={{ flexDirection: 'column', alignItems: 'flex-end' }}>

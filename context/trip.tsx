@@ -18,6 +18,7 @@ export type TripContextProps = {
     refNumber: string;
     isCargoable: number;
     approvedBy?: string;
+    hasScanned?: boolean;
     setVessel: React.Dispatch<React.SetStateAction<string>>;
     setRouteID: React.Dispatch<React.SetStateAction<number>>;
     setOrigin: React.Dispatch<React.SetStateAction<string>>;
@@ -35,6 +36,7 @@ export type TripContextProps = {
     setRefNumber: React.Dispatch<React.SetStateAction<string>>;
     setIsCargoable: React.Dispatch<React.SetStateAction<number>>;
     setApprovedBy: React.Dispatch<React.SetStateAction<string>>;
+    setHasScanned: React.Dispatch<React.SetStateAction<boolean>>;
     clearTrip: () => void;
 }
 
@@ -63,6 +65,7 @@ export const TripProvider = ({ children }: TripProviderProps) => {
     const [note, setNote] = useState<string>('');
     const [isCargoable, setIsCargoable] = useState<number>(0);
     const [approvedBy, setApprovedBy] = useState('');
+    const [hasScanned, setHasScanned] = useState(false);
 
     const clearTrip = () => {
         setID(0);
@@ -84,8 +87,8 @@ export const TripProvider = ({ children }: TripProviderProps) => {
 
     return (
         <TripContext.Provider value={{ id, vessel, routeID, origin, destination, vessel_id, totalFare, note, departure_time,
-                                        fareChange, code, webCode, mobileCode, cashTendered, refNumber, isCargoable, approvedBy,
-                                    setVessel, setID, setRouteID, setOrigin, setDestination, setVesselID, setTotalFare, setNote,setDepartureTime,
+                                        fareChange, code, webCode, mobileCode, cashTendered, refNumber, isCargoable, approvedBy, hasScanned,
+                                    setVessel, setID, setRouteID, setOrigin, setDestination, setVesselID, setTotalFare, setNote,setDepartureTime, setHasScanned,
                                     setFareChange, setCode, setWebCode, setMobileCode, setCashTendered, setRefNumber, setIsCargoable, clearTrip, setApprovedBy }}>
             {children}
         </TripContext.Provider>

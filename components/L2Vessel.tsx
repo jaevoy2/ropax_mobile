@@ -1,4 +1,3 @@
-import { FetchAccommodations } from '@/api/accommodations';
 import { FetchBookings } from '@/api/bookings';
 import { usePassengers } from '@/context/passenger';
 import { useTrip } from '@/context/trip';
@@ -9,11 +8,18 @@ import * as Crypto from 'expo-crypto';
 import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { Alert, Dimensions, Text, TouchableOpacity, View } from 'react-native';
 
+import { AccomsProps } from '@/app/seatPlan';
+import L2BClassSeatPlan from './l2BClassSeatPlan';
+import L2TouristSeatPlan from './l2TouristSeatPlan';
+
+
 const { height } = Dimensions.get('window');
 
-const touristSeatList = ['BC1', 'BC2', 'BC3', 'BC4', 'BC5', 'P1', 'P2', 'P4', 'P3', 'P5', 'P6', 'P7', 'P8'];
-const touristSet = new Set(touristSeatList);
+const specialSeatList = ['BC1', 'BC2', 'BC3', 'BC4', 'BC5', 'P1', 'P2', 'P4', 'P3', 'P5', 'P6', 'P7', 'P8'];
+const specialSeats = new Set(specialSeatList);
 const bClassNames = ['Business Class', 'B Class', 'B-Class'];
+
+
 
 interface SeatProps {
     start: number;
@@ -28,9 +34,10 @@ interface SeatProps {
     onSeatSelect?: (seat: string | number, type: string, accomm_id: number) => void;
     passengerSeats: Set<number | string>;
     seatChannel?: Set<number | string>;
+    seatAvailability?: (hasAvailable: boolean) => void;
 }
 
-const SeatPlan: React.FC<SeatProps> = React.memo(({ start, limit, skipPattern = false, letter, skip = 0, count = 0, onSeatSelect, type, accomm_id, bookedSeats, seatChannel, passengerSeats }) => {
+export const SeatPlan: React.FC<SeatProps> = React.memo(({ start, limit, skipPattern = false, letter, skip = 0, count = 0, onSeatSelect, type, accomm_id, bookedSeats, seatChannel, passengerSeats, seatAvailability }) => {
     const items = useMemo(() => {
         const seats = [];
 
@@ -58,6 +65,22 @@ const SeatPlan: React.FC<SeatProps> = React.memo(({ start, limit, skipPattern = 
         return map;
     }, [bookedSeats]);
 
+    const hasSeatAvailable = useMemo(() => {
+        return items.some(seat => {
+            const booked = bookedSeatsMap[`${letter}${seat}`]
+            const isPassenger = passengerSeats?.has(`${letter}${seat}`);
+            const inChannel = seatChannel?.has(`${letter}${seat}`) ?? false;
+
+            return !booked && !isPassenger && !inChannel;
+        })
+    }, [items, bookedSeatsMap, passengerSeats, seatChannel]);
+
+    useEffect(() => {
+        seatAvailability?.(hasSeatAvailable)
+    }, [hasSeatAvailable])
+
+
+
     return (
         <View style={{ flexDirection: 'row', flexWrap: 'wrap', gap: 2, justifyContent: 'center' }}>
             {items.map((seat) => {
@@ -78,7 +101,7 @@ const SeatPlan: React.FC<SeatProps> = React.memo(({ start, limit, skipPattern = 
                             backgroundColor:
                                 booked ? booked?.station.color
                                 : isPassenger ? '#BA68C8'
-                                : touristSet.has(seatKey) && !inChannel ? '#E6E2C6'
+                                : specialSeats.has(seatKey) && !inChannel ? '#E6E2C6'
                                 : inChannel ? '#e6d1e9ff'
                                 : 'transparent'
                         }}>
@@ -97,12 +120,8 @@ const SeatPlan: React.FC<SeatProps> = React.memo(({ start, limit, skipPattern = 
 
 type L2VesselProps = {
     onSeatSelect?: (seat: string | number) => void;
-}
-
-type AccomsProps = {
-    id: number;
-    name: string;
-    code: string;
+    accommodations: AccomsProps[];
+    seatAvailability?: (hasAvailable: boolean) => void;
 }
 
 type BookedSeat = {
@@ -118,14 +137,32 @@ type BookedSeat = {
     }
 }
 
-const L2Vessel = ({ onSeatSelect }: L2VesselProps) => {
-    const { id } = useTrip();
+const L2Vessel = ({ onSeatSelect, accommodations, seatAvailability }: L2VesselProps) => {
+    const { id, hasScanned } = useTrip();
     const [bookedSeats, setBookedSeats] = useState<BookedSeat[]>([]);
-    const [accommodations, setAccommodations] = useState<AccomsProps[] | null>(null);
     const { passengers, setPassengers } = usePassengers();
     const [seatSelectionChannel, setSeatSelectionChannel] = useState<string[]>([]);
+    const [bclassHasSeats, setBClassHasSeats] = useState(true);
+    const [touristHasSeats, setTouristHasSeats] = useState(true);
 
     const stationRef = useRef<{ id: string; color: string } | null>(null);
+    const isDisabledAccom = passengers.some(p => p.hasScanned == true && p.accommodation == 'Tourist');
+
+    const isTouristPaxAccom = useMemo(() =>
+        passengers.some(p => p.hasScanned === true && p.accommodation === 'Tourist')
+    , [passengers]);
+
+    useEffect(() => {
+        if(hasScanned) {
+            if(isTouristPaxAccom) {
+                seatAvailability?.(touristHasSeats)
+            }else {
+                seatAvailability?.(bclassHasSeats)
+            }
+        }else {
+            seatAvailability?.(bclassHasSeats || touristHasSeats)
+        }
+    }, [bclassHasSeats, touristHasSeats])
 
     useEffect(() => {
         const loadStation = async () => {
@@ -169,23 +206,6 @@ const L2Vessel = ({ onSeatSelect }: L2VesselProps) => {
     }, [id, onSeatSelect, setPassengers]);
 
     useEffect(() => {
-        const fetchAccom = async () => {
-            try {
-                const accomType = await FetchAccommodations();
-
-                if (!accomType.error) {
-                    const accomms: AccomsProps[] = accomType.data.map((a: any) => ({
-                        id: a.id,
-                        name: a.name,
-                        code: a.code
-                    }));
-                    setAccommodations(accomms);
-                }
-            } catch (error: any) {
-                Alert.alert('Error', error.message);
-            }
-        };
-
         const fetchBookings = async () => {
             try {
                 const seats = await FetchBookings(id);
@@ -205,7 +225,6 @@ const L2Vessel = ({ onSeatSelect }: L2VesselProps) => {
             }
         };
 
-        fetchAccom();
         fetchBookings();
     }, []);
 
@@ -248,36 +267,52 @@ const L2Vessel = ({ onSeatSelect }: L2VesselProps) => {
 
     return (
         <View style={{ width: '100%', height: height + 290, backgroundColor: '#FAFAFA', marginTop: 20, paddingTop: 10, borderRadius: 50 }}>
-            <Text style={{ textAlign: 'center', fontWeight: '900', letterSpacing: 1, fontSize: 16, color: '#cf2a3a' }}>BUSINESS CLASS</Text>
-            <View style={{ marginTop: 15, flexDirection: 'row', justifyContent: 'space-between', alignSelf: 'center' }}>
-                <View style={{ width: '40%' }}>
-                    <SeatPlan passengerSeats={passengerSeats} seatChannel={seatChannel} start={1} limit={23} skipPattern={true} bookedSeats={bookedSeats} skip={2} count={3} letter='BC' onSeatSelect={assignseat} type={BClassAccomms?.name} accomm_id={BClassAccomms?.id} />
-                </View>
-                <View style={{ width: '25%' }}>
-                    <SeatPlan passengerSeats={passengerSeats} seatChannel={seatChannel} skip={3} count={2} start={4} limit={25} bookedSeats={bookedSeats} skipPattern={true} letter='BC' onSeatSelect={assignseat} type={BClassAccomms?.name} accomm_id={BClassAccomms?.id} />
-                </View>
-            </View>
+            {hasScanned != true ? (
+                <>
+                    <L2BClassSeatPlan 
+                        passengerSeats={passengerSeats}
+                        seatChannel={seatChannel}
+                        bookedSeats={bookedSeats}
+                        assignseat={assignseat}
+                        BClassAccomms={BClassAccomms}
+                        isDisabled={isDisabledAccom}
+                        seatAvailability={setBClassHasSeats}
+                    />
 
-            <Text style={{ textAlign: 'center', fontWeight: '900', letterSpacing: 1, fontSize: 16, color: '#cf2a3a', marginTop: 30 }}>TOURIST CLASS</Text>
-            <View style={{ marginTop: 15, flexDirection: 'row', gap: 3, alignItems: 'flex-end' }}>
-                <View style={{ width: '25%' }}>
-                    <SeatPlan passengerSeats={passengerSeats} seatChannel={seatChannel} start={1} limit={2} letter='P' bookedSeats={bookedSeats} onSeatSelect={assignseat} type={TouristAccoms?.name} accomm_id={TouristAccoms?.id} />
-                    <SeatPlan passengerSeats={passengerSeats} seatChannel={seatChannel} start={1} limit={22} letter='A' bookedSeats={bookedSeats} onSeatSelect={assignseat} type={TouristAccoms?.name} accomm_id={TouristAccoms?.id} />
-                </View>
-                <View style={{ width: '50%' }}>
-                    <SeatPlan passengerSeats={passengerSeats} seatChannel={seatChannel} start={3} limit={6} letter='P' bookedSeats={bookedSeats} onSeatSelect={assignseat} type={TouristAccoms?.name} accomm_id={TouristAccoms?.id} />
-                    <SeatPlan passengerSeats={passengerSeats} seatChannel={seatChannel} start={1} limit={40} letter='B' bookedSeats={bookedSeats} onSeatSelect={assignseat} type={TouristAccoms?.name} accomm_id={TouristAccoms?.id} />
-                </View>
-                <View style={{ width: '25%' }}>
-                    <SeatPlan passengerSeats={passengerSeats} seatChannel={seatChannel} start={7} limit={8} letter='P' bookedSeats={bookedSeats} onSeatSelect={assignseat} type={TouristAccoms?.name} accomm_id={TouristAccoms?.id} />
-                    <SeatPlan passengerSeats={passengerSeats} seatChannel={seatChannel} start={1} limit={22} letter='C' bookedSeats={bookedSeats} onSeatSelect={assignseat} type={TouristAccoms?.name} accomm_id={TouristAccoms?.id} />
-                </View>
-            </View>
-            <View style={{ marginTop: 20, flexDirection: 'row', gap: 3, alignSelf: 'center' }}>
-                <View style={{ width: '60%' }}>
-                    <SeatPlan passengerSeats={passengerSeats} seatChannel={seatChannel} start={1} limit={15} letter='D' bookedSeats={bookedSeats} onSeatSelect={assignseat} type={TouristAccoms?.name} accomm_id={TouristAccoms?.id} />
-                </View>
-            </View>
+                    <L2TouristSeatPlan 
+                        passengerSeats={passengerSeats}
+                        seatChannel={seatChannel}
+                        bookedSeats={bookedSeats}
+                        assignseat={assignseat}
+                        TouristAccoms={TouristAccoms}
+                        isDisabled={!isDisabledAccom}
+                        seatAvailability={setTouristHasSeats}
+                    />
+                </>
+            ) : (
+                <>
+                    <L2BClassSeatPlan 
+                        passengerSeats={passengerSeats}
+                        seatChannel={seatChannel}
+                        bookedSeats={bookedSeats}
+                        assignseat={assignseat}
+                        BClassAccomms={BClassAccomms}
+                        isDisabled={isDisabledAccom}
+                        seatAvailability={setBClassHasSeats}
+                    />
+        
+                    <L2TouristSeatPlan 
+                        passengerSeats={passengerSeats}
+                        seatChannel={seatChannel}
+                        bookedSeats={bookedSeats}
+                        assignseat={assignseat}
+                        TouristAccoms={TouristAccoms}
+                        isDisabled={!isDisabledAccom}
+                        seatAvailability={setTouristHasSeats}
+                    />
+                </>
+            )}
+            
         </View>
     );
 };

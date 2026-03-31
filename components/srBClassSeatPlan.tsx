@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useEffect, useMemo } from 'react';
 import { Text, TouchableOpacity, View } from 'react-native';
 import { BookedSeat } from './srVessel';
 
@@ -18,10 +18,30 @@ type SrBClassSeatPlanProps = {
         name?: string
     };
     isDisabled?: boolean;
+    seatAvailability?: (hasAvailable: boolean) => void;
 }
 
+const allSeats = [...seatColumn1, ...seatColumn2, ...seatColumn3];
 
-const SRBClassSeatPlan = ({ passengerSeats, seatChannel, bookedSeatMap, assignseat, BClassAccomms, isDisabled }: SrBClassSeatPlanProps) => {
+
+const SRBClassSeatPlan = ({ passengerSeats, seatChannel, bookedSeatMap, assignseat, BClassAccomms, isDisabled, seatAvailability }: SrBClassSeatPlanProps) => {
+    
+    const hasSeatAvailable = useMemo(() => {
+        return allSeats.some(seat => {
+            const booked = bookedSeatMap[seat];
+            const isPassenger = passengerSeats.has(seat);
+            const inChannel = seatChannel?.has(String(seat)) ?? false;
+
+            return !booked && !isPassenger && !inChannel;
+        });
+
+    }, [bookedSeatMap, passengerSeats, seatChannel])
+
+    useEffect(() => {
+        seatAvailability?.(hasSeatAvailable)
+    }, [hasSeatAvailable])
+
+
     return (
         <View pointerEvents={isDisabled ? 'none' : 'auto'} style={{ opacity: isDisabled ? 0.3 : 1 }}>
             <Text style={{ textAlign: 'center', fontWeight: '900', letterSpacing: 1, fontSize: 16, color: '#cf2a3a' }}>BUSINESS CLASS</Text>

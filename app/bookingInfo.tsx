@@ -88,7 +88,7 @@ const tabs = [
 export default function BookingInfo() {
     const { cargoProperties, paxCargoProperty } = useCargo();
     const { setPassengers, clearPassengers } = usePassengers();
-    const { setRouteID, setVessel, setID, setOrigin, setDestination, setVesselID, setCode, setWebCode, setDepartureTime, setMobileCode, setIsCargoable } = useTrip();
+    const { setRouteID, setVessel, setID, setOrigin, setDestination, setVesselID, setCode, setWebCode, setDepartureTime, setMobileCode, setIsCargoable, setHasScanned } = useTrip();
     const { bookingId, paxId, refNum } = useLocalSearchParams();
     const [ loading, setLoading ] = useState(true);
     const [ paxInfo, setPaxInfo ] = useState<PaxInfo[]>([]);
@@ -346,6 +346,7 @@ export default function BookingInfo() {
         setCode(paxInfo[0].vesselCode);
         setDepartureTime(paxInfo[0].departureISO);
         setIsCargoable(paxInfo[0].isCargoable);
+        setHasScanned(true);
         // setLoading(false);
 
         setTimeout(() => {

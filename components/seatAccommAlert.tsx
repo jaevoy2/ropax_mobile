@@ -1,6 +1,6 @@
 import { router } from "expo-router";
 import React, { useState } from "react";
-import { Dimensions, SafeAreaView, StyleSheet, Text, TouchableOpacity, View } from "react-native";
+import { ActivityIndicator, Dimensions, SafeAreaView, StyleSheet, Text, TouchableOpacity, View } from "react-native";
 
 const { height } = Dimensions.get('window')
 
@@ -8,14 +8,13 @@ const { height } = Dimensions.get('window')
 
 export default function SeatAccommAlert({ setPassengers, accommodations }: {
         setPassengers: React.Dispatch<React.SetStateAction<any[]>> 
-        accommodations: any[]
+        accommodations: any[],
     }) {
 
     const[loading, setLoading] = useState(false);
 
     const handleUpdatePassengerAccomm = () => {
         setLoading(true);
-        console.log(accommodations);
 
         setTimeout(() => {
             setPassengers(prev => 
@@ -33,6 +32,8 @@ export default function SeatAccommAlert({ setPassengers, accommodations }: {
                     return p;
                 })
             )
+
+            setLoading(false)
         }, 300);
     }
 
@@ -45,10 +46,14 @@ export default function SeatAccommAlert({ setPassengers, accommodations }: {
                 </View>
                 <View style={{ paddingHorizontal: 20, paddingVertical: 10 }}>
                     <Text style={styles.body}>
-                        The passenger's selected accommodation is full. Change it to continue?
+                        The selected accommodation is already full. Please choose a different one to continue.
                     </Text>
-                    <TouchableOpacity onPress={() => handleUpdatePassengerAccomm()} style={{ paddingVertical: 12, backgroundColor: '#cf2a3a', borderRadius: 8, marginBottom: 5 }}>
-                        <Text style={{ color: '#fff', textAlign: 'center', fontWeight: '700', fontSize: 16 }}>Confirm</Text>
+                    <TouchableOpacity disabled={loading} onPress={() => handleUpdatePassengerAccomm()} style={{ paddingVertical: 12, backgroundColor: '#cf2a3a', borderRadius: 8, marginBottom: 5 }}>
+                        {loading ? (
+                            <ActivityIndicator size={'small'} color={'#fff'} style={{ alignSelf: 'center' }} />
+                        ) : (
+                            <Text style={{ color: '#fff', textAlign: 'center', fontWeight: '700', fontSize: 16 }}>Confirm</Text>
+                        )}
                     </TouchableOpacity>
                     <TouchableOpacity onPress={() => router.back()} style={{ alignSelf: 'center', paddingHorizontal: 30 }}>
                         <Text style={{ color: '#5a5a5a', textAlign: 'center', paddingVertical: 10, fontSize: 15 }}>Decline</Text>
