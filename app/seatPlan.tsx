@@ -32,7 +32,7 @@ export type AccomsProps = {
 
 export default function SeatPlan() {
     const { passengers, setPassengers } = usePassengers();
-    const { id, vessel, destination, origin, setTotalFare, totalFare } = useTrip();
+    const { id, vessel, destination, origin, setTotalFare } = useTrip();
     const { passesTypeID, passesTypeCode, passesTypeName } = usePassesType();
     const { paxCargoProperty } = useCargo();
     const [accommodations, setAccommodations] = useState<AccomsProps[] | null>(null);
@@ -43,8 +43,8 @@ export default function SeatPlan() {
     const [hasAvailableSeat, setHasAvailableSeat] = useState<boolean>(true);
     const passengersRef = useRef(passengers);
     const seatSheetRef = useRef<BottomSheet>(null);
+    const [isLoading, setIsLoading] = useState(true); 
 
-    console.log(hasAvailableSeat)
 
     const seatSnapPoints = useMemo(() => ["30%"], []);
     const sheetIndex = useMemo(() => passengers.length > 0 ? 0 : -1, [passengers.length]);
@@ -120,11 +120,9 @@ export default function SeatPlan() {
 
     const vesselComponent = useMemo(() => (
         vessel == 'Mbca Leopards Sea Runner' || vessel == 'Sea Runner'
-            ? <SRVessel onSeatSelect={handleSeatSelect} accommodations={accommodations} seatAvailability={setHasAvailableSeat} />
-            : <L2Vessel onSeatSelect={handleSeatSelect} accommodations={accommodations} seatAvailability={setHasAvailableSeat} />
+            ? <SRVessel onSeatSelect={handleSeatSelect} accommodations={accommodations} seatAvailability={setHasAvailableSeat} setParentLoading={setIsLoading} />
+            : <L2Vessel onSeatSelect={handleSeatSelect} accommodations={accommodations} seatAvailability={setHasAvailableSeat} setParentLoading={setIsLoading} />
     ), [vessel, handleSeatSelect]);
-
-
 
     const handleRemoveSeat =  useCallback((seat: number | string, paxId: string | number) => {
         if (!seat) return;
@@ -206,6 +204,7 @@ export default function SeatPlan() {
 
     return (
         <GestureHandlerRootView style={{ flex: 1, backgroundColor: '#cf2a3a' }}>
+                
             <View style={{ height: '100%', overflow: 'hidden' }}>
                 <View style={{ height: 100, flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', paddingHorizontal: 20, paddingTop: 20 }}>
                     <TouchableOpacity onPress={() => {handleForceSeatRemoval(); router.back()}} style={{ zIndex: 1 }}>
@@ -227,26 +226,33 @@ export default function SeatPlan() {
                     <Text style={{ textAlign: 'center', color: '#fff', fontSize: 10 }}>Vessel Seat Plan</Text>
                     <View style={{ paddingTop: 10, height: height - 60 }}>
                         <ScrollView style={{ height: '100%' }} contentContainerStyle={{ paddingBottom: 20 }}>
-                            <Image source={deck} style={{ opacity: 0.5, width: '100%', height: height + 620, alignSelf: 'center', tintColor: '#ffffff' }} />
+
+                            {!isLoading && (
+                                <Image source={deck} style={{ opacity: 0.5, width: '100%', height: height + 620, alignSelf: 'center', tintColor: '#ffffff' }} />
+                            )}
 
                             <View style={{ height: 300, width: '95%', zIndex: 5, position: 'absolute', alignSelf: 'center', alignItems: 'center', }}>
-                                <Image source={icon} style={{ width: 41, height: 40, marginTop: 40 }} />
-                                <Image source={text_logo} style={{ width: 120, height: 28, marginTop: 10 }} />
+                                {!isLoading && (
+                                    <>
+                                        <Image source={icon} style={{ width: 41, height: 40, marginTop: 40 }} />
+                                        <Image source={text_logo} style={{ width: 120, height: 28, marginTop: 10 }} />
 
-                                <Text style={{ fontSize: 13, fontWeight: '900', color: '#fff', marginTop: 20, textAlign: 'center' }}>{totalBookings} TOTAL PAYING PASSENGERS</Text>
+                                        <Text style={{ fontSize: 13, fontWeight: '900', color: '#fff', marginTop: 20, textAlign: 'center' }}>{totalBookings} TOTAL PAYING PASSENGERS</Text>
 
-                                <View style={{ width: '80%', backgroundColor: '#FAFAFA', marginTop: 20, borderTopLeftRadius: 30, borderTopRightRadius: 30, borderBottomLeftRadius: 5,
-                                        borderBottomRightRadius: 5, paddingVertical: 30, paddingHorizontal: 10, flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' }}>
-                                    <View style={{ flexDirection: 'row', gap: 3, alignItems: 'center' }}>
-                                        <Ionicons name={'boat'} size={16} color={'#fff'} style={{ padding: 3, backgroundColor: '#cf2a3a', borderRadius: 5 }} />
-                                        <Text style={{ fontSize: 12, fontWeight: 'bold' }}>{origin}</Text>
-                                    </View>
-                                    <Ionicons name={'arrow-forward'} color={'#cf2a3a'} size={25} />
-                                    <View style={{ flexDirection: 'row', gap: 3, alignItems: 'center' }}>
-                                        <Ionicons name={'location'} size={15} color={'#fff'} style={{ padding: 3, backgroundColor: '#cf2a3a', borderRadius: 5 }} />
-                                        <Text style={{ fontSize: 12, fontWeight: 'bold' }}>{destination}</Text>
-                                    </View>
-                                </View>
+                                        <View style={{ width: '80%', backgroundColor: '#FAFAFA', marginTop: 20, borderTopLeftRadius: 30, borderTopRightRadius: 30, borderBottomLeftRadius: 5,
+                                                borderBottomRightRadius: 5, paddingVertical: 30, paddingHorizontal: 10, flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' }}>
+                                            <View style={{ flexDirection: 'row', gap: 3, alignItems: 'center' }}>
+                                                <Ionicons name={'boat'} size={16} color={'#fff'} style={{ padding: 3, backgroundColor: '#cf2a3a', borderRadius: 5 }} />
+                                                <Text style={{ fontSize: 12, fontWeight: 'bold' }}>{origin}</Text>
+                                            </View>
+                                            <Ionicons name={'arrow-forward'} color={'#cf2a3a'} size={25} />
+                                            <View style={{ flexDirection: 'row', gap: 3, alignItems: 'center' }}>
+                                                <Ionicons name={'location'} size={15} color={'#fff'} style={{ padding: 3, backgroundColor: '#cf2a3a', borderRadius: 5 }} />
+                                                <Text style={{ fontSize: 12, fontWeight: 'bold' }}>{destination}</Text>
+                                            </View>
+                                        </View>
+                                    </>
+                                )}
 
                                 <View style={{ alignSelf: 'center' }}>
                                     {vesselComponent}

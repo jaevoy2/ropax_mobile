@@ -11,6 +11,7 @@ import { Alert, Dimensions, Text, TouchableOpacity, View } from 'react-native';
 import { AccomsProps } from '@/app/seatPlan';
 import L2BClassSeatPlan from './l2BClassSeatPlan';
 import L2TouristSeatPlan from './l2TouristSeatPlan';
+import PreLoader from './preloader';
 
 
 const { height } = Dimensions.get('window');
@@ -122,6 +123,7 @@ type L2VesselProps = {
     onSeatSelect?: (seat: string | number) => void;
     accommodations: AccomsProps[];
     seatAvailability?: (hasAvailable: boolean) => void;
+    setParentLoading?: React.Dispatch<React.SetStateAction<boolean>>;
 }
 
 type BookedSeat = {
@@ -137,13 +139,14 @@ type BookedSeat = {
     }
 }
 
-const L2Vessel = ({ onSeatSelect, accommodations, seatAvailability }: L2VesselProps) => {
+const L2Vessel = ({ onSeatSelect, accommodations, seatAvailability, setParentLoading }: L2VesselProps) => {
     const { id, hasScanned } = useTrip();
     const [bookedSeats, setBookedSeats] = useState<BookedSeat[]>([]);
     const { passengers, setPassengers } = usePassengers();
     const [seatSelectionChannel, setSeatSelectionChannel] = useState<string[]>([]);
     const [bclassHasSeats, setBClassHasSeats] = useState(true);
     const [touristHasSeats, setTouristHasSeats] = useState(true);
+    const [isLoading, setIsLoading] = useState(true);
 
     const stationRef = useRef<{ id: string; color: string } | null>(null);
     const isDisabledAccom = passengers.some(p => p.hasScanned == true && p.accommodation == 'Tourist');
@@ -222,6 +225,9 @@ const L2Vessel = ({ onSeatSelect, accommodations, seatAvailability }: L2VesselPr
                 }
             } catch (error: any) {
                 Alert.alert('Error', error.message);
+            }finally {
+                setParentLoading(false);
+                setIsLoading(false);
             }
         };
 
@@ -267,51 +273,59 @@ const L2Vessel = ({ onSeatSelect, accommodations, seatAvailability }: L2VesselPr
 
     return (
         <View style={{ width: '100%', height: height + 290, backgroundColor: '#FAFAFA', marginTop: 20, paddingTop: 10, borderRadius: 50 }}>
-            {hasScanned != true ? (
-                <>
-                    <L2BClassSeatPlan 
-                        passengerSeats={passengerSeats}
-                        seatChannel={seatChannel}
-                        bookedSeats={bookedSeats}
-                        assignseat={assignseat}
-                        BClassAccomms={BClassAccomms}
-                        isDisabled={isDisabledAccom}
-                        seatAvailability={setBClassHasSeats}
-                    />
-
-                    <L2TouristSeatPlan 
-                        passengerSeats={passengerSeats}
-                        seatChannel={seatChannel}
-                        bookedSeats={bookedSeats}
-                        assignseat={assignseat}
-                        TouristAccoms={TouristAccoms}
-                        isDisabled={!isDisabledAccom}
-                        seatAvailability={setTouristHasSeats}
-                    />
-                </>
+            
+            {isLoading == true ? (
+                <PreLoader loading={isLoading} />
             ) : (
                 <>
-                    <L2BClassSeatPlan 
-                        passengerSeats={passengerSeats}
-                        seatChannel={seatChannel}
-                        bookedSeats={bookedSeats}
-                        assignseat={assignseat}
-                        BClassAccomms={BClassAccomms}
-                        isDisabled={isDisabledAccom}
-                        seatAvailability={setBClassHasSeats}
-                    />
-        
-                    <L2TouristSeatPlan 
-                        passengerSeats={passengerSeats}
-                        seatChannel={seatChannel}
-                        bookedSeats={bookedSeats}
-                        assignseat={assignseat}
-                        TouristAccoms={TouristAccoms}
-                        isDisabled={!isDisabledAccom}
-                        seatAvailability={setTouristHasSeats}
-                    />
+                    {hasScanned != true ? (
+                        <>
+                            <L2BClassSeatPlan 
+                                passengerSeats={passengerSeats}
+                                seatChannel={seatChannel}
+                                bookedSeats={bookedSeats}
+                                assignseat={assignseat}
+                                BClassAccomms={BClassAccomms}
+                                isDisabled={isDisabledAccom}
+                                seatAvailability={setBClassHasSeats}
+                            />
+
+                            <L2TouristSeatPlan 
+                                passengerSeats={passengerSeats}
+                                seatChannel={seatChannel}
+                                bookedSeats={bookedSeats}
+                                assignseat={assignseat}
+                                TouristAccoms={TouristAccoms}
+                                isDisabled={!isDisabledAccom}
+                                seatAvailability={setTouristHasSeats}
+                            />
+                        </>
+                    ) : (
+                        <>
+                            <L2BClassSeatPlan 
+                                passengerSeats={passengerSeats}
+                                seatChannel={seatChannel}
+                                bookedSeats={bookedSeats}
+                                assignseat={assignseat}
+                                BClassAccomms={BClassAccomms}
+                                isDisabled={isDisabledAccom}
+                                seatAvailability={setBClassHasSeats}
+                            />
+                
+                            <L2TouristSeatPlan 
+                                passengerSeats={passengerSeats}
+                                seatChannel={seatChannel}
+                                bookedSeats={bookedSeats}
+                                assignseat={assignseat}
+                                TouristAccoms={TouristAccoms}
+                                isDisabled={!isDisabledAccom}
+                                seatAvailability={setTouristHasSeats}
+                            />
+                        </>
+                    )}
                 </>
             )}
+
             
         </View>
     );

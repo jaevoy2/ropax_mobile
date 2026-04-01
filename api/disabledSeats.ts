@@ -9,7 +9,7 @@ export async function FetchDisabledSeats() {
 
     try {
         const res = await fetch(`${API_URL}vessel/disabled-seats`, {
-            method: 'POST',
+            method: 'GET',
             headers: {
                 'Accept': 'application/json',
                 'x-api-key': `${API_KEY}`,

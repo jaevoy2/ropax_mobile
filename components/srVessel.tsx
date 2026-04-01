@@ -10,6 +10,7 @@ import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import { Alert, Dimensions, Text, TouchableOpacity, View } from 'react-native';
 
 import { AccomsProps } from '@/app/seatPlan';
+import PreLoader from './preloader';
 import SRBClassSeatPlan from './srBClassSeatPlan';
 import SrToursitSeatPlan from './srToursitSeatPlan';
 
@@ -27,9 +28,11 @@ export interface SeatProps {
     seatChannel?:  Set<number | string>
     onSeatSelect?: (seat: number, type: string, accomm_id: number) => void;
     seatAvailability?: (hasAvailable: boolean) => void;
+    disabledSeats: string[];
+    alignItemsOn: string
 }
 
-export const SeatPlan: React.FC<SeatProps> = React.memo(({ start, limit, passengerSeats, skipPattern = false, onSeatSelect, type, accomm_id, bookedSeats, seatChannel, seatAvailability }) => {
+export const SeatPlan: React.FC<SeatProps> = React.memo(({ start, limit, passengerSeats, skipPattern = false, onSeatSelect, type, accomm_id, bookedSeats, seatChannel, seatAvailability, disabledSeats, alignItemsOn }) => {
     const items = useMemo(() => {
         const seats = [];
 
@@ -58,13 +61,17 @@ export const SeatPlan: React.FC<SeatProps> = React.memo(({ start, limit, passeng
         return map;
     }, [bookedSeats]);
 
+    
+    const disabledSeatsSet = new Set(disabledSeats)
+
     const hasSeatAvailable = useMemo(() => {
         return items.some(seat => {
             const booked = bookedSeatMap[seat];
             const isPassenger = passengerSeats.has(seat);
             const inChannel = seatChannel?.has(String(seat)) ?? false;
+            const disabled = disabledSeatsSet?.has(String(seat)) ?? false
 
-            return !booked && !isPassenger && !inChannel;
+            return !booked && !isPassenger && !inChannel && !disabled;
         })
     }, [items, bookedSeatMap, passengerSeats, seatChannel])
 
@@ -74,25 +81,27 @@ export const SeatPlan: React.FC<SeatProps> = React.memo(({ start, limit, passeng
 
 
     return (
-        <View style={{ flexDirection: 'row', flexWrap: 'wrap', gap: 4, justifyContent: 'center' }}>
+        <View style={{ flexDirection: 'row', flexWrap: 'wrap', gap: 4, justifyContent: alignItemsOn == 'center' ? 'center' : 'flex-start' }}>
             {items.map((seat) => {
                 const specialSeatSet = new Set(specialSeats);
+                const isDisabled = disabledSeatsSet?.has(String(seat)) ?? false
                 const booked = bookedSeatMap[seat];
                 const isPassenger = passengerSeats.has(seat);
                 const inChannel = seatChannel?.has(String(seat)) ?? false;
                 
                 return (
-                    <TouchableOpacity disabled={!!booked || isPassenger || inChannel} 
+                    <TouchableOpacity disabled={!!booked || isPassenger || inChannel || isDisabled} 
                         onPress={() => onSeatSelect?.(seat, type, accomm_id)} key={seat}
-                        style={{ justifyContent: 'center', paddingVertical: 2, width: 33, height: 33, borderColor: '#A9A9B2', borderWidth: 1, borderRadius: 3, 
+                        style={{ justifyContent: 'center', paddingVertical: 2, width: 33, height: 33, borderColor: isDisabled ? '#e0e0e0' : '#A9A9B2', borderWidth: 1, borderRadius: 3, 
                         backgroundColor: 
-                            booked ? booked?.station?.color 
-                            : isPassenger ? '#BA68C8' 
+                            booked ? booked?.station?.color
+                            : isDisabled ? '#e9e9e9'
+                            : isPassenger ? '#BA68C8'
                             : specialSeatSet.has(seat) && !inChannel ? '#E6E2C6' 
                             : inChannel ? '#e6d1e9ff' : 'transparent'
                         }}>
                         <Text style={{ fontSize: 14, textAlign: 'center', fontWeight: 'bold', 
-                            color: booked || isPassenger || inChannel ? '#fff' : '#000' }}>
+                            color: booked || isPassenger || inChannel || isDisabled ? '#fff' : '#000' }}>
                                 {booked?.passTypeCode ?? seat}
                         </Text>
                     </TouchableOpacity>
@@ -107,6 +116,7 @@ type SRVesselProps = {
     onSeatSelect?: (seat: number | string) => void;
     accommodations: AccomsProps[];
     seatAvailability?: (hasAvailable: boolean) => void;
+    setParentLoading?: React.Dispatch<React.SetStateAction<boolean>>
 };
 
 export type BookedSeat = {
@@ -124,7 +134,7 @@ export type BookedSeat = {
 
 const bClassNames = ['Business Class', 'B Class', 'B-Class']
 
-const SRVessel = ({ onSeatSelect, accommodations, seatAvailability }: SRVesselProps) => {
+const SRVessel = ({ onSeatSelect, accommodations, seatAvailability, setParentLoading }: SRVesselProps) => {
     const { id, hasScanned } = useTrip();
     const [bookedSeats, setBookedSeats] = useState<BookedSeat[]>([]);
     const { passengers, setPassengers } = usePassengers();
@@ -133,6 +143,9 @@ const SRVessel = ({ onSeatSelect, accommodations, seatAvailability }: SRVesselPr
     const [touristHasSeats, setTouristHasSeat] = useState<boolean>(true)
     const stationRef = useRef<{ id: string; color: string } | null>(null);
     const tripIdRef = useRef(id);
+    const [disabledSeats, setDisabledSeats] = useState<string[]>([]);
+    const [isLoading, setIsLoading] = useState(true);
+    
     
     useEffect(() => { tripIdRef.current = id; }, [id]);
     
@@ -195,12 +208,16 @@ const SRVessel = ({ onSeatSelect, accommodations, seatAvailability }: SRVesselPr
 
 
     useEffect(() => {
-        const fetchBookings = async () => {
+        const fetchBookingsAndDisabledSeats = async () => {
             try {
-                const seats = await FetchBookings(id);
-                
-                if(!seats.error) {
-                    const bookings = seats.data.filter((b: any) => b.station_id != null)
+                console.log('Fetching bookings and disabled seats...')
+                const [bookings, disabledSeats] = await Promise.all([
+                    FetchBookings(id),
+                    FetchDisabledSeats()
+                ]);
+    
+                if(!bookings.error) {
+                    const bookedSeats = bookings.data.filter((b: any) => b.station_id != null)
                         .flatMap((t: any) =>
                         t.passengers.map((p: any) => ({
                             passTypeCode: p?.passenger_type?.passenger_types_code,
@@ -208,22 +225,21 @@ const SRVessel = ({ onSeatSelect, accommodations, seatAvailability }: SRVesselPr
                             station: t?.station
                         }))
                     )
-                    setBookedSeats(bookings);
+                    setBookedSeats(bookedSeats);
+                }
+    
+                if(!disabledSeats.error) {
+                    setDisabledSeats(disabledSeats.vessel.disabled_seats)
                 }
             }catch(error: any) {
                 Alert.alert('Error', error.message);
+            }finally {
+                setParentLoading(false)
+                setIsLoading(false);
             }
         }
 
-        const fetchDisabledSeats = async () => {
-            const response = await FetchDisabledSeats();
-
-            if(!response.error) {
-                // ////////////////////////////////////////////////////////////////////////////////
-            }
-        }
-
-        fetchBookings();
+        fetchBookingsAndDisabledSeats();
     }, [])
 
     
@@ -285,49 +301,58 @@ const SRVessel = ({ onSeatSelect, accommodations, seatAvailability }: SRVesselPr
 
     return (
         <View style={{ width: '100%', height: height + 290, backgroundColor: '#f0f0f0', marginTop: 20, paddingTop: 10, borderRadius: 50, position: 'relative' }}>
-            {hasScanned != true ? (
-                <>
-                    <SRBClassSeatPlan
-                        passengerSeats={passengerSeats}
-                        seatChannel={seatChannel}
-                        bookedSeatMap={bookedSeatMap}
-                        assignseat={assignseat}
-                        BClassAccomms={BClassAccomms}
-                        seatAvailability={setBClassHasSeat}
-                    />
-                    
-                    <SrToursitSeatPlan
-                        passengerSeats={passengerSeats}
-                        seatChannel={seatChannel}
-                        bookedSeats={bookedSeats} 
-                        assignseat={assignseat}
-                        TouristAccoms={TouristAccoms}
-                        seatAvailability={setTouristHasSeat}
-                    />
-                </>
+            {isLoading == true ? (
+                <PreLoader loading={isLoading} />
             ) : (
                 <>
-                    <SRBClassSeatPlan
-                        passengerSeats={passengerSeats}
-                        seatChannel={seatChannel}
-                        bookedSeatMap={bookedSeatMap}
-                        assignseat={assignseat}
-                        BClassAccomms={BClassAccomms}
-                        isDisabled={isTouristPaxAccom}
-                        seatAvailability={setBClassHasSeat}
-                    />
-                    
-                    <SrToursitSeatPlan
-                        passengerSeats={passengerSeats}
-                        seatChannel={seatChannel}
-                        bookedSeats={bookedSeats} 
-                        assignseat={assignseat}
-                        TouristAccoms={TouristAccoms}
-                        isDisabled={!isTouristPaxAccom}
-                        seatAvailability={setTouristHasSeat}
-                    />
+                    {hasScanned != true ? (
+                        <>
+                            <SRBClassSeatPlan
+                                passengerSeats={passengerSeats}
+                                seatChannel={seatChannel}
+                                bookedSeatMap={bookedSeatMap}
+                                assignseat={assignseat}
+                                BClassAccomms={BClassAccomms}
+                                seatAvailability={setBClassHasSeat}
+                            />
+                            
+                            <SrToursitSeatPlan
+                                passengerSeats={passengerSeats}
+                                seatChannel={seatChannel}
+                                bookedSeats={bookedSeats} 
+                                assignseat={assignseat}
+                                TouristAccoms={TouristAccoms}
+                                seatAvailability={setTouristHasSeat}
+                                disabledSeats={disabledSeats}
+                            />
+                        </>
+                    ) : (
+                        <>
+                            <SRBClassSeatPlan
+                                passengerSeats={passengerSeats}
+                                seatChannel={seatChannel}
+                                bookedSeatMap={bookedSeatMap}
+                                assignseat={assignseat}
+                                BClassAccomms={BClassAccomms}
+                                isDisabled={isTouristPaxAccom}
+                                seatAvailability={setBClassHasSeat}
+                            />
+                            
+                            <SrToursitSeatPlan
+                                passengerSeats={passengerSeats}
+                                seatChannel={seatChannel}
+                                bookedSeats={bookedSeats} 
+                                assignseat={assignseat}
+                                TouristAccoms={TouristAccoms}
+                                isDisabled={!isTouristPaxAccom}
+                                seatAvailability={setTouristHasSeat}
+                                disabledSeats={disabledSeats}
+                            />
+                        </>
+                    )}
                 </>
             )}
+
 
         </View>
     )
