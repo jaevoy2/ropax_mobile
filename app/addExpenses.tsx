@@ -7,10 +7,11 @@ import { Ionicons } from '@expo/vector-icons';
 import { CameraType, CameraView, useCameraPermissions } from 'expo-camera';
 import * as FileSystem from 'expo-file-system';
 import { router } from 'expo-router';
-import { useEffect, useMemo, useRef, useState } from 'react';
-import { ActivityIndicator, Alert, Dimensions, Image, Modal, ScrollView, StyleSheet, Text, TextInput, TouchableOpacity, View } from 'react-native';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import { ActivityIndicator, Alert, Dimensions, Image, KeyboardAvoidingView, Modal, Platform, ScrollView, StyleSheet, Text, TextInput, TouchableOpacity, View } from 'react-native';
 import { Dropdown } from 'react-native-element-dropdown';
 import { SafeAreaView } from 'react-native-safe-area-context';
+
 
 const { height, width } = Dimensions.get('window');
 const TEMP_DIR = FileSystem.cacheDirectory + 'expensesImages/';
@@ -52,18 +53,6 @@ export default function AddExpenses() {
     const [expenseID, setExpenseID] = useState(0);
 
 
-    // Only update trip_schedule_id when selectedTrip changes
-    useEffect(() => {
-        if (selectedTrip != null && expenses.length > 0) {
-            setExpenses((prev) =>
-                prev.map(expense => ({
-                    ...expense,
-                    trip_schedule_id: selectedTrip
-                }))
-            );
-        }
-        // eslint-disable-next-line react-hooks/exhaustive-deps
-    }, [selectedTrip]);
 
     const handleOnCapture = async (expenseId: number) => {
         if(!permission.granted) {
@@ -232,8 +221,10 @@ export default function AddExpenses() {
     }, [categories]);
 
     const tripDropdown = useMemo(() => {
+        if(!trips) return [];
+
         if(trips && trips.length > 0) {
-            return trips.map((t) => ({
+            return trips.map(t => ({
                 label: `${t.code} ${t.departure} [${t.vessel}]`,
                 id: t.trip_id
             }))
@@ -281,10 +272,18 @@ export default function AddExpenses() {
         }
     }
 
+    const handleTripChange = useCallback((item: { id: number; label: string }) => {
+        if (item.id === selectedTrip) return;
+
+        setSelectedTrip(item.id);
+        setExpenses(prev => prev.map(exp => ({ ...exp, trip_schedule_id: item.id })));
+    }, [selectedTrip, setExpenses]);
+
     const addExpenseForm = () => {
         setExpenses(prev => {
-            const lastID = prev[prev.length - 1].id;
-            return [...prev, { id: lastID + 1, trip_schedule_id: 0, description: '', amount: 0, expense_category_id: 0 }]
+            const lastId = prev[prev.length - 1].id;
+
+            return [...prev, { id: lastId + 1, trip_schedule_id: 0, description: '', amount: 0, expense_category_id: 0 }]
         })
     }
 
@@ -334,7 +333,7 @@ export default function AddExpenses() {
     }
 
     return (
-        <View style={{ backgroundColor: '#f1f1f1', position: 'relative', height: height, }}>
+        <View style={{ backgroundColor: '##fdfdfd', position: 'relative', height: height, }}>
             {/* add category modal */}
             <Modal visible={modal} transparent animationType="fade">
                 <View style={{ backgroundColor: '#00000048', flex: 1, justifyContent: 'center', alignItems: 'center' }}>
@@ -343,15 +342,15 @@ export default function AddExpenses() {
                         <View style={{ borderColor: '#B3B3B3', borderWidth: 1, borderRadius: 5 }}>
                             <TextInput onChangeText={(text) => setAddedCategory(text)} placeholder='e.g. Consumable' style={{ fontSize: 13 }} />
                         </View>
-                        <View style={{ alignSelf: 'flex-end', flexDirection: 'row', marginTop: 20, gap: 10 }}>
+                        <View style={{ alignSelf: 'flex-end', flexDirection: 'row', alignItems: 'center', marginTop: 20, gap: 10 }}>
                             <TouchableOpacity onPress={() => setModal(false)}>
                                 <Text>Cancel</Text>
                             </TouchableOpacity>
                             {saveCategotySpinner ? (
-                                <ActivityIndicator size="small" color="#cf2a3a" style={{ marginRight: 10 }} />
+                                <ActivityIndicator size="small" color="#fff" style={{ marginRight: 10 }} />
                             ) : (
-                                <TouchableOpacity onPress={handleAddCategory} disabled={saveCategotySpinner}>
-                                    <Text style={{ color: '#cf2a3a', fontWeight: 'bold' }}>Save</Text>
+                                <TouchableOpacity style={{ paddingHorizontal: 12, paddingVertical: 8, backgroundColor: '#cf2a3a', borderRadius: 5 }} onPress={handleAddCategory} disabled={saveCategotySpinner}>
+                                    <Text style={{ color: '#fff', fontWeight: 'bold' }}>Save</Text>
                                 </TouchableOpacity>
                             )}
                         </View>
@@ -359,39 +358,45 @@ export default function AddExpenses() {
                 </View>
             </Modal>
 
-
-            <TouchableOpacity onPress={() => [ setExpenses([]), router.back() ]} style={{ position: 'absolute', top: 45, left: 10, zIndex: 3 }}>
-                <Ionicons name='chevron-back' size={30} color={'#fff'} />
-            </TouchableOpacity>
-            <View style={{ height: 100, backgroundColor: '#cf2a3a', paddingTop: 50 }}>
-                <Text style={{ fontSize: 18, color: '#fff', fontWeight: 'bold', textAlign: 'center' }}>Add Daily Expense</Text>
+            <View style={{ flexDirection: 'row', alignItems: 'center', gap: 10, backgroundColor: '#cf2a3a', paddingTop: 50, paddingBottom: 20, paddingHorizontal: 20 }}>
+                <TouchableOpacity onPress={() => [ setExpenses([]), router.back() ]} style={{ }}>
+                    <Ionicons name='arrow-back' size={30} color={'#fff'} />
+                </TouchableOpacity>
+                <Text style={{ fontSize: 20, color: '#fff', fontWeight: 'bold', textAlign: 'center' }}>Add Daily Expense</Text>
             </View>
-            <View style={{ padding: 10, marginTop: 20 }}>
-                <View style={{ flexDirection: 'row', justifyContent: 'space-between' }}>
-                    <View style={{ flexDirection: 'column', alignItems: 'flex-start' }}>
-                        <Text style={{ fontSize: 12 }}>Date:</Text>
-                        <Text style={{ color: '#CF2A3A', fontSize: 15, fontWeight: '900' }}>{date}</Text>
+            <View style={{ marginTop: 20 }}>
+                <View style={{ paddingHorizontal: 20 }}>
+                    <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', backgroundColor: '#fff', borderRadius: 10, padding: 20, elevation: 5 }}>
+                        <View style={{ flexDirection: 'column' }}>
+                            <Text style={{ fontSize: 12 }}>Date:</Text>
+                            <Text style={{ color: '#CF2A3A', fontSize: 15, fontWeight: '900' }}>{date}</Text>
+                        </View>
+                        <TouchableOpacity disabled={trips && trips.length == 0} onPress={() => addExpenseForm()} style={{ flexDirection: 'row', alignItems: 'center', paddingHorizontal: 15, paddingVertical: 8, backgroundColor: trips?.length == 0 ? '#d8727c' : '#cf2a3a', justifyContent: 'center', borderRadius: 5 }}>
+                            <Ionicons name='add' size={20} color={'#fff'} />
+                            <Text style={{ fontWeight: 'bold', color: '#fff' }}>Add</Text>
+                        </TouchableOpacity>
                     </View>
-                    <TouchableOpacity disabled={trips && trips.length == 0} onPress={addExpenseForm} style={{flexDirection: 'row', alignItems: 'center', alignSelf: 'flex-end', paddingHorizontal: 15, paddingVertical: 8, backgroundColor: trips?.length == 0 ? '#d8727c' : '#cf2a3a', justifyContent: 'center', marginBottom: 15, borderRadius: 5 }}>
-                        <Ionicons name='add' size={20} color={'#fff'} />
-                        <Text style={{ fontWeight: 'bold', color: '#fff' }}>Add</Text>
-                    </TouchableOpacity>
                 </View>
 
                 {trips && trips.length == 0 ? (
                     <View style={{ height: height / 2, justifyContent: 'center' }}>
-                        <Text style={{ color: '#7A7A85', textAlign: 'center' }}>No Trip Available To Add Expense</Text>
+                        <Text style={{ color: '#7A7A85', textAlign: 'center' }}>No Trip Available  To Add Expense</Text>
                     </View>
                 ) : (
-                    <>
-                        <View>
-                            <Text style={{ fontSize: 10, fontWeight: 'bold', color: '#545454' }}>Trip Schedules:</Text>
-                            <View style={{ borderColor: '#B3B3B3', borderWidth: 1, borderRadius: 5, flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', backgroundColor: '#fff' }}>
-                                <Dropdown onChange={item => setSelectedTrip(item.id)} value={selectedTrip || undefined} data={tripDropdown} labelField="label" valueField="id" placeholder="Select Trip Schedule" 
+                    <View style={{ height: height - 200 }}>
+                        <View style={{ paddingHorizontal: 20, marginTop: 20 }}>
+                            <Text style={{ fontSize: 14, fontWeight: 'bold', color: '#545454' }}>Trip Schedules:</Text>
+                            <View style={{ borderColor: '#B3B3B3', borderWidth: 1, borderRadius: 5, flexDirection: 'row', elevation: 5, justifyContent: 'space-between', alignItems: 'center', backgroundColor: '#fff' }}>
+                                <Dropdown onChange={handleTripChange} 
+                                    value={selectedTrip || undefined} 
+                                    data={tripDropdown} 
+                                    labelField="label" 
+                                    valueField="id" 
+                                    placeholder="Select Trip Schedule" 
                                     style={{ height: 40, width: '100%', paddingHorizontal: 10 }}
                                     containerStyle={{
                                         alignSelf: 'flex-start',
-                                        width: '94%',
+                                        width: '88%',
                                     }}
                                     selectedTextStyle={{ fontWeight: '500', fontSize: 12, lineHeight: 35, }}
                                     renderRightIcon={() => (
@@ -399,109 +404,109 @@ export default function AddExpenses() {
                                     )}
                                     dropdownPosition="bottom"
                                     renderItem={(item) => (
-                                        <View style={{ width: '80%', padding: 8 }}>
-                                        <Text>{item.label}</Text>
+                                        <View style={{ width: '100%', padding: 8, backgroundColor: '#fff' }}>
+                                            <Text style={{ color: '#cf2a3a', fontWeight: '600' }}>{item.label}</Text>
                                         </View>
                                     )}
                                 />
                             </View>
                         </View>
-                        <View style={{ flex: 1, flexGrow: 1, marginTop: 10 }}>
-                            <View style={{ minHeight: height - 350, maxHeight: height - 300 }}>
-                                <ScrollView style={{ maxHeight: height - 300 }} contentContainerStyle={{ minHeight: height - 350 }}>
-                                    {expenses.map((e) => (
-                                        <View key={e.id} style={{ padding: 10, marginTop: 15, borderColor: '#B3B3B3', borderWidth: 1, borderRadius: 8, backgroundColor: '#fff' }}>
-                                            {e.id !== 1 && (
-                                                <TouchableOpacity onPress={() => removeExpenseForm(e.id)}  style={{ alignSelf: 'flex-end' }} >
-                                                    <Ionicons name={'close'} size={25} color={'#cf2a3a'}/>
-                                                </TouchableOpacity>
-                                            )}
-                                            <View>
-                                                <Text style={{ fontSize: 10, fontWeight: 'bold', color: '#545454' }}>Description</Text>
-                                                <View style={{ borderColor: '#B3B3B3', borderWidth: 1, borderRadius: 5 }}>
-                                                    <TextInput value={e.description} onChangeText={(text) => updateExpense(e.id, 'description', text)} placeholder='e.g. Vessel Oil' style={{ fontSize: 13 }} />
-                                                </View>
-                                            </View>
-                                            <View style={{ marginTop: 5, flexDirection: 'row', gap: 8, alignItems: 'flex-end' }}>
-                                                <View style={{ width: '25%' }}>
-                                                    <Text style={{ fontSize: 10, fontWeight: 'bold', color: '#545454' }}>Amount:</Text>
-                                                    <View style={{ borderColor: '#B3B3B3', borderWidth: 1, borderRadius: 5, flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', paddingHorizontal: 5 }}>
-                                                        <Text style={{ fontWeight: 'bold', fontSize: 16, marginTop: -5 }}>₱</Text>
-                                                        <TextInput value={String(e.amount)} onChangeText={(text) => updateExpense(e.id, 'amount', Number(text))} keyboardType='numeric' placeholder='00.00' style={{ fontSize: 13, textAlign: 'right', }} />
-                                                    </View>
-                                                </View>
-                                                <View style={{ width: '72.5%' }}>
-                                                    <Text style={{ fontSize: 10, fontWeight: 'bold', color: '#545454' }}>Category</Text>
-                                                    <View style={{ borderColor: '#B3B3B3', borderWidth: 1, borderRadius: 5, flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' }}>
-                                                        <Dropdown onChange={item => updateExpense(e.id, 'expense_category_id', item.id)} value={e.expense_category_id || undefined} data={dropdownCategory} labelField="label" valueField="id" placeholder="Select Category" 
-                                                            style={{ height: 40, width: '80%', paddingHorizontal: 10 }}
-                                                            containerStyle={{
-                                                                alignSelf: 'flex-start',
-                                                                width: '53%',
-                                                            }}
-                                                            selectedTextStyle={{ fontWeight: '500', fontSize: 12, lineHeight: 35, }}
-                                                            renderRightIcon={() => (
-                                                                <Ionicons name="chevron-down" size={15} />
-                                                            )}
-                                                            dropdownPosition="bottom"
-                                                            renderItem={(item) => (
-                                                                <View style={{ width: '80%', padding: 8 }}>
-                                                                <Text>{item.label}</Text>
-                                                                </View>
-                                                            )}
-                                                        />
-                                                        <TouchableOpacity onPress={() => setModal(true)} style={{ borderLeftColor: '#B3B3B3', borderLeftWidth: 1, height: '100%', padding: 8 }} >
-                                                            <Ionicons name='add' size={20}/>
-                                                        </TouchableOpacity>
-                                                    </View>
-                                                </View>
-                                            </View>
-                                            <View style={{ marginTop: 5 }}>
-                                                <Text style={{ fontSize: 10, fontWeight: 'bold', color: '#545454' }}>Image</Text>
-                                                {/* <TouchableOpacity disabled={e.image_uri != null} onPress={() => handleOnCapture(e.id)} style={{ borderColor: '#b3b3b3', borderWidth: 1, borderRadius: 5, height: 90, justifyContent: 'center', position: 'relative' }}>
-                                                    {e.image_uri == null ? (
-                                                        <View style={{ backgroundColor: '#f8f8f8', borderRadius: 5, height: '100%', justifyContent: 'center' }}>
-                                                            <Text style={{ textAlign: 'center', color: '#a3a3a3' }}>Tap to capture image.</Text>
-                                                        </View>
-                                                    ) : (
-                                                        <>
-                                                            <Image source={{ uri: e.image_uri }} resizeMode={'cover'} style={{ width: '95%', height: '90%', alignSelf: 'center' }} />
-                                                            <View style={{ position: 'absolute', bottom: 0, width: '100%', height: 10 }} />
-                                                            <View style={{ position: 'absolute', alignSelf: 'center', backgroundColor: '#2e2e2e48', height: '100%', width: '100%', justifyContent: 'center', alignItems: 'center', borderRadius: 3 }}>
-                                                                <TouchableOpacity onPress={() => updateExpense(e.id, 'image_uri', null)} style={{ flexDirection: 'row', alignItems: 'center', borderColor: '#fff', borderWidth: 1, padding: 5 }}>
-                                                                    <Ionicons name={'close'} color={'#fff'} size={18} />
-                                                                    <Text style={{ color: '#fff' }}>Remove</Text>
-                                                                </TouchableOpacity>
-                                                            </View>
-                                                            <LinearGradient
-                                                                colors={[
-                                                                'rgba(0, 200, 83, 0)',
-                                                                'rgba(2, 224, 95, 0.15)',
-                                                                'rgba(1, 226, 95, 0.4)',
-                                                                'rgba(3, 226, 96, 0.8)',
-                                                                ]}
-                                                                style={{ flex: 1, height: 40, position: 'absolute', width: '100%', bottom: 0, zIndex: 2 }}
-                                                            />
-                                                        </>
-                                                    )}
-                                                </TouchableOpacity> */}
+                        <KeyboardAvoidingView style={{ flex: 1, marginTop: 10, paddingBottom: 200 }} behavior={Platform.OS === 'android' ? 'padding' : 'height'}>
+                            <ScrollView keyboardShouldPersistTaps="handled" style={{ paddingBottom: 120, paddingHorizontal: 20, flex: 1 }}>
+                                {expenses.map((e) => (
+                                    <View key={e.id} style={{ padding: 10, borderColor: '#B3B3B3', borderWidth: 1, borderRadius: 8, backgroundColor: '#fff', elevation: 5, marginBottom: 10 }}>
+                                        {e.id !== 1 && (
+                                            <TouchableOpacity onPress={() => removeExpenseForm(e.id)}  style={{ alignSelf: 'flex-end' }} >
+                                                <Ionicons name={'close'} size={25} color={'#cf2a3a'}/>
+                                            </TouchableOpacity>
+                                        )}
+                                        <View>
+                                            <Text style={{ fontSize: 14, fontWeight: 'bold', color: '#545454' }}>Description</Text>
+                                            <View style={{ borderColor: '#B3B3B3', borderWidth: 1, borderRadius: 5 }}>
+                                                <TextInput value={e.description} onChangeText={(text) => updateExpense(e.id, 'description', text)} placeholder='e.g. Vessel Oil' style={{ fontSize: 13 }} />
                                             </View>
                                         </View>
-                                    ))}
-                                </ScrollView>
+                                        <View style={{ marginTop: 5, flexDirection: 'row', gap: 8, alignItems: 'flex-end' }}>
+                                            <View style={{ width: '25%' }}>
+                                                <Text style={{ fontSize: 14, fontWeight: 'bold', color: '#545454' }}>Amount:</Text>
+                                                <View style={{ borderColor: '#B3B3B3', borderWidth: 1, borderRadius: 5, flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', paddingHorizontal: 5 }}>
+                                                    <Text style={{ fontWeight: 'bold', fontSize: 16, marginTop: -5 }}>₱</Text>
+                                                    <TextInput onChangeText={(text) => updateExpense(e.id, 'amount', Number(text))} keyboardType='numeric' placeholder='0.00' style={{ fontSize: 14, textAlign: 'right', fontWeight: '600' }} />
+                                                </View>
+                                            </View>
+                                            <View style={{ width: '72.5%' }}>
+                                                <Text style={{ fontSize: 14, fontWeight: 'bold', color: '#545454' }}>Category</Text>
+                                                <View style={{ borderColor: '#B3B3B3', borderWidth: 1, borderRadius: 5, flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' }}>
+                                                    <Dropdown onChange={item => updateExpense(e.id, 'expense_category_id', item.id)} value={e.expense_category_id || undefined} data={dropdownCategory} labelField="label" valueField="id" placeholder="Select Category" 
+                                                        style={{ height: 40, width: '80%', paddingHorizontal: 10 }}
+                                                        containerStyle={{
+                                                            alignSelf: 'flex-start',
+                                                            width: '53%',
+                                                        }}
+                                                        selectedTextStyle={{ fontWeight: '500', fontSize: 12, lineHeight: 35, }}
+                                                        renderRightIcon={() => (
+                                                            <Ionicons name="chevron-down" size={15} />
+                                                        )}
+                                                        dropdownPosition="bottom"
+                                                        renderItem={(item) => (
+                                                            <View style={{ width: '80%', padding: 8 }}>
+                                                            <Text>{item.label}</Text>
+                                                            </View>
+                                                        )}
+                                                    />
+                                                    <TouchableOpacity onPress={() => setModal(true)} style={{ borderLeftColor: '#B3B3B3', borderLeftWidth: 1, height: '100%', padding: 8 }} >
+                                                        <Ionicons name='add' size={20}/>
+                                                    </TouchableOpacity>
+                                                </View>
+                                            </View>
+                                        </View>
+                                        <View style={{ marginTop: 5 }}>
+                                            {/* <Text style={{ fontSize: 10, fontWeight: 'bold', color: '#545454' }}>Image</Text>
+                                            <TouchableOpacity disabled={e.image_uri != null} onPress={() => handleOnCapture(e.id)} style={{ borderColor: '#b3b3b3', borderWidth: 1, borderRadius: 5, height: 90, justifyContent: 'center', position: 'relative' }}>
+                                                {e.image_uri == null ? (
+                                                    <View style={{ backgroundColor: '#f8f8f8', borderRadius: 5, height: '100%', justifyContent: 'center' }}>
+                                                        <Text style={{ textAlign: 'center', color: '#a3a3a3' }}>Tap to capture image.</Text>
+                                                    </View>
+                                                ) : (
+                                                    <>
+                                                        <Image source={{ uri: e.image_uri }} resizeMode={'cover'} style={{ width: '95%', height: '90%', alignSelf: 'center' }} />
+                                                        <View style={{ position: 'absolute', bottom: 0, width: '100%', height: 10 }} />
+                                                        <View style={{ position: 'absolute', alignSelf: 'center', backgroundColor: '#2e2e2e48', height: '100%', width: '100%', justifyContent: 'center', alignItems: 'center', borderRadius: 3 }}>
+                                                            <TouchableOpacity onPress={() => updateExpense(e.id, 'image_uri', null)} style={{ flexDirection: 'row', alignItems: 'center', borderColor: '#fff', borderWidth: 1, padding: 5 }}>
+                                                                <Ionicons name={'close'} color={'#fff'} size={18} />
+                                                                <Text style={{ color: '#fff' }}>Remove</Text>
+                                                            </TouchableOpacity>
+                                                        </View>
+                                                        <LinearGradient
+                                                            colors={[
+                                                            'rgba(0, 200, 83, 0)',
+                                                            'rgba(2, 224, 95, 0.15)',
+                                                            'rgba(1, 226, 95, 0.4)',
+                                                            'rgba(3, 226, 96, 0.8)',
+                                                            ]}
+                                                            style={{ flex: 1, height: 40, position: 'absolute', width: '100%', bottom: 0, zIndex: 2 }}
+                                                        />
+                                                    </>
+                                                )}
+                                            </TouchableOpacity> */}
+                                        </View>
+                                    </View>
+                                ))}
+                            </ScrollView>
+
+                            <View style={{ paddingVertical: 20, backgroundColor: '#fff', paddingHorizontal: 20, }}>
+                                <TouchableOpacity disabled={saveExpenseSpinner || trips?.length == 0} onPress={handleSaveExpense} style={{ width: '100%', paddingVertical: 13, borderRadius: 8   , alignSelf: 'center', backgroundColor: trips?.length == 0 ? '#d8727c' : '#cf2a3a' }}>
+                                    {saveExpenseSpinner == true ? (
+                                        <ActivityIndicator size="small" color="#fff" style={{ marginRight: 10 }} />
+                                    ) : (
+                                        <Text style={{ fontWeight: 'bold', color: '#fff', textAlign: 'center', fontSize: 18 }}>Save</Text>
+                                    )}
+                                </TouchableOpacity>
                             </View>
-                        </View>
-                    </>
+                        </KeyboardAvoidingView>
+                    </View>
                 )}
             </View>
-            
-            <TouchableOpacity disabled={saveExpenseSpinner || trips?.length == 0} onPress={handleSaveExpense} style={{ width: '95%', paddingVertical: 13, borderRadius: 60, position: 'absolute', bottom: 0, backgroundColor: trips?.length == 0 ? '#d8727c' : '#cf2a3a', transform: [{ translateX: '-50%' }], left: '50%' }}>
-                {saveExpenseSpinner == true ? (
-                    <ActivityIndicator size="small" color="#fff" style={{ marginRight: 10 }} />
-                ) : (
-                    <Text style={{ fontWeight: 'bold', color: '#fff', textAlign: 'center', fontSize: 18 }}>Save</Text>
-                )}
-            </TouchableOpacity>
         </View>
     )
 }

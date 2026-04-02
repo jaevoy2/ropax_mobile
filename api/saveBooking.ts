@@ -30,6 +30,7 @@ export async function SaveBooking(trip: TripContextProps, passengers: PassengerP
                     nationality: p?.nationality,
                     accommodation_type_id: p.accommodationID ?? null,
                     passenger_type_id: p.passType_id,
+                    passType: p.passType,
                     seat_no: String(p.seatNumber),
                     fare: p.fare,
 
