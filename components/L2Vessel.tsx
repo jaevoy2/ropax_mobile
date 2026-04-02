@@ -140,7 +140,7 @@ type BookedSeat = {
 }
 
 const L2Vessel = ({ onSeatSelect, accommodations, seatAvailability, setParentLoading }: L2VesselProps) => {
-    const { id, hasScanned } = useTrip();
+    const { id, hasScanned, tripAccom } = useTrip();
     const [bookedSeats, setBookedSeats] = useState<BookedSeat[]>([]);
     const { passengers, setPassengers } = usePassengers();
     const [seatSelectionChannel, setSeatSelectionChannel] = useState<string[]>([]);
@@ -188,7 +188,13 @@ const L2Vessel = ({ onSeatSelect, accommodations, seatAvailability, setParentLoa
             const tempId = Crypto.randomUUID();
 
             setPassengers(prev => {
+                const scannedPax = prev.filter(p => p.hasScanned == true);
                 const paxScan = prev.find(p => p?.hasScanned && p.seatNumber == '');
+
+                if(scannedPax.length > 0 && !paxScan) {
+                    Alert.alert('Notice', 'All passengers already have seats assigned.');
+                    return prev;    
+                }
 
                 if (!paxScan) {
                     return [
@@ -270,6 +276,7 @@ const L2Vessel = ({ onSeatSelect, accommodations, seatAvailability, setParentLoa
     const TouristAccoms = useMemo(() => accommodations?.find((accom) => accom?.name == 'Tourist'), [accommodations]);
     const BClassAccomms = useMemo(() => accommodations?.find((accom) => bClassNames.includes(accom?.name)), [accommodations]);
     const seatChannel = useMemo(() => new Set(seatSelectionChannel), [seatSelectionChannel]);
+    console.log('trip accom', tripAccom)
 
     return (
         <View style={{ width: '100%', height: height + 290, backgroundColor: '#FAFAFA', marginTop: 20, paddingTop: 10, borderRadius: 50 }}>
@@ -286,7 +293,6 @@ const L2Vessel = ({ onSeatSelect, accommodations, seatAvailability, setParentLoa
                                 bookedSeats={bookedSeats}
                                 assignseat={assignseat}
                                 BClassAccomms={BClassAccomms}
-                                isDisabled={isDisabledAccom}
                                 seatAvailability={setBClassHasSeats}
                             />
 
@@ -296,7 +302,6 @@ const L2Vessel = ({ onSeatSelect, accommodations, seatAvailability, setParentLoa
                                 bookedSeats={bookedSeats}
                                 assignseat={assignseat}
                                 TouristAccoms={TouristAccoms}
-                                isDisabled={!isDisabledAccom}
                                 seatAvailability={setTouristHasSeats}
                             />
                         </>
@@ -308,7 +313,7 @@ const L2Vessel = ({ onSeatSelect, accommodations, seatAvailability, setParentLoa
                                 bookedSeats={bookedSeats}
                                 assignseat={assignseat}
                                 BClassAccomms={BClassAccomms}
-                                isDisabled={isDisabledAccom}
+                                isDisabled={tripAccom == 'Tourist'}
                                 seatAvailability={setBClassHasSeats}
                             />
                 
@@ -318,7 +323,7 @@ const L2Vessel = ({ onSeatSelect, accommodations, seatAvailability, setParentLoa
                                 bookedSeats={bookedSeats}
                                 assignseat={assignseat}
                                 TouristAccoms={TouristAccoms}
-                                isDisabled={!isDisabledAccom}
+                                isDisabled={tripAccom != 'Tourist'}
                                 seatAvailability={setTouristHasSeats}
                             />
                         </>

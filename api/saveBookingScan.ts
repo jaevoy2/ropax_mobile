@@ -1,0 +1,53 @@
+import { PassengerProps } from "@/context/passenger";
+import { TripContextProps } from "@/context/trip";
+import Constants from "expo-constants";
+
+
+export async function SaveBookingScan(trip: TripContextProps, passengers: PassengerProps[], stationID: number, bookingId: number) {
+    const extras = Constants.expoConfig?.extra ?? {};
+    const API_KEY = extras.API_KEY as string;
+    const API_URL = extras.API_URL as string;
+    const ORIGIN = extras.ORIGIN as string;
+
+    try {
+        const res = await fetch(`${API_URL}booking-scan/save`, {
+            method: 'POST',
+            headers: {
+                'Accept': 'application/json',
+                'Content-Type': 'application/json',
+                'x-api-key': `${API_KEY}`,
+                'Origin': `${ORIGIN}`
+            },
+            body: JSON.stringify({
+                station_id: Number(stationID),
+                booking_id: bookingId,
+                trip_schedule_id: trip.id,
+                web_code: trip.webCode,
+                passengers: passengers.map((p) => ({
+                    passenger_id: Number(p.id),
+                    accommodation_type_id: p.accommodationID ?? null,
+                    seat_no: String(p.seatNumber),
+                    fare: p.fare,
+
+                    cargos: Array.isArray(p.cargo) ? p.cargo?.map((c) => ({
+                        cargo_option_id: c.cargoOptionID,
+                        quantity: c.quantity,
+                        amount: c.cargoAmount,
+                        trip_id: trip.id
+                     })) : []
+                }))
+            })
+        });
+    
+        const response = await res.json();
+        
+        if(!res.ok) {
+            throw new Error(response.message);
+        }
+
+        return response;
+
+    } catch(error) {
+        throw error;
+    }
+}

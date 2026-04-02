@@ -32,7 +32,7 @@ export type AccomsProps = {
 
 export default function SeatPlan() {
     const { passengers, setPassengers } = usePassengers();
-    const { id, vessel, destination, origin, setTotalFare } = useTrip();
+    const { id, vessel, tripAccom, destination, origin, setTotalFare } = useTrip();
     const { passesTypeID, passesTypeCode, passesTypeName } = usePassesType();
     const { paxCargoProperty } = useCargo();
     const [accommodations, setAccommodations] = useState<AccomsProps[] | null>(null);
@@ -190,17 +190,19 @@ export default function SeatPlan() {
     )
 
     const handleFetchTotalBookings = async (trip_id: number | null) => {
-            try {
-                if(!trip_id) return;
-                const totalBookingFetch = await FetchTotalBookings(trip_id);
-                
-                if(!totalBookingFetch.error) {
-                    setTotalBookings(totalBookingFetch.total_paying);
-                }
-            }catch(error: any) {
-                Alert.alert('Error', error.message);
+        try {
+            if(!trip_id) return;
+            const totalBookingFetch = await FetchTotalBookings(trip_id);
+            
+            if(!totalBookingFetch.error) {
+                setTotalBookings(totalBookingFetch.total_paying);
             }
+        }catch(error: any) {
+            Alert.alert('Error', error.message);
         }
+    }
+
+    console.log('accom', tripAccom)
 
     return (
         <GestureHandlerRootView style={{ flex: 1, backgroundColor: '#cf2a3a' }}>
@@ -217,7 +219,7 @@ export default function SeatPlan() {
                     )}
                 </View>
 
-                {hasAvailableSeat == false && (
+                {!isLoading && hasAvailableSeat == false && (
                     <SeatAccommAlert setPassengers={setPassengers} accommodations={accommodations} />
                 )}
 
@@ -268,7 +270,7 @@ export default function SeatPlan() {
                         <View style={{ height: 90, borderColor: '#B3B3B3', borderWidth: 1, backgroundColor: '#fff', borderRadius: 8, paddingHorizontal: 8, width: '100%', marginTop: 5 }}>
                             <ScrollView style={{ flex: 1, paddingTop: 10, paddingBottom: 20 }}>
                                 <View style={{ flexDirection: 'row', flexWrap: 'wrap', gap: 12 }}>
-                                    {passengers.map((p) => (
+                                    {passengers.filter(p => p.passType != 'Infant').map((p) => (
                                         <View key={p.id} style={{ position: 'relative' }}>
                                             <TouchableOpacity onPress={() => handleRemoveSeat(p.seatNumber, p.id)} style={{ position: 'absolute', top: -10, right: -9, zIndex: 3 }}>
                                                 <Ionicons name="remove-circle" size={28} color={'#cf2a3a'} />
@@ -283,7 +285,7 @@ export default function SeatPlan() {
                         </View>
                     </View>
 
-                    <TouchableOpacity onPress={() => router.push('/bookingForm')} disabled={passengers.some(p => p.seatNumber == '')} style={{ backgroundColor: passengers.some(p => p.seatNumber == '') ? '#df5a68ff' : '#cf2a3a', width: '95%', alignSelf: 'center', borderRadius: 8, paddingVertical: 15, marginTop: 15 }}>
+                    <TouchableOpacity onPress={() => router.push('/bookingForm')} disabled={passengers.filter(p => p.passType != 'Infant').some(p => p.seatNumber == '')} style={{ backgroundColor: passengers.filter(p => p.passType != 'Infant').some(p => p.seatNumber == '') ? '#df5a68ff' : '#cf2a3a', width: '95%', alignSelf: 'center', borderRadius: 8, paddingVertical: 15, marginTop: 15 }}>
                         <Text style={{ fontSize: 16, fontWeight: 'bold', textAlign: 'center', color: '#fff' }}>Continue</Text>
                     </TouchableOpacity>
                 </BottomSheet>

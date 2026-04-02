@@ -1,4 +1,5 @@
 import { SaveBooking } from '@/api/saveBooking';
+import { SaveBookingScan } from '@/api/saveBookingScan';
 import { SaveCargo } from '@/api/saveCargo';
 import { useCargo } from '@/context/cargoProps';
 import { usePassengers } from '@/context/passenger';
@@ -15,7 +16,7 @@ const { height } = Dimensions.get('window');
 
 export default function PaymentSummary() {
     const { passengers } = usePassengers();
-    const { id, totalFare, fareChange, webCode, destination, origin, departure_time, vessel, setRefNumber, setFareChange, setCashTendered } = useTrip();
+    const { id, bookingId, totalFare, fareChange, webCode, destination, origin, departure_time, vessel, setRefNumber, setFareChange, setCashTendered } = useTrip();
     const { paxCargoProperty } = useCargo();
     const [loading, setLoading] = useState(false);
     const [cashTendered, setPassCashTendered] = useState(0);
@@ -46,6 +47,7 @@ export default function PaymentSummary() {
 
     const handleConfirmation = async () => {
         setLoading(true);
+        console.log(passengers, bookingId)
 
         if(cashTendered == 0 && !passengers.some(p => p.passType == 'Passes')) {
             setLoading(false);
@@ -71,8 +73,19 @@ export default function PaymentSummary() {
 
         try {
             const trip = { id, totalFare, fareChange, webCode } as TripContextProps;
-            if(passengers.length > 0) {
+            if(passengers.length > 0 && passengers.some(p => p.hasScanned != true)) {
                 const response = await SaveBooking(trip, passengers, Number(stationID));
+                
+                if(!response.error) {
+                    setRefNumber(response.reference_no);
+                    passengers.forEach(p => {
+                        if(p.seatNumber) {
+                            seatRemoval(p.seatNumber, id)
+                        }
+                    })
+                }
+            }else if(passengers.length > 0 && passengers.some(p => p.hasScanned == true)){
+                const response = await SaveBookingScan(trip, passengers, Number(stationID), bookingId);
                 
                 if(!response.error) {
                     setRefNumber(response.reference_no);

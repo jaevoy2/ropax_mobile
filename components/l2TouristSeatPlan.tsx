@@ -17,9 +17,9 @@ type L2TouristSeatPlanProps = {
 }
 
 
-const L2TouristSeatPlan = ({ passengerSeats, seatChannel, bookedSeats, assignseat, TouristAccoms }: L2TouristSeatPlanProps) => {
+const L2TouristSeatPlan = ({ passengerSeats, seatChannel, bookedSeats, assignseat, TouristAccoms, isDisabled }: L2TouristSeatPlanProps) => {
     return (
-        <View>
+        <View pointerEvents={isDisabled ? 'none' : 'auto'} style={{ opacity: isDisabled ? 0.3 : 1 }}>
             <Text style={{ textAlign: 'center', fontWeight: '900', letterSpacing: 1, fontSize: 16, color: '#cf2a3a', marginTop: 30 }}>TOURIST CLASS</Text>
                 <View style={{ marginTop: 15, flexDirection: 'row', gap: 3, alignItems: 'flex-end' }}>
                     <View style={{ width: '25%' }}>

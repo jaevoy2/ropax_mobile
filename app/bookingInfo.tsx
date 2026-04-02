@@ -88,7 +88,7 @@ const tabs = [
 export default function BookingInfo() {
     const { cargoProperties, paxCargoProperty } = useCargo();
     const { setPassengers, clearPassengers } = usePassengers();
-    const { setRouteID, setVessel, setID, setOrigin, setDestination, setVesselID, setCode, setWebCode, setDepartureTime, setMobileCode, setIsCargoable, setHasScanned } = useTrip();
+    const { setBookingId, clearTrip, setRouteID, setVessel, setID, setOrigin, setDestination, setVesselID, setCode, setWebCode, setDepartureTime, setMobileCode, setIsCargoable, setHasScanned, setTripAccom } = useTrip();
     const { bookingId, paxId, refNum } = useLocalSearchParams();
     const [ loading, setLoading ] = useState(true);
     const [ paxInfo, setPaxInfo ] = useState<PaxInfo[]>([]);
@@ -109,10 +109,10 @@ export default function BookingInfo() {
 
     const hasOnlinePax = paxInfo.some(p => p.station.toLowerCase() == 'online booking');
 
-
     useFocusEffect(
         useCallback(() => {
-            clearPassengers()
+            clearPassengers();
+            clearTrip();
             handleFetchInfo();
         }, [])
 
@@ -333,8 +333,10 @@ export default function BookingInfo() {
     }
 
     const handleProceedBooking = () => {
+        setTripAccom(paxInfo[0].accommodation);
         setProceedLoading(true);
-
+        
+        setBookingId(Number(bookingId))
         setID(paxInfo[0].tripId);
         setVessel(paxInfo[0].vessel);
         setVesselID(paxInfo[0].vesselId);
@@ -346,18 +348,19 @@ export default function BookingInfo() {
         setCode(paxInfo[0].vesselCode);
         setDepartureTime(paxInfo[0].departureISO);
         setIsCargoable(paxInfo[0].isCargoable);
-        setHasScanned(true);
-        // setLoading(false);
-
-        setTimeout(() => {
-            for(const pax of paxInfo) {
-                setPassengers(prev => [...prev, {
-                    id: String(pax.id), name: `${pax.last_name}, ${pax.first_name}`, age: pax.age, gender: pax.gender, nationality: pax.nationality, address: pax.address,
+        
+        
+        for(const pax of paxInfo) {
+            setPassengers(prev => [...prev, {
+                    id: String(pax.id), pax_id: String(pax.id), name: `${pax.last_name}, ${pax.first_name}`, age: pax.age, gender: pax.gender, nationality: pax.nationality, address: pax.address,
                     contact: pax.contactNo, seatNumber: '', accommodation: pax.accommodation, fare: pax.fare,
                     accommodationID: pax.accommodationTypeId, passType: pax.passenger_type, passType_id: pax.passengerTypeId, hasScanned: true
                 }])
             }
+            
 
+        setTimeout(() => {
+            setHasScanned(true);
             setProceedLoading(false);
             
             if(!paxInfo.some(p => p.passenger_type == 'Passes')) {
@@ -376,7 +379,6 @@ export default function BookingInfo() {
 
         setCancelModal(true)
     }
-
 
     return (
         <View style={{ flex: 1, backgroundColor: '#fafafa' }}>
@@ -464,7 +466,7 @@ export default function BookingInfo() {
                                             <View style={{ flexDirection: 'column', width: '65%' }}>
                                                 <Text style={{ fontSize: 14, fontWeight: '700' }}>{`${pax.first_name} ${pax.last_name}`}</Text>
                                                 <View style={{ flexDirection: 'row', alignItems: 'center', gap: 5 }}>
-                                                    <Text style={{ fontSize: 10, color: '#646464', fontWeight: '600' }}>{pax?.seatNumber != 'N/A' ? `Seat# ${pax?.seatNumber}` : '---'}</Text>
+                                                    <Text style={{ fontSize: 10, color: '#646464', fontWeight: '600' }}>{pax?.seatNumber != 'N/A' ? `Seat# ${pax?.seatNumber}` : '--'}</Text>
                                                     <Text style={{ fontSize: 10, color: '#646464' }}>|</Text>
                                                     <Text style={{ fontSize: 10, color: '#646464', fontWeight: '600' }}>{pax?.passenger_type}</Text>
                                                     <Text style={{ fontSize: 10, color: '#646464' }}>|</Text>

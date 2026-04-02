@@ -563,7 +563,7 @@ export default function Forms({ errorForm }: FormProps) {
                     <PreLoader loading={loading} />
                 ) : (
                     <>
-                        {passengers.map((p, index) => (
+                        {passengers.filter(p => p.passType != 'Infant').map((p, index) => (
                             <View key={p.id} style={{ position: 'relative', borderColor: errorForm.includes(p.seatNumber ?? '') ? '#cf2a3a' : '#B3B3B3', borderWidth: 1, borderRadius: 8, paddingHorizontal: 10, paddingVertical: 10, backgroundColor: '#fff', elevation: 5 }}>
                                 {hasPasses && index != 0 && (
                                     <TouchableOpacity onPress={() => handlePassesRemove(p.id)} style={{ position: 'absolute', right: -5, top: -15 }}>
@@ -1010,6 +1010,37 @@ export default function Forms({ errorForm }: FormProps) {
 
                                     </View>
                                 )}
+                            </View>
+                        ))}
+
+                        {passengers.filter(p => p.hasScanned == true && p.passType == 'Infant').map(inf => (
+                            <View style={{ padding: 10, backgroundColor: '#fff', elevation: 5, borderRadius: 8, borderWidth: 1, borderColor: '#B3B3B3' }} key={inf.id}>
+                                <Text style={{ fontSize: 18, fontWeight: '900', color: '#cf2a3a', marginBottom: 5 }}>Infant Details</Text>
+                                <View style={{ marginTop: 20 }}>
+                                    <Text style={{ fontSize: 13, fontWeight: 'bold', color: '#545454' }}>Full Name:</Text>
+                                    <View style={{ borderColor: '#B3B3B3', borderWidth: 1, borderRadius: 5, height: 45, justifyContent: 'center'  }}>
+                                        <TextInput value={inf.name} onChangeText={(text) => updatePassenger(inf.id, 'name', text)} keyboardType='numeric' placeholder='Name' style={{ fontSize: 13, fontWeight: '600' }} />
+                                    </View>
+                                </View>
+                                <View style={{ marginTop: 5, flexDirection: 'row', gap: 8, alignItems: 'flex-end' }}>
+                                    <View style={{ width: '40%' }}>
+                                        <Text style={{ fontSize: 13, fontWeight: 'bold', color: '#545454' }}>Age:</Text>
+                                        <View style={{ borderColor: '#B3B3B3', borderWidth: 1, borderRadius: 5, height: 45, justifyContent: 'center'  }}>
+                                            <TextInput value={String(inf.age ?? '')} onChangeText={(text) => updatePassenger(inf.id, 'age', Number(text))} keyboardType='numeric' placeholder='Age' style={{ fontSize: 13, fontWeight: '600' }} />
+                                        </View>
+                                    </View>
+                                    <View style={{ width: '56%', }}>
+                                        <Text style={{ fontSize: 13, fontWeight: 'bold', color: '#545454' }}>Gender:</Text>
+                                        <View style={{ flexDirection:'row', gap: 5 }}>
+                                            {passGender.map((infntgender) => (
+                                                <TouchableOpacity onPress={() => updatePassenger(inf.id, 'gender', 'gender')} key={infntgender} style={{ backgroundColor: inf.gender == infntgender ? '#cf2a3a' : 'transparent',
+                                                    borderColor: '#cf2a3a', borderWidth: 1, width: '50%', borderRadius: 5, justifyContent :'center', paddingVertical: 12 }}>
+                                                    <Text style={{ textAlign: 'center', fontSize: 14, fontWeight: '600', color: inf.gender == infntgender ? '#fff' : '#cf2a3a' }}>{infntgender}</Text>
+                                                </TouchableOpacity>
+                                            ))}
+                                        </View>
+                                    </View>
+                                </View>
                             </View>
                         ))}
 

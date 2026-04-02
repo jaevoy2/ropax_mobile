@@ -19,6 +19,8 @@ export type TripContextProps = {
     isCargoable: number;
     approvedBy?: string;
     hasScanned?: boolean;
+    tripAccom?: string;
+    bookingId?: number;
     setVessel: React.Dispatch<React.SetStateAction<string>>;
     setRouteID: React.Dispatch<React.SetStateAction<number>>;
     setOrigin: React.Dispatch<React.SetStateAction<string>>;
@@ -37,6 +39,8 @@ export type TripContextProps = {
     setIsCargoable: React.Dispatch<React.SetStateAction<number>>;
     setApprovedBy: React.Dispatch<React.SetStateAction<string>>;
     setHasScanned: React.Dispatch<React.SetStateAction<boolean>>;
+    setTripAccom: React.Dispatch<React.SetStateAction<string>>;
+    setBookingId: React.Dispatch<React.SetStateAction<number>>;
     clearTrip: () => void;
 }
 
@@ -59,13 +63,15 @@ export const TripProvider = ({ children }: TripProviderProps) => {
     const [totalFare, setTotalFare] = useState<number>(0);
     const [id, setID] = useState<number>(0);
     const [vessel_id, setVesselID] = useState<number>(0);
-    const [fareChange, setFareChange] = useState<number>(0);
+    const [fareChange, setFareChange] = useState<number | null>(null);
     const [cashTendered, setCashTendered] = useState<number>(0);
     const [departure_time, setDepartureTime] = useState<string>('');
     const [note, setNote] = useState<string>('');
     const [isCargoable, setIsCargoable] = useState<number>(0);
     const [approvedBy, setApprovedBy] = useState('');
-    const [hasScanned, setHasScanned] = useState(false);
+    const [hasScanned, setHasScanned] = useState<boolean>(null);
+    const [tripAccom, setTripAccom] = useState('');
+    const [bookingId, setBookingId] = useState<number | null>(null)
 
     const clearTrip = () => {
         setID(0);
@@ -82,14 +88,20 @@ export const TripProvider = ({ children }: TripProviderProps) => {
         setCode("");
         setRefNumber("");
         setDepartureTime("");
+        setVesselID(null)
         setIsCargoable(0);
+        setTripAccom('');
+        setBookingId(null);
+        setHasScanned(false);
+        setApprovedBy('');
+        setNote('')
     };
 
     return (
-        <TripContext.Provider value={{ id, vessel, routeID, origin, destination, vessel_id, totalFare, note, departure_time,
+        <TripContext.Provider value={{ id, vessel, routeID, origin, destination, vessel_id, totalFare, note, departure_time, tripAccom, bookingId,
                                         fareChange, code, webCode, mobileCode, cashTendered, refNumber, isCargoable, approvedBy, hasScanned,
-                                    setVessel, setID, setRouteID, setOrigin, setDestination, setVesselID, setTotalFare, setNote,setDepartureTime, setHasScanned,
-                                    setFareChange, setCode, setWebCode, setMobileCode, setCashTendered, setRefNumber, setIsCargoable, clearTrip, setApprovedBy }}>
+                                    setVessel, setID, setRouteID, setOrigin, setDestination, setVesselID, setTotalFare, setNote,setDepartureTime, setHasScanned, setBookingId,
+                                    setFareChange, setCode, setWebCode, setMobileCode, setCashTendered, setRefNumber, setIsCargoable, clearTrip, setApprovedBy, setTripAccom }}>
             {children}
         </TripContext.Provider>
     );

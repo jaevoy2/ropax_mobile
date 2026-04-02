@@ -135,7 +135,7 @@ export type BookedSeat = {
 const bClassNames = ['Business Class', 'B Class', 'B-Class']
 
 const SRVessel = ({ onSeatSelect, accommodations, seatAvailability, setParentLoading }: SRVesselProps) => {
-    const { id, hasScanned } = useTrip();
+    const { id, hasScanned, tripAccom } = useTrip();
     const [bookedSeats, setBookedSeats] = useState<BookedSeat[]>([]);
     const { passengers, setPassengers } = usePassengers();
     const [seatSelectionChannel, setSeatSelectionChannel] = useState<string[]>([]);
@@ -149,23 +149,17 @@ const SRVessel = ({ onSeatSelect, accommodations, seatAvailability, setParentLoa
     
     useEffect(() => { tripIdRef.current = id; }, [id]);
     
-    const isTouristPaxAccom = useMemo(() =>
-        passengers.some(p => p.hasScanned === true && p.accommodation === 'Tourist')
-    , [passengers]);
-    
-    
     useEffect(() => {
-        if(hasScanned) {
-            if(isTouristPaxAccom) {
-                seatAvailability?.(touristHasSeats)
-            }else {
-                seatAvailability?.(bclassHasSeats)
-            }
-        }else {
-            seatAvailability?.(bclassHasSeats || touristHasSeats)
+        if (isLoading) return;
+
+        if (hasScanned) {
+            const accom = tripAccom == 'Tourist' ? touristHasSeats : bclassHasSeats;
+            seatAvailability?.(accom);
+        } else {
+            seatAvailability?.(bclassHasSeats || touristHasSeats);
         }
 
-    }, [bclassHasSeats, touristHasSeats, isTouristPaxAccom])
+    }, [isLoading, bclassHasSeats, touristHasSeats, passengers.length])
 
     useEffect(() => {
         const loadStation = async () => {
@@ -189,7 +183,13 @@ const SRVessel = ({ onSeatSelect, accommodations, seatAvailability, setParentLoa
             const tempId = Crypto.randomUUID();
             
             setPassengers(prev => {
+                const scannedPax = prev.filter(p => p.hasScanned == true);
                 const paxScan = prev.find(p => p.hasScanned && p.seatNumber == '');
+
+                if(scannedPax.length > 0 && !paxScan) {
+                    Alert.alert('Notice', 'All passengers already have seats assigned.');
+                    return prev;  
+                }
 
                 if(!paxScan) {
                     return [
@@ -334,7 +334,7 @@ const SRVessel = ({ onSeatSelect, accommodations, seatAvailability, setParentLoa
                                 bookedSeatMap={bookedSeatMap}
                                 assignseat={assignseat}
                                 BClassAccomms={BClassAccomms}
-                                isDisabled={isTouristPaxAccom}
+                                isDisabled={tripAccom == 'Tourist'}
                                 seatAvailability={setBClassHasSeat}
                             />
                             
@@ -344,7 +344,7 @@ const SRVessel = ({ onSeatSelect, accommodations, seatAvailability, setParentLoa
                                 bookedSeats={bookedSeats} 
                                 assignseat={assignseat}
                                 TouristAccoms={TouristAccoms}
-                                isDisabled={!isTouristPaxAccom}
+                                isDisabled={tripAccom != 'Tourist'}
                                 seatAvailability={setTouristHasSeat}
                                 disabledSeats={disabledSeats}
                             />

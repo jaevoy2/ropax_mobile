@@ -17,9 +17,9 @@ type L2BClassSeatPlanProps = {
     seatAvailability?: (hasAvailable: boolean) => void;
 }
 
-const L2BClassSeatPlan = ({ passengerSeats, seatChannel, bookedSeats, assignseat, BClassAccomms }: L2BClassSeatPlanProps) => {
+const L2BClassSeatPlan = ({ passengerSeats, seatChannel, bookedSeats, assignseat, BClassAccomms, isDisabled }: L2BClassSeatPlanProps) => {
     return (
-        <View>
+        <View pointerEvents={isDisabled ? 'none' : 'auto'} style={{ opacity: isDisabled ? 0.3 : 1 }}>
             <Text style={{ textAlign: 'center', fontWeight: '900', letterSpacing: 1, fontSize: 16, color: '#cf2a3a' }}>BUSINESS CLASS</Text>
             <View style={{ marginTop: 15, flexDirection: 'row', justifyContent: 'space-between', alignSelf: 'center' }}>
                 <View style={{ width: '40%' }}>
