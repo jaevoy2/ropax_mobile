@@ -151,15 +151,18 @@ const SRVessel = ({ onSeatSelect, accommodations, seatAvailability, setParentLoa
     
     useEffect(() => {
         if (isLoading) return;
+        console.log('t: ', touristHasSeats)
+        console.log('b: ', bclassHasSeats)
 
         if (hasScanned) {
             const accom = tripAccom == 'Tourist' ? touristHasSeats : bclassHasSeats;
+            console.log('accom: ', accom)
             seatAvailability?.(accom);
         } else {
             seatAvailability?.(bclassHasSeats || touristHasSeats);
         }
 
-    }, [isLoading, bclassHasSeats, touristHasSeats, passengers.length])
+    }, [isLoading, bclassHasSeats, touristHasSeats, passengers])
 
     useEffect(() => {
         const loadStation = async () => {

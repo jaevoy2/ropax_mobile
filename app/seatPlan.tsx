@@ -201,8 +201,7 @@ export default function SeatPlan() {
             Alert.alert('Error', error.message);
         }
     }
-
-    console.log('accom', tripAccom)
+    console.log('availble:',  hasAvailableSeat)
 
     return (
         <GestureHandlerRootView style={{ flex: 1, backgroundColor: '#cf2a3a' }}>
@@ -219,7 +218,7 @@ export default function SeatPlan() {
                     )}
                 </View>
 
-                {!isLoading && hasAvailableSeat == false && (
+                {isLoading == false && hasAvailableSeat == false && (
                     <SeatAccommAlert setPassengers={setPassengers} accommodations={accommodations} />
                 )}
 
@@ -272,9 +271,11 @@ export default function SeatPlan() {
                                 <View style={{ flexDirection: 'row', flexWrap: 'wrap', gap: 12 }}>
                                     {passengers.filter(p => p.passType != 'Infant').map((p) => (
                                         <View key={p.id} style={{ position: 'relative' }}>
-                                            <TouchableOpacity onPress={() => handleRemoveSeat(p.seatNumber, p.id)} style={{ position: 'absolute', top: -10, right: -9, zIndex: 3 }}>
-                                                <Ionicons name="remove-circle" size={28} color={'#cf2a3a'} />
-                                            </TouchableOpacity>
+                                            {p.seatNumber != '' && (
+                                                <TouchableOpacity onPress={() => handleRemoveSeat(p.seatNumber, p.id)} style={{ position: 'absolute', top: -10, right: -9, zIndex: 3 }}>
+                                                    <Ionicons name="remove-circle" size={28} color={'#cf2a3a'} />
+                                                </TouchableOpacity>
+                                            )}
                                             <TouchableOpacity style={{ borderColor: errorForm.includes(p.seatNumber!) ? '#cf2a3a' : '#000', backgroundColor: errorForm.includes(p.seatNumber!) ? '#cf2a3b3d' : 'transparent', borderWidth: 1, borderRadius: 5, width: 50, height: 50, justifyContent: 'center' }}>
                                                 <Text style={{ textAlign: 'center', fontWeight: 'bold', fontSize: 16 }}>{p.seatNumber}</Text>
                                             </TouchableOpacity>

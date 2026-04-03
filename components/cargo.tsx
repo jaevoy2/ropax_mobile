@@ -102,7 +102,7 @@ export default function CargoComponent({ dateChange }: {dateChange: string} ) {
                         });
 
         setSelectedVessel(vesselName);
-        setTimeWithRoute(`${origin} --- ${destination} | ${departure_time}`)
+        setTimeWithRoute(`${origin}  >  ${destination} | ${departure_time}`)
         toggleFormSheet();
         setTimeout(() => {
     
@@ -345,7 +345,7 @@ export default function CargoComponent({ dateChange }: {dateChange: string} ) {
 
 
     return (
-        <View style={{ flex: 1, height }}>
+        <View style={{ height: height - 225 }}>
             <View style={{ flexDirection: 'row', gap: 10, paddingHorizontal: 15, paddingTop: 20 }}>
                 <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', width: '100%' }}>
                     { trips && (trips.length > 0 && trips.some(t => t.hasDeparted == false)) &&  (
@@ -353,7 +353,7 @@ export default function CargoComponent({ dateChange }: {dateChange: string} ) {
                     )}
                 </View>
             </View>
-            <Animated.View style={{ opacity: tripsAnimation, height: height }}> 
+            <Animated.View style={{ opacity: tripsAnimation, flex: 1 }}> 
                 {cargoContentLoading == true ? (
                     <View style={{ height: height / 2, justifyContent: 'center' }}>
                         <ActivityIndicator size={'large'} color={'#cf2a3a'} />
@@ -379,14 +379,14 @@ export default function CargoComponent({ dateChange }: {dateChange: string} ) {
                 )}
             </Animated.View>
 
-            <Animated.View style={{ paddingHorizontal: 15, transform: [{ translateX: tripsAnimation }], position: 'absolute', width, paddingTop: 20, backgroundColor: '#f1f1f1' }}>
+            <Animated.View style={{ transform: [{ translateX: tripsAnimation }], position: 'absolute', flex: 1, width, paddingTop: 20, backgroundColor: '#fdfdfd' }}>
                 {formLoading == true ? (
                     <View style={{ height: height - 300, justifyContent: 'center', alignSelf: 'center' }}>
                         <ActivityIndicator size={'large'} color={'#cf2a3a'} />
                     </View>
                 ) : (
-                    <View style={{ height: height - 250 }}>
-                        <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' }}>
+                    <View style={{ flex: 1 }}>
+                        <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', paddingHorizontal: 10 }}>
                             <View style={{ flexDirection: 'row', alignItems: 'center', gap: 8, width: '70%' }}>
                                 <Ionicons name={'boat'} color={'#fff'} size={26} style={{ backgroundColor: '#cf2a3a', padding: 5, borderRadius: 50 }} />
                                 <View style={{ flexDirection: 'column' }}>
@@ -397,7 +397,7 @@ export default function CargoComponent({ dateChange }: {dateChange: string} ) {
                             
                             <View style={{ flexDirection: 'row', alignItems: 'center', gap: 8 }}>
                                 <TouchableOpacity onPress={() => closeFormSheet()} style={{ paddingVertical: 8, paddingHorizontal: 12, backgroundColor: '#cf2a3a', borderRadius: 5 }}>
-                                    <Ionicons name={'swap-horizontal'} color={'#fff'} size={18} />
+                                    <Ionicons name={'arrow-back'} color={'#fff'} size={18} />
                                 </TouchableOpacity>
 
                                 <TouchableOpacity onPress={() => addCargo()} style={{ paddingVertical: 8, paddingHorizontal: 12, backgroundColor: '#cf2a3a', borderRadius: 5 }}>
@@ -408,7 +408,7 @@ export default function CargoComponent({ dateChange }: {dateChange: string} ) {
                         </View>
 
                         {paxCargoProperty.length > 1 && (
-                            <View style={{ flexDirection: 'row', alignItems: 'center', marginTop: 18, gap: 8, alignSelf: 'flex-end' }}>
+                            <View style={{ flexDirection: 'row', alignItems: 'center', marginTop: 18, gap: 8, alignSelf: 'flex-end', paddingHorizontal: 10 }}>
                                 <Text style={{ fontWeight: 'bold', color: '#545454', fontSize: 14 }}>Total Amount:</Text>
                                 <View style={{ borderBottomColor: '#cf2a3a', borderBottomWidth: 2, flexDirection: 'row', alignItems: 'center', paddingHorizontal: 15 }}>
                                     <Text style={{ fontSize: 17, color: '#cf2a3a', fontWeight: 'bold' }}>₱ </Text>
@@ -418,11 +418,11 @@ export default function CargoComponent({ dateChange }: {dateChange: string} ) {
                                 </View>
                             </View>
                         )}
-
-                        <KeyboardAvoidingView style={{ flex: 1, paddingBottom: 100 }} behavior={Platform.OS === 'android' ? 'padding' : 'height'}>
-                            <ScrollView style={{ flex: 1 }} nestedScrollEnabled={true}>
+    
+                        <KeyboardAvoidingView style={{ paddingBottom: 100 }} behavior={Platform.OS === 'ios' ? 'padding' : 'height'}>
+                            <ScrollView keyboardShouldPersistTaps="handled" showsVerticalScrollIndicator={false} contentContainerStyle={{ paddingHorizontal: 10, paddingBottom: 100 }} nestedScrollEnabled={true}>
                                 {paxCargoProperty?.map((c: any) => (
-                                    <View key={c.id} style={{ borderColor: '#B3B3B3', backgroundColor: '#fff', padding: 10, borderRadius: 8, borderWidth: 1, marginTop: 10 }}>
+                                    <View key={c.id} style={{ backgroundColor: '#fff', padding: 10, borderRadius: 8, marginTop: 10, elevation: 5 }}>
                                         {c.id > 1 && (
                                             <TouchableOpacity onPress={() => removeCargoForm(c.id)} style={{ alignSelf: 'flex-end' }}>
                                                 <Ionicons color={'#cf2a3a'} name={'close'} size={20} />
@@ -564,7 +564,7 @@ export default function CargoComponent({ dateChange }: {dateChange: string} ) {
                                         )}
                                     </View>
                                 ))}
-                                <View style={{ borderColor: '#B3B3B3', backgroundColor: '#fff', padding: 10, borderRadius: 8, borderWidth: 1, marginTop: 10 }}>
+                                <View style={{ backgroundColor: '#fff', padding: 10, borderRadius: 8, marginTop: 10, elevation: 5 }}>
                                     <Text style={{ fontSize: 9, fontWeight: 'bold', color: '#545454' }}>Note:</Text>
                                     <View style={{ borderColor: '#B3B3B3', borderWidth: 1, borderRadius: 5, height: 60 }}>
                                         <TextInput onChangeText={(text) => setNote(text)} placeholder='e.g. Receiver' style={{ fontSize: 13 }} />

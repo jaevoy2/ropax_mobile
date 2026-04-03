@@ -115,7 +115,6 @@ export default function BookingInfo() {
             clearTrip();
             handleFetchInfo();
         }, [])
-
     )
 
     const handleOnResched = () => {
@@ -352,8 +351,8 @@ export default function BookingInfo() {
         
         for(const pax of paxInfo) {
             setPassengers(prev => [...prev, {
-                    id: String(pax.id), pax_id: String(pax.id), name: `${pax.last_name}, ${pax.first_name}`, age: pax.age, gender: pax.gender, nationality: pax.nationality, address: pax.address,
-                    contact: pax.contactNo, seatNumber: '', accommodation: pax.accommodation, fare: pax.fare,
+                    id: String(pax.id), pax_id: String(pax.id), name: `${pax.last_name}, ${pax.first_name}`, age: pax.age, gender: pax.gender, 
+                    nationality: pax.nationality, address: pax.address, contact: pax.contactNo, seatNumber: '', accommodation: pax.accommodation, fare: pax.fare,
                     accommodationID: pax.accommodationTypeId, passType: pax.passenger_type, passType_id: pax.passengerTypeId, hasScanned: true
                 }])
             }

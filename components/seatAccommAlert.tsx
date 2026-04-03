@@ -1,3 +1,4 @@
+import { useTrip } from "@/context/trip";
 import { router } from "expo-router";
 import React, { useState } from "react";
 import { ActivityIndicator, Dimensions, SafeAreaView, StyleSheet, Text, TouchableOpacity, View } from "react-native";
@@ -11,6 +12,7 @@ export default function SeatAccommAlert({ setPassengers, accommodations }: {
         accommodations: any[],
     }) {
 
+    const { tripAccom, setTripAccom } = useTrip();    
     const[loading, setLoading] = useState(false);
 
     const handleUpdatePassengerAccomm = () => {
@@ -19,8 +21,12 @@ export default function SeatAccommAlert({ setPassengers, accommodations }: {
         setTimeout(() => {
             setPassengers(prev => 
                 prev.map(p => {
-                    const updatedAccom = accommodations.find(accom => accom.id != p.accommodationID);
-    
+                    const updatedAccom = accommodations.find(accom => accom.id !== p.accommodationID);
+
+                    if(tripAccom != updatedAccom.name) {
+                        setTripAccom(updatedAccom.name)
+                    }
+
                     if(updatedAccom) {
                         return {
                             ...p,
