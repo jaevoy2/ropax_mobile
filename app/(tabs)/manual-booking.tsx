@@ -86,8 +86,6 @@ export default function ManualBooking() {
     const translateY = useRef(new Animated.Value(height + 50)).current;
     const fadeInAnim = useRef(new Animated.Value(0)).current;
 
-    console.log('passengers', passengers)
-
     useEffect(() => {
         handleFetchCargoProps();
         // change the seatRemoval(passenger.seatNumber, id) id reference to the current tripID in context

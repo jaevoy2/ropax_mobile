@@ -1,4 +1,3 @@
-
 import { FetchCargoVessel } from '@/api/cargoVessel';
 import { PaxCargoProperties, useCargo } from '@/context/cargoProps';
 import { useTrip } from '@/context/trip';

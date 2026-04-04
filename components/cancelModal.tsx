@@ -12,34 +12,34 @@ export default function CancelBooking({ cancelModal, setCancelModal, paxInfo, se
         paxInfo: PaxInfo[];
         setPaxInfo: React.Dispatch<React.SetStateAction<PaxInfo[]>> 
         percents,
-        bookingId
+        bookingId,
         }) {
 
-    const [selectAll, setSelectAll] = useState(true);
+    const [selectAll, setSelectAll] = useState(false);
     const [totalFare, setTotalFare] = useState(0);
     const [percent, setPercent] = useState(Number);
     const [charge, setCharge] = useState(Number)
     const [refundAmnt, setRefundAmnt] = useState(Number);
     const [submitLoading, setSubmitLoading] = useState(false);
     const [cancelReason, setCancelReason] = useState('');
-    const [recipient, setRecipient] = useState('');
+
+    const forCancel = useMemo(() => {
+        return paxInfo.filter(p => p.forCancel == true && (p.passenger_type == 'Infant' && p.forCancel == true));
+    }, [paxInfo])
 
     useMemo(() => {
-        const total = paxInfo.reduce((sum, passenger) => sum + Number(passenger?.fare), 0);
+        const paxToCancel = paxInfo.filter(p => p.forCancel == true);
+        const total = paxToCancel.reduce((sum, passenger) => sum + Number(passenger?.fare), 0);
+
         setTotalFare(total);
     }, [paxInfo]);
 
 
     useEffect(() => {
-        handleChargeComputation()
+        handleChargeComputation();
         const notForCancel = paxInfo.some(p => p.forCancel != true);
-
-        if(notForCancel) {
-            setSelectAll(false);
-        }else {
-            setSelectAll(true)
-        }
-    }, [paxInfo])
+        setSelectAll(!notForCancel);
+    }, [paxInfo]);
 
 
     const handleChargeComputation = () => {
@@ -78,13 +78,20 @@ export default function CancelBooking({ cancelModal, setCancelModal, paxInfo, se
     const handleSubmitCancellation = async () => {
         setSubmitLoading(true);
 
-        if(!cancelReason.trim() || !recipient.trim()) {
+        if(!cancelReason.trim()) {
             setSubmitLoading(false)
-            return Alert.alert('Invalid', 'Reason and recipient are required.');
+            return Alert.alert('Invalid', 'Reason is required.');
         }
 
         try {
-            const response = await CancelPaxBooking(bookingId, cancelReason, recipient, charge, refundAmnt);
+            const toCancelIDs = [];
+            const paxToCancel = paxInfo.filter(p => p.forCancel == true);
+
+            paxToCancel.forEach(pax => {
+                toCancelIDs.push(pax.id)
+            });
+
+            const response = await CancelPaxBooking(bookingId, cancelReason, charge, refundAmnt, paxInfo[0].departureDate, paxInfo[0].tripId, selectAll, toCancelIDs);
 
             if(!response.error) {
                 Alert.alert('Success', 'Cancellation Success', [{
@@ -105,12 +112,8 @@ export default function CancelBooking({ cancelModal, setCancelModal, paxInfo, se
             <Modal transparent animationType={'fade'} visible={cancelModal}>
                 <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center', backgroundColor: 'rgba(0, 0, 0, 0.5)' }}>
                     <View style={{ width: '92%', backgroundColor: '#fff', borderRadius: 10, shadowColor: '#000', shadowOffset: { width: 0, height: 2 }, shadowOpacity: 0.25, shadowRadius: 4 }}>
-                        <Text style={{ fontWeight: 'bold', fontSize: 16, marginBottom: 10, paddingHorizontal: 20, paddingVertical: 15, borderBottomColor: '#dadada', borderBottomWidth: 1 }}>Cancellation Booking</Text>
+                        <Text style={{ fontWeight: 'bold', fontSize: 16, marginBottom: 10, paddingHorizontal: 20, paddingVertical: 15, borderBottomColor: '#dadada', borderBottomWidth: 1 }}>Booking Cancellation</Text>
                         <View style={{ paddingHorizontal: 20, }}>
-                            {/* <View style={{ flexDirection: 'row', opacity: 0.5, width: '90%' }}>
-                                <Text style={{ marginBottom: 5, fontSize: 13 }}>Note: </Text>
-                                <Text style={{ marginBottom: 5, fontSize: 13 }}>Refund amount varies based on vessel departure status.</Text>
-                            </View> */}
 
                             <View style={{ borderColor: '#dadada', borderWidth: 1, borderRadius: 5, marginTop: 5 }}>
                                 <Text style={{ fontWeight: '600', marginBottom: 5, borderBottomWidth: 1, borderBottomColor: '#dadada', padding: 8 }}>Breakdown</Text>
@@ -138,28 +141,22 @@ export default function CancelBooking({ cancelModal, setCancelModal, paxInfo, se
                                     <TextInput onChangeText={(text) => setCancelReason(text)} style={{ fontSize: 16 }} placeholder='e.g Emergency' />
                                 </View>
                             </View>
-                            <View style={{ marginTop: 5 }}>
-                                <Text style={{ fontWeight: '600', marginBottom: 5 }}>Recepient Name</Text>
-                                <View style={{ borderColor: '#dadada', borderWidth: 1, borderRadius: 5 }}>
-                                    <TextInput onChangeText={(text) => setRecipient(text)} style={{ fontSize: 16 }} placeholder='Firstname Lastname' />
-                                </View>
-                            </View>
 
-                            <View>
+                            <View style={{ marginTop: 10 }}>
                                 <View style={{ flexDirection: 'row', alignItems: 'flex-end', justifyContent: 'space-between' }}>
-                                    <Text style={{ fontWeight: '600', marginBottom: 5, fontSize: 16 }}>Passenger/s</Text>
+                                    <Text style={{ fontWeight: '600', marginBottom: 5, fontSize: 14 }}>Passenger/s</Text>
                                     <TouchableOpacity onPress={() => handleSelectAll()} style={{ flexDirection: 'row', alignItems: 'center', alignSelf: 'flex-end' }}>
                                         <Checkbox status={selectAll ? 'checked' : 'unchecked'} color='#cf2a3a' uncheckedColor="#999" />
-                                        <Text style={{ color: selectAll ? '#cf2a3a' : '#999', fontSize: 15 }}>Select All</Text>
+                                        <Text style={{ color: selectAll ? '#cf2a3a' : '#999', fontSize: 14 }}>Select All</Text>
                                     </TouchableOpacity>
                                 </View>
                                 
-                                <View style={{ height: 90 }}>
+                                <View style={{ height: 140 }}>
                                     <ScrollView style={{ flex: 1, borderWidth: 1, borderColor: '#dadada', borderRadius: 8, paddingHorizontal: 5 }}>
                                         {paxInfo.map((p: any) => (
                                             <TouchableOpacity key={p.id} onPress={() => handleCancelPax(p.id)} style={{ flexDirection: 'row', alignItems: 'center' }}>
                                                 <Checkbox status={p.forCancel == true ? 'checked' : 'unchecked'} color='#cf2a3a' uncheckedColor="#999" />
-                                                <Text style={{ color: p.forCancel == true ? '#cf2a3a' : '#999', fontSize: 16 }}>{`${p.first_name} ${p.last_name}`}</Text>
+                                                <Text style={{ color: p.forCancel == true ? '#cf2a3a' : '#999', fontSize: 16 }}>{`${p.first_name} ${p.last_name} (${p.passenger_type})`}</Text>
                                             </TouchableOpacity>
                                         ))}
                                     </ScrollView>
@@ -167,7 +164,7 @@ export default function CancelBooking({ cancelModal, setCancelModal, paxInfo, se
                             </View>
 
                             <View style={{ paddingBottom: 20 }}>
-                                <TouchableOpacity disabled={submitLoading} onPress={() => handleSubmitCancellation()} style={{ marginTop: 30, padding: 10, backgroundColor: '#CF2A3A', borderRadius: 5 }}>
+                                <TouchableOpacity disabled={forCancel.length == 0 || submitLoading} onPress={() => handleSubmitCancellation()} style={{ marginTop: 30, padding: 10, backgroundColor: '#CF2A3A', borderRadius: 5, opacity: forCancel.length == 0 ? 0.5 : 1 }}>
                                     {submitLoading == true ? (
                                         <ActivityIndicator size={'small'} color={'#fff'} style={{ alignSelf: 'center' }} />
                                     ) : (

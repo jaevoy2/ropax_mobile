@@ -105,7 +105,7 @@ export default function ManageBooking() {
                 setPassengers(paxData)
             }
         }catch (error: any) {
-            Alert.alert('Error', error.message)
+            Alert.alert('Error', error.message || 'Network Error')
         }finally {
             setTimeout(() => {
                 setLoading(false);

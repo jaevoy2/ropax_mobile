@@ -1,7 +1,7 @@
 import Constants from "expo-constants";
 
 
-export async function CancelPaxBooking(bookingId: number, reason: string, recipient: string, charge: number, refundAmnt: number) {
+export async function CancelPaxBooking(bookingId: number, reason: string, charge: number, refundAmnt: number, tripDate: string, tripScheduleId: number, selectAll: boolean, passenger_ids: number[]) {
     const extras = Constants.expoConfig.extra ?? {};
     const API_URL = extras.API_URL as string;
     const API_KEY = extras.API_KEY as string;
@@ -19,9 +19,12 @@ export async function CancelPaxBooking(bookingId: number, reason: string, recipi
             body: JSON.stringify({ 
                 booking_id: bookingId,
                 reason,
-                recipient,
                 charge,
-                refundAmnt
+                refundAmnt,
+                tripDate,
+                selectAll,
+                passenger_ids,
+                tripScheduleId
             })
         });
     
