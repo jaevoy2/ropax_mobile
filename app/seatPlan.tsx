@@ -57,13 +57,9 @@ export default function SeatPlan() {
     }, [passengers]);
 
     useEffect(() => {
-        if(accommodations) {
-            return;
-        }else {
-            fetchAccom();
-        }
+        fetchAccom();
+        handleFetchTotalBookings(id);
 
-        handleFetchTotalBookings(id)
         const date = new Date();
         setYear(date.getFullYear().toString().slice(-2));
     }, []);
@@ -117,12 +113,6 @@ export default function SeatPlan() {
             Alert.alert('Error', error.message)
         }
     }
-
-    const vesselComponent = useMemo(() => (
-        vessel == 'Mbca Leopards Sea Runner' || vessel == 'Sea Runner'
-            ? <SRVessel onSeatSelect={handleSeatSelect} accommodations={accommodations} seatAvailability={setHasAvailableSeat} setParentLoading={setIsLoading} />
-            : <L2Vessel onSeatSelect={handleSeatSelect} accommodations={accommodations} seatAvailability={setHasAvailableSeat} setParentLoading={setIsLoading} />
-    ), [vessel, handleSeatSelect]);
 
     const handleRemoveSeat =  useCallback((seat: number | string, paxId: string | number) => {
         if (!seat) return;
@@ -201,7 +191,18 @@ export default function SeatPlan() {
             Alert.alert('Error', error.message);
         }
     }
-    console.log('availble:',  hasAvailableSeat)
+
+
+    const vesselComponent = useMemo(() => {
+        if(!accommodations) return null;
+
+        return vessel == 'Mbca Leopards Sea Runner' || vessel == 'Sea Runner'
+            ? <SRVessel onSeatSelect={handleSeatSelect} accommodations={accommodations} seatAvailability={setHasAvailableSeat} setParentLoading={setIsLoading} />
+            : <L2Vessel onSeatSelect={handleSeatSelect} accommodations={accommodations} seatAvailability={setHasAvailableSeat} setParentLoading={setIsLoading} />
+    }, [vessel, handleSeatSelect, accommodations]);
+
+
+
 
     return (
         <GestureHandlerRootView style={{ flex: 1, backgroundColor: '#cf2a3a' }}>

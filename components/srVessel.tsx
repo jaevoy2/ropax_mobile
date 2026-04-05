@@ -151,8 +151,6 @@ const SRVessel = ({ onSeatSelect, accommodations, seatAvailability, setParentLoa
     
     useEffect(() => {
         if (isLoading) return;
-        console.log('t: ', touristHasSeats)
-        console.log('b: ', bclassHasSeats)
 
         if (hasScanned) {
             const accom = tripAccom == 'Tourist' ? touristHasSeats : bclassHasSeats;
@@ -183,6 +181,7 @@ const SRVessel = ({ onSeatSelect, accommodations, seatAvailability, setParentLoa
                 Alert.alert('Error', 'Seat selection failed. Please try again later.');
             }
 
+            console.log('accoms: ', accomm_id, type, accommodations)
             const tempId = Crypto.randomUUID();
             
             setPassengers(prev => {
@@ -213,7 +212,6 @@ const SRVessel = ({ onSeatSelect, accommodations, seatAvailability, setParentLoa
     useEffect(() => {
         const fetchBookingsAndDisabledSeats = async () => {
             try {
-                console.log('Fetching bookings and disabled seats...')
                 const [bookings, disabledSeats] = await Promise.all([
                     FetchBookings(id),
                     FetchDisabledSeats()

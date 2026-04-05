@@ -69,7 +69,7 @@ export default function Forms({ errorForm }: FormProps) {
     const infantSearchRefs = useRef<{ [key: string]: any }>({});
 
     const hasPasses = passengers.some((p) => p.passType == 'Passes');
-
+    console.log('paxfare: ', passengers)
 
     useEffect(() => {
         const paxTypeAndLists = async () => {
@@ -423,6 +423,8 @@ export default function Forms({ errorForm }: FormProps) {
                 p.passenger_type_id == typeID
         );
 
+        console.log('pax: ', routeID, accommodationId, typeID, paxType, prop.fare)
+
         setPassengers(prev =>
             prev.map(p => p.id == passengerId ? {
                 ...p,
@@ -584,7 +586,7 @@ export default function Forms({ errorForm }: FormProps) {
                                         <View style={{ borderColor: '#FFC107', backgroundColor: '#ffc10727', borderWidth: 2, borderRadius: 5, flexDirection: 'row', alignItems: 'center', paddingHorizontal: 15 }}>
                                             <Text style={{ fontSize: 16, fontWeight: '900' }}>₱</Text>
                                             <TextInput onChangeText={(text) => updatePassenger(p.id, 'fare',  Number(text.replace(/[^0-9.]/g,'')))} value={String(p?.fare?.toLocaleString('en-PH', { minimumFractionDigits: 2, maximumFractionDigits: 2 }) ?? '')}
-                                                keyboardType={'numeric'} placeholder='00.00' style={{ fontWeight: '900', textAlign: 'right',fontSize: 15 }} />
+                                                keyboardType={'numeric'} placeholder='00.00' style={{ fontWeight: '900', textAlign: 'right',fontSize: 15, color: '#000' }} />
                                         </View>
                                     </View>
                                 </View>
