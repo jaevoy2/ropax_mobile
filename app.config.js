@@ -29,6 +29,7 @@ export default {
     },
     plugins: [
       "expo-router",
+      "expo-dev-client",  
       "expo-audio",
       "expo-font",
       "expo-web-browser",
@@ -39,6 +40,14 @@ export default {
           imageWidth: 200,
           resizeMode: "contain",
           backgroundColor: "#ffffff"
+        },
+      ],
+      [
+        "react-native-ble-plx",
+        {
+          "isBackgroundEnabled": false,
+          "modes": ["peripheral", "central"],
+          "bluetoothAlwaysPermission": "Allow $(BUNDLE_ID) to connect to bluetooth devices"
         }
       ]
     ],

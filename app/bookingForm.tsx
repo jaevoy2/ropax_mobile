@@ -4,19 +4,21 @@ import { useTrip } from "@/context/trip";
 import { Ionicons } from "@expo/vector-icons";
 import { router } from "expo-router";
 import { useEffect, useState } from "react";
-import { ActivityIndicator, Alert, Dimensions, KeyboardAvoidingView, Platform, ScrollView, StyleSheet, Text, TextInput, TouchableOpacity, View } from "react-native";
+import { ActivityIndicator, Alert, Dimensions, KeyboardAvoidingView, Platform, ScrollView, StyleSheet, Text, TouchableOpacity, View } from "react-native";
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 
-const { height, width } = Dimensions.get('window')
 
+const { height, width } = Dimensions.get('screen');
 
 export default function BookingForm() {
     const { passengers, clearPassengers } = usePassengers();
-    const { totalFare, approvedBy, origin, destination, setTotalFare } = useTrip()
+    const { approvedBy, origin, destination } = useTrip()
     const [saveloading, setSaveLoading] = useState(false);
     const [errorForm, setErrorForm] = useState<(string | number)[]>([]);
     const [year, setYear] = useState('');
-
+    const insets = useSafeAreaInsets();
+    
 
     useEffect(() =>{
         const date = new Date();
@@ -168,7 +170,7 @@ export default function BookingForm() {
 
 
     return (
-        <View style={{ height, backgroundColor: '#fdfdfd', paddingBottom: 20 }}>
+        <View style={{ height, backgroundColor: '#fdfdfd', paddingBottom: insets.bottom }}>
             <View style={styles.header}>
                 <TouchableOpacity onPress={() => {handleClearPasses(), router.back()}}>
                     <Ionicons name={'arrow-back'} size={30} color={'#fff'} />
@@ -177,7 +179,7 @@ export default function BookingForm() {
             </View>
 
             <View style={styles.body}>
-                <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginVertical: 15, paddingHorizontal: 10, borderColor: '#B3B3B3', borderWidth: 1, width: '95%', alignSelf: 'center', borderRadius: 8, padding: 8 }}>
+                {/* <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginVertical: 15, paddingHorizontal: 10, borderColor: '#B3B3B3', borderWidth: 1, width: '95%', alignSelf: 'center', borderRadius: 8, padding: 8 }}>
                     <View style={{ flexDirection: 'column', alignItems: 'flex-start' }}>
                         <Text style={{ fontSize: 12 }}>Reference#:</Text>
                         <Text style={{ fontWeight: '900', fontSize: 16, color: '#cf2a3a' }}>LMBS000000{year}{origin?.charAt(0)}{destination?.charAt(0)}</Text>
@@ -189,7 +191,7 @@ export default function BookingForm() {
                             <TextInput value={String(totalFare != 0 ? totalFare.toFixed(2) : '')} onChangeText={(text) => setTotalFare(Number(text))} placeholder='00.00' style={{ fontWeight: '900', textAlign: 'right', fontSize: 18 }} keyboardType={'numeric'} />
                         </View>
                     </View>
-                </View>
+                </View> */}
                 <KeyboardAvoidingView style={{ flex: 1, paddingBottom: 100 }} behavior={Platform.OS === 'android' ? 'padding' : 'height'}>
                     <ScrollView keyboardShouldPersistTaps="handled" style={{ paddingHorizontal: 10, paddingBottom: 20, marginBottom: 15 }}>
                         <Forms errorForm={errorForm} />
@@ -199,7 +201,7 @@ export default function BookingForm() {
                         {saveloading == true ? (
                             <ActivityIndicator size='small' color={'#fff'} />
                         ) : (
-                            <Text style={{ fontSize: 16, fontWeight: 'bold', textAlign: 'center', color: '#fff' }}>Proceed to Payment</Text>
+                            <Text style={{ fontSize: 20, fontWeight: 'bold', textAlign: 'center', color: '#fff' }}>Proceed to Payment</Text>
                         )}
                     </TouchableOpacity>
                 </KeyboardAvoidingView>

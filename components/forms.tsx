@@ -51,11 +51,11 @@ type PaxListProps = {
 }
 
 export default function Forms({ errorForm }: FormProps) {
-    const { vessel_id, routeID, isCargoable, approvedBy, setApprovedBy } = useTrip();
+    const { vessel_id, routeID, isCargoable, approvedBy, setApprovedBy, setTotalFare } = useTrip();
     const { passengers, setPassengers, updatePassenger, updateInfant, updateCargo } = usePassengers();
     const { passesTypeID, passesTypeCode, passesTypeName } = usePassesType();
     const [loading, setLoading] = useState(true)
-    const { cargoProperties } = useCargo();
+    const { cargoProperties, paxCargoProperty } = useCargo();
     const [passengerType, setPassengerType] = useState<PassTypeProps[] | null>(null);
     const [paxFares, setPaxFares] = useState<PaxFareProps[] | null>(null);
     const [paxlists, setPaxLists] = useState<PaxListProps[]>([]);
@@ -69,7 +69,7 @@ export default function Forms({ errorForm }: FormProps) {
     const infantSearchRefs = useRef<{ [key: string]: any }>({});
 
     const hasPasses = passengers.some((p) => p.passType == 'Passes');
-    console.log('paxfare: ', passengers)
+    
 
     useEffect(() => {
         const paxTypeAndLists = async () => {
@@ -292,6 +292,22 @@ export default function Forms({ errorForm }: FormProps) {
 
 
 
+    const computedFare = useMemo(() => {
+        return passengers.reduce((sum, p) => {
+            const passengerFare = Number(p.fare || 0);
+
+            const cargoTotal = (p.cargo ?? []).reduce((cargoSum, c) => {
+                return cargoSum + (Number.isFinite(c.cargoAmount) ? Number(c.cargoAmount) : 0);
+            }, 0);
+
+            return sum + passengerFare + cargoTotal;
+        }, 0);
+
+    }, [passengers, paxCargoProperty]);
+
+    useEffect(() => {
+        setTotalFare(computedFare)
+    }, [computedFare])
 
     const hasInfantChecker = useCallback((paxId: number | string, type_id: number) => {
         setPassengers(prev => {
@@ -575,37 +591,36 @@ export default function Forms({ errorForm }: FormProps) {
                                 <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' }}>
                                     {p.passType != 'Passes' && (
                                         <View style={{ flexDirection: 'column', alignItems: 'flex-start' }}>
-                                            <Text style={{ color: '#cf2a3a', fontSize: 11, fontWeight: '900' }}>{p.accommodation} Seat#</Text>
-                                            <Text style={{ textAlign: 'center', fontWeight: 'bold', fontSize: 18, color: '#cf2a3a', borderColor: '#cf2a3a', backgroundColor: '#cf2a3b1a', borderWidth: 1, paddingVertical: 5, paddingHorizontal: 25, borderRadius: 5 }}>
+                                            <Text style={{ color: '#cf2a3a', fontSize: 16, fontWeight: '900' }}>{p.accommodation} Seat#</Text>
+                                            <Text style={{ textAlign: 'center', fontWeight: 'bold', fontSize: 20, color: '#cf2a3a', borderColor: '#cf2a3a', backgroundColor: '#cf2a3b1a', borderWidth: 1, paddingVertical: 8, paddingHorizontal: 25, borderRadius: 5 }}>
                                                 {p.seatNumber}
                                             </Text>
                                         </View>
                                     )}
                                     <View style={{ flexDirection: 'column', alignItems: 'flex-start' }}>
-                                        <Text style={{ fontSize: 12, fontWeight: 'bold', color: '#545454' }}>Fare:</Text>
+                                        <Text style={{ fontSize: 16, fontWeight: 'bold', color: '#545454' }}>Fare:</Text>
                                         <View style={{ borderColor: '#FFC107', backgroundColor: '#ffc10727', borderWidth: 2, borderRadius: 5, flexDirection: 'row', alignItems: 'center', paddingHorizontal: 15 }}>
                                             <Text style={{ fontSize: 16, fontWeight: '900' }}>₱</Text>
                                             <TextInput onChangeText={(text) => updatePassenger(p.id, 'fare',  Number(text.replace(/[^0-9.]/g,'')))} value={String(p?.fare?.toLocaleString('en-PH', { minimumFractionDigits: 2, maximumFractionDigits: 2 }) ?? '')}
-                                                keyboardType={'numeric'} placeholder='00.00' style={{ fontWeight: '900', textAlign: 'right',fontSize: 15, color: '#000' }} />
+                                                keyboardType={'numeric'} placeholder='0.00' style={{ fontWeight: '900', textAlign: 'right',fontSize: 20, color: '#000' }} />
                                         </View>
                                     </View>
                                 </View>
                                 {p.passType != 'Passes' && (
-                                    <View style={{ flexDirection: 'column', alignItems: 'flex-start', marginTop: 10, gap: 5 }}>
-                                        <Text style={{ fontSize: 12, fontWeight: 'bold', color: '#545454' }}>Type:</Text>
+                                    <View style={{ flexDirection: 'column', alignItems: 'flex-start', marginTop: 15, gap: 5 }}>
                                         <View style={{ flexDirection: 'row', flexWrap: 'wrap', gap: 5 }}>
                                             {paxsengerTypes.map((type) => (
                                                 <TouchableOpacity onPress={() => handleOnPaxTypeSelect(p.id, p.accommodationID, type?.id, type?.name, type.code)}
-                                                key={type.id} style={{ backgroundColor: p.passType == type?.name ? '#cf2a3a' : 'transparent', borderColor: '#cf2a3a', borderWidth: 1, paddingVertical: 9, paddingHorizontal: 18, borderRadius: 5  }}>
-                                                    <Text style={{ textAlign: 'center', fontSize: 14, color: p.passType == type?.name ? '#fff' : '#cf2a3a', fontWeight: '600' }}>{type?.name}</Text>
+                                                key={type.id} style={{ backgroundColor: p.passType == type?.name ? '#cf2a3a' : 'transparent', borderColor: '#cf2a3a', borderWidth: 1, paddingVertical: 9, width: '32%', borderRadius: 5  }}>
+                                                    <Text style={{ textAlign: 'center', fontSize: 20, color: p.passType == type?.name ? '#fff' : '#cf2a3a', fontWeight: '600' }}>{type?.name}</Text>
                                                 </TouchableOpacity>
                                             ))}
                                         </View>
                                     </View>
                                 )}
                                 <View style={{ marginTop: 20 }}>
-                                    <Text style={{ fontSize: 12, fontWeight: 'bold', color: '#545454' }}>Full Name:</Text>
-                                    <View style={{ borderWidth: 1, borderColor: '#B3B3B3', borderRadius: 5, height: 45, justifyContent: 'center' }}>
+                                    <Text style={{ fontSize: 17, fontWeight: 'bold', color: '#545454' }}>Full Name:</Text>
+                                    <View style={{ borderWidth: 1, borderColor: '#B3B3B3', borderRadius: 5, height: 55, justifyContent: 'center' }}>
                                         <AutocompleteDropdown
                                             key={p.id}
                                             ref={ref => {
@@ -655,8 +670,9 @@ export default function Forms({ errorForm }: FormProps) {
                                                     borderColor: 'transparent',
                                                     borderRadius: 2,
                                                     fontWeight: '600',
-                                                    fontSize: 14,
+                                                    fontSize: 20,
                                                     paddingHorizontal: 5,
+                                                    height: 50
                                                 }
                                             }}
                                             rightButtonsContainerStyle={{
@@ -666,66 +682,67 @@ export default function Forms({ errorForm }: FormProps) {
                                             }}
                                             inputContainerStyle={{
                                                 borderRadius: 0,
-                                                borderColor: '#B3B3B3'
+                                                borderColor: '#B3B3B3',
                                             }}
                                             trimSearchText={true}
                                             containerStyle={{ flexGrow: 1, flexShrink: 1 }}
                                             showChevron={false}
-                                            renderItem={(formattedPaxList) => <Text style={{ color: '#000', backgroundColor: '#f0f0f0', padding: 15, borderRadius: 5 }}>{formattedPaxList.title}</Text>}
+                                            renderItem={(formattedPaxList) => <Text style={{ color: '#000', backgroundColor: '#f0f0f0', justifyContent: 'center', borderRadius: 5, fontSize: 16, paddingHorizontal: 5, paddingVertical: 15 }}>{formattedPaxList.title}</Text>}
                                         />
                                     </View>
                                 </View>
-                                <View style={{ marginTop: 5, flexDirection: 'row', gap: 8, alignItems: 'flex-end' }}>
-                                    <View style={{ width: '40%' }}>
-                                        <Text style={{ fontSize: 12, fontWeight: 'bold', color: '#545454' }}>Age:</Text>
-                                        <View style={{ borderColor: '#B3B3B3', borderWidth: 1, borderRadius: 5, height: 45, justifyContent: 'center' }}>
-                                            <TextInput value={String(p?.age ?? '')} onChangeText={(text) => updatePassenger(p.id, 'age', Number(text))} keyboardType='numeric' placeholder='Age' style={{ fontSize: 16, fontWeight: '600' }} />
-                                        </View>
-                                    </View>
-                                    <View style={{ width: '56%', }}>
-                                        <Text style={{ fontSize: 12, fontWeight: 'bold', color: '#545454' }}>Gender:</Text>
-                                        <View style={{ flexDirection:'row', gap: 5 }}>
-                                            {passGender.map((gender) => (
-                                                <TouchableOpacity onPress={() => updatePassenger(p.id, 'gender', gender)} key={gender} style={{ backgroundColor: p.gender == gender ? '#cf2a3a' : 'transparent', borderColor: '#cf2a3a', borderWidth: 1, width: '50%',
-                                                    borderRadius: 5, justifyContent :'center', paddingVertical: 11 }}>
-                                                    <Text style={{ textAlign: 'center', fontSize: 14, fontWeight: '600', color: p.gender == gender ? '#fff' : '#cf2a3a' }}>{gender}</Text>
-                                                </TouchableOpacity>
-                                            ))} 
-                                        </View>
+                                <View style={{ width: '100%', marginTop: 10 }}>
+                                    <Text style={{ fontSize: 17, fontWeight: 'bold', color: '#545454' }}>Gender:</Text>
+                                    <View style={{ flexDirection:'row', gap: 5, justifyContent: 'center' }}>
+                                        {passGender.map((gender) => (
+                                            <TouchableOpacity onPress={() => updatePassenger(p.id, 'gender', gender)} key={gender} style={{ backgroundColor: p.gender == gender ? '#cf2a3a' : 'transparent', borderColor: '#cf2a3a', borderWidth: 1, width: '49%',
+                                                borderRadius: 5, justifyContent :'center', paddingVertical: 11 }}>
+                                                <Text style={{ textAlign: 'center', fontSize: 18, fontWeight: '600', color: p.gender == gender ? '#fff' : '#cf2a3a' }}>{gender}</Text>
+                                            </TouchableOpacity>
+                                        ))} 
                                     </View>
                                 </View>
-                                <View style={{ marginTop: 5, flexDirection: 'row', gap: 8 }}>
+                                <View style={{ marginTop: 10, flexDirection: 'row', gap: 8, alignItems: 'flex-end' }}>
                                     <View style={{ width: '40%' }}>
-                                        <Text style={{ fontSize: 12, fontWeight: 'bold', color: '#545454' }}>Nationality:</Text>
-                                        <View style={{ borderColor: '#B3B3B3', borderWidth: 1, borderRadius: 5, height: 45, justifyContent: 'center'  }}>
-                                            <TextInput value={p.nationality ?? 'Filipino'} onChangeText={(text) => updatePassenger(p.id, 'nationality', text)} defaultValue='Filipino' style={{ fontSize: 16, fontWeight: '600' }} />
+                                        <Text style={{ fontSize: 17, fontWeight: 'bold', color: '#545454' }}>Age:</Text>
+                                        <View style={{ borderColor: '#B3B3B3', borderWidth: 1, borderRadius: 5, height: 50, justifyContent: 'center' }}>
+                                            <TextInput value={String(p?.age ?? '')} onChangeText={(text) => updatePassenger(p.id, 'age', Number(text))} keyboardType='numeric' placeholder='Age' style={{ fontSize: 19, fontWeight: '600' }} />
                                         </View>
                                     </View>
                                     <View style={{ width: '57.5%' }}>
-                                        <Text style={{ fontSize: 12, fontWeight: 'bold', color: '#545454' }}>Address:</Text>
-                                        <View style={{ borderColor: '#B3B3B3', borderWidth: 1, borderRadius: 5, height: 45, justifyContent: 'center'  }}>
-                                            <TextInput value={p.address ?? ''} onChangeText={(text) => updatePassenger(p.id, 'address', text)} placeholder='Address' style={{ fontSize: 16, fontWeight: '600' }} />
+                                        <Text style={{ fontSize: 17, fontWeight: 'bold', color: '#545454' }}>Contact#:</Text>
+                                        <View style={{ borderColor: '#B3B3B3', borderWidth: 1, borderRadius: 5, height: 50, justifyContent: 'center'  }}>
+                                            <TextInput value={p.contact ?? ''} placeholder='+63' keyboardType={'numeric'} onChangeText={(text) => updatePassenger(p.id, 'contact', text)} style={{ fontSize: 19, fontWeight:'600' }} />
+                                        </View>
+                                    </View>
+                                </View>
+                                <View style={{ marginTop: 10, flexDirection: 'row', gap: 8 }}>
+                                    <View style={{ width: '40%' }}>
+                                        <Text style={{ fontSize: 17, fontWeight: 'bold', color: '#545454' }}>Nationality:</Text>
+                                        <View style={{ borderColor: '#B3B3B3', borderWidth: 1, borderRadius: 5, height: 50, justifyContent: 'center'  }}>
+                                            <TextInput value={p.nationality ?? 'Filipino'} onChangeText={(text) => updatePassenger(p.id, 'nationality', text)} defaultValue='Filipino' style={{ fontSize: 19, fontWeight: '600' }} />
+                                        </View>
+                                    </View>
+                                    <View style={{ width: '57.5%' }}>
+                                        <Text style={{ fontSize: 17, fontWeight: 'bold', color: '#545454' }}>Address:</Text>
+                                        <View style={{ borderColor: '#B3B3B3', borderWidth: 1, borderRadius: 5, height: 50, justifyContent: 'center'  }}>
+                                            <TextInput value={p.address ?? ''} onChangeText={(text) => updatePassenger(p.id, 'address', text)} placeholder='Address' style={{ fontSize: 19, fontWeight: '600' }} />
                                         </View>
                                     </View>
                                 </View>
                                 <View style={{ marginTop: 5, flexDirection: 'row', alignItems: 'flex-end', justifyContent: 'space-between' }}>
-                                    <View style={{ width: '45%' }}>
-                                        <Text style={{ fontSize: 12, fontWeight: 'bold', color: '#545454' }}>Contact#:</Text>
-                                        <View style={{ borderColor: '#B3B3B3', borderWidth: 1, borderRadius: 5, height: 45, justifyContent: 'center'  }}>
-                                            <TextInput value={p.contact ?? ''} placeholder='+63' keyboardType={'numeric'} onChangeText={(text) => updatePassenger(p.id, 'contact', text)} style={{ fontSize: 16, fontWeight:'600' }} />
-                                        </View>
-                                    </View>
-                                    <View style={{ flexDirection: 'row' }}>
+                                    
+                                    <View style={{ flexDirection: 'row', gap: 20 }}>
                                         <TouchableOpacity disabled={p.passType == 'Child'} onPress={() => hasInfantChecker(p.id, passengerType?.find((i) => i?.name == 'Infant')?.id ?? 0 )}
                                             style={{ flexDirection: 'row', alignItems: 'center', marginTop: 15 }}>
                                             <Checkbox status={p.hasInfant ? 'checked' : 'unchecked'} color='#cf2a3a' uncheckedColor="#999" />
-                                            <Text style={{ fontSize: 16 }}>Infant</Text>
+                                            <Text style={{ fontSize: 20 }}>Infant</Text>
                                         </TouchableOpacity>
                                         {isCargoable != 0 && (
                                             <TouchableOpacity onPress={() => hasCargoChecker(p.id)}
                                                 style={{ flexDirection: 'row', alignItems: 'center', marginTop: 15 }}>
                                                 <Checkbox status={p.hasCargo ? 'checked' : 'unchecked'} color='#cf2a3a' uncheckedColor="#999" />
-                                                <Text style={{ fontSize: 16 }}>Cargo</Text>
+                                                <Text style={{ fontSize: 20 }}>Cargo</Text>
                                             </TouchableOpacity>
                                         )}
                                     </View>
@@ -734,7 +751,7 @@ export default function Forms({ errorForm }: FormProps) {
                                 {p.hasInfant && (
                                     <View style={{ marginTop: 30 }}>
                                         <View style={{ flexDirection: 'row', alignItems: 'flex-end', justifyContent: 'space-between', borderTopWidth: 1, borderTopColor: '#949494', paddingTop: 8 }}>
-                                            <Text style={{ fontSize: 18, fontWeight: '900', color: '#cf2a3a', marginBottom: 5 }}>Infant Details</Text>
+                                            <Text style={{ fontSize: 20, fontWeight: '900', color: '#cf2a3a', marginBottom: 5 }}>Infant Details</Text>
                                             <TouchableOpacity onPress={() => {
                                                 if(!hasPasses) {
                                                     addInfant(p.seatNumber!, {name: '', gender: '', age: 0, passType_id: passengerType?.find((i) => i.name == 'Infant')?.id! })
@@ -743,23 +760,23 @@ export default function Forms({ errorForm }: FormProps) {
                                                 } 
                                             }}
                                                 style={{ backgroundColor: '#cf2a3a', borderColor: '#cf2a3a', borderWidth: 1, padding: 8, elevation: 3, borderRadius: 5, flexDirection: 'row', gap: 5, alignItems: 'center' }}>
-                                                <Text style={{ color: '#fff', fontWeight: 600 }}>Add Infant</Text>
-                                                <Ionicons name={'add-circle'} size={20} color={'#fff'} />
+                                                <Ionicons name={'add'} size={20} color={'#fff'} />
+                                                <Text style={{ color: '#fff', fontWeight: 600, fontSize: 18 }}>Add Infant</Text>
                                             </TouchableOpacity>
                                         </View>
                                         {p.infant?.map((i, index) => (
                                             <View key={`${p.name}-${index}`}>
                                                 <View style={{ marginTop: 30 }}>
                                                     <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' }}>
-                                                        <Text style={{ fontSize: 13, fontWeight: 'bold', color: '#545454' }}>Full Name:</Text>
+                                                        <Text style={{ fontSize: 17, fontWeight: 'bold', color: '#545454' }}>Full Name:</Text>
                                                         {index != 0 && (
                                                             <TouchableOpacity onPress={() => removeInfant(p.seatNumber!, index)} style={{ flexDirection: 'row', alignItems: 'center' }}>
                                                                 <Ionicons name={'close'} size={20} color={'#cf2a3a'} />
-                                                                <Text style={{ color: '#cf2a3a', fontWeight: '600', fontSize: 13 }}>Remove</Text>
+                                                                <Text style={{ color: '#cf2a3a', fontWeight: '600', fontSize: 19 }}>Remove</Text>
                                                             </TouchableOpacity>
                                                         )}
                                                     </View>
-                                                    <View style={{ borderColor: '#B3B3B3', borderWidth: 1, borderRadius: 5, height: 45, justifyContent: 'center'  }}>
+                                                    <View style={{ borderColor: '#B3B3B3', borderWidth: 1, borderRadius: 5, height: 55, justifyContent: 'center'  }}>
                                                         <AutocompleteDropdown
                                                             key={`${p.id}-${index}`}
                                                             ref={ref => {
@@ -808,9 +825,10 @@ export default function Forms({ errorForm }: FormProps) {
                                                                     borderWidth: 1,
                                                                     borderColor: 'transparent',
                                                                     borderRadius: 2,
-                                                                    fontSize: 14,
+                                                                    fontSize: 20,
                                                                     fontWeight: '600',
-                                                                    paddingHorizontal: 5
+                                                                    paddingHorizontal: 5,
+                                                                    height: 50
                                                                 }
                                                             }}
                                                             rightButtonsContainerStyle={{
@@ -825,24 +843,24 @@ export default function Forms({ errorForm }: FormProps) {
                                                             trimSearchText={true}
                                                             containerStyle={{ flexGrow: 1, flexShrink: 1 }}
                                                             showChevron={false}
-                                                            renderItem={(formattedPaxList) => <Text style={{ color: '#000', backgroundColor: '#f0f0f0', padding: 15, borderRadius: 5 }}>{formattedPaxList.title}</Text>}
+                                                            renderItem={(formattedPaxList) => <Text style={{ color: '#000', backgroundColor: '#f0f0f0', paddingVertical: 15, paddingHorizontal: 5, borderRadius: 5 }}>{formattedPaxList.title}</Text>}
                                                         />
                                                     </View>
                                                 </View>
-                                                <View style={{ marginTop: 5, flexDirection: 'row', gap: 8, alignItems: 'flex-end' }}>
+                                                <View style={{ marginTop: 10, flexDirection: 'row', gap: 8, alignItems: 'flex-end' }}>
                                                     <View style={{ width: '40%' }}>
-                                                        <Text style={{ fontSize: 13, fontWeight: 'bold', color: '#545454' }}>Age:</Text>
-                                                        <View style={{ borderColor: '#B3B3B3', borderWidth: 1, borderRadius: 5, height: 45, justifyContent: 'center'  }}>
-                                                            <TextInput value={String(i.age ?? '')} onChangeText={(text) => updateInfant(p.id, index, 'age', Number(text))} keyboardType='numeric' placeholder='Age' style={{ fontSize: 13, fontWeight: '600' }} />
+                                                        <Text style={{ fontSize: 17, fontWeight: 'bold', color: '#545454' }}>Age:</Text>
+                                                        <View style={{ borderColor: '#B3B3B3', borderWidth: 1, borderRadius: 5, height: 50, justifyContent: 'center'  }}>
+                                                            <TextInput value={String(i.age ?? '')} onChangeText={(text) => updateInfant(p.id, index, 'age', Number(text))} keyboardType='numeric' placeholder='Age' style={{ fontSize: 19, fontWeight: '600' }} />
                                                         </View>
                                                     </View>
                                                     <View style={{ width: '56%', }}>
-                                                        <Text style={{ fontSize: 13, fontWeight: 'bold', color: '#545454' }}>Gender:</Text>
+                                                        <Text style={{ fontSize: 17, fontWeight: 'bold', color: '#545454' }}>Gender:</Text>
                                                         <View style={{ flexDirection:'row', gap: 5 }}>
                                                             {passGender.map((infntgender) => (
                                                                 <TouchableOpacity onPress={() => updateInfant(p.id, index, 'gender', infntgender)} key={infntgender} style={{ backgroundColor: p.infant?.[index]?.gender == infntgender ? '#cf2a3a' : 'transparent',
                                                                     borderColor: '#cf2a3a', borderWidth: 1, width: '50%', borderRadius: 5, justifyContent :'center', paddingVertical: 12 }}>
-                                                                    <Text style={{ textAlign: 'center', fontSize: 14, fontWeight: '600', color: p.infant?.[index]?.gender == infntgender ? '#fff' : '#cf2a3a' }}>{infntgender}</Text>
+                                                                    <Text style={{ textAlign: 'center', fontSize: 16, fontWeight: '600', color: p.infant?.[index]?.gender == infntgender ? '#fff' : '#cf2a3a' }}>{infntgender}</Text>
                                                                 </TouchableOpacity>
                                                             ))}
                                                         </View>
@@ -856,7 +874,7 @@ export default function Forms({ errorForm }: FormProps) {
                                 {p.hasCargo == true && (
                                     <View style={{ marginTop: 40 }}>
                                         <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'flex-end', marginBottom: 10, borderTopColor: '#949494', borderTopWidth: 1, paddingTop: 8 }}>
-                                            <Text style={{ fontSize: 18, fontWeight: '900', color: '#cf2a3a', marginBottom: 5 }}>Cargo Details</Text>
+                                            <Text style={{ fontSize: 20, fontWeight: '900', color: '#cf2a3a', marginBottom: 5 }}>Cargo Details</Text>
                                             <TouchableOpacity onPress={() => {
                                                         if(!hasPasses) {
                                                             addPaxCargo(p.seatNumber!, { cargoAmount: 0.00, quantity: 1 })
@@ -865,8 +883,8 @@ export default function Forms({ errorForm }: FormProps) {
                                                         } 
                                                     }}
                                                 style={{ backgroundColor: '#cf2a3a', borderColor: '#cf2a3a', borderWidth: 1, padding: 8, borderRadius: 5, flexDirection: 'row', gap: 5, alignItems: 'center' }}>
-                                                <Text style={{ color: '#fff', fontWeight: 600 }}>Add Cargo</Text>
-                                                <Ionicons name={'add-circle'} size={20} color={'#fff'} />
+                                                <Ionicons name={'add'} size={20} color={'#fff'} />
+                                                <Text style={{ color: '#fff', fontWeight: 600, fontSize: 19 }}>Add Cargo</Text>
                                             </TouchableOpacity>
                                         </View>
                                         
@@ -879,48 +897,48 @@ export default function Forms({ errorForm }: FormProps) {
                                                 )}
                                                 <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', paddingBottom: 5 }}>
                                                     <View style={{ flexDirection: 'column', alignSelf: 'flex-start' }}>
-                                                        <Text style={{ fontSize: 12, fontWeight: 'bold', color: '#545454' }}>Amount:</Text>
+                                                        <Text style={{ fontSize: 17, fontWeight: 'bold', color: '#545454' }}>Amount:</Text>
                                                         <View style={{ borderColor: '#FFC107', backgroundColor: '#ffc10727', borderWidth: 2, borderRadius: 5, flexDirection: 'row', alignItems: 'center', paddingHorizontal: 15, paddingVertical: 8 }}>
-                                                            <Text style={{ fontSize: 16 }}>₱ </Text>
-                                                            <Text style={{ fontWeight: 'bold', textAlign: 'right', fontSize: 16 }}>
+                                                            <Text style={{ fontSize: 20 }}>₱ </Text>
+                                                            <Text style={{ fontWeight: 'bold', textAlign: 'right', fontSize: 20 }}>
                                                                 {ComputedCargoAmount(c).amount.toLocaleString('en-PH', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
                                                             </Text>
                                                         </View>
                                                     </View>
                                                     {c.cargoType && c.cargoType != 'Rolling Cargo' && (
                                                         <View style={{ flexDirection: 'column', alignItems: 'flex-end' }}>
-                                                            <Text style={{ fontSize: 12, fontWeight: 'bold', color: '#545454' }}>Quantity:</Text>
+                                                            <Text style={{ fontSize: 17, fontWeight: 'bold', color: '#545454' }}>Quantity:</Text>
                                                             <View style={{ flexDirection: 'row', alignItems: 'center', borderColor: '#B3B3B3', paddingHorizontal: 5, borderWidth: 1, borderRadius: 5 }}>
                                                                 <TouchableOpacity disabled={c.quantity == 1} onPress={() => handleCargoQuantity('minus', cargoIndex, p.id)} style={{ paddingRight: 5 }}>
-                                                                    <Ionicons name={'remove'} size={18} color={c.quantity == 1 && "#d4d4d4ff"} />
+                                                                    <Ionicons name={'remove'} size={25} color={c.quantity == 1 && "#d4d4d4ff"} />
                                                                 </TouchableOpacity>
-                                                                <Text style={{ paddingHorizontal: 14, fontWeight: 'bold', borderRightColor: '#B3B3B3', borderLeftColor: '#B3B3B3', borderLeftWidth: 1, borderRightWidth: 1, paddingVertical: 5 }}>
+                                                                <Text style={{ paddingHorizontal: 14, fontSize: 20, fontWeight: 'bold', borderRightColor: '#B3B3B3', borderLeftColor: '#B3B3B3', borderLeftWidth: 1, borderRightWidth: 1, paddingVertical: 5 }}>
                                                                     {c.quantity}
                                                                 </Text>
                                                                 <TouchableOpacity onPress={() => handleCargoQuantity('add', cargoIndex, p.id)} style={{ paddingLeft: 5 }}>
-                                                                    <Ionicons name={'add'} size={18}/>
+                                                                    <Ionicons name={'add'} size={25}/>
                                                                 </TouchableOpacity>
                                                             </View>
                                                         </View>
                                                     )}
                                                 </View>
                                                 <View style={{ width: '100%' }}>
-                                                    <Text style={{ fontSize: 12, fontWeight: 'bold', color: '#545454' }}>Cargo Type:</Text>
+                                                    <Text style={{ fontSize: 17, fontWeight: 'bold', color: '#545454' }}>Cargo Type:</Text>
                                                     <View style={{ borderColor: '#B3B3B3', borderWidth: 1, borderRadius: 5 }}>
                                                         <Dropdown onChange={(item) => handleOnUpdateCargo(p.id, cargoIndex, 'cargoType', item.label, 'cargoTypeID', item.value)} 
-                                                        value={c.cargoTypeID} data={cargoProperties?.data.cargo_types.map((type: any) => ({ label: type.name, value: type.id })) } labelField="label" valueField="value" placeholder="Select Cargo Type" style={{ height: 40, width: '100%', paddingHorizontal: 10 }}
+                                                        value={c.cargoTypeID} data={cargoProperties?.data.cargo_types.map((type: any) => ({ label: type.name, value: type.id })) } labelField="label" valueField="value" placeholder="Select Cargo Type" style={{ height: 50, width: '100%', paddingHorizontal: 10 }}
                                                             containerStyle={{
                                                                 alignSelf: 'flex-start',
                                                                 width: '90%',
                                                             }}
-                                                            selectedTextStyle={{ fontSize: 14, lineHeight: 35, }}
+                                                            selectedTextStyle={{ fontSize: 18, lineHeight: 35, fontWeight: '600' }}
                                                             renderRightIcon={() => (
-                                                                <Ionicons name="chevron-down" size={15} />
+                                                                <Ionicons name="chevron-down" size={18} />
                                                             )}
                                                             dropdownPosition="bottom"
                                                             renderItem={(item) => (
                                                                 <View style={{ width: '80%', padding: 8 }}>
-                                                                    <Text>{item.label}</Text>
+                                                                    <Text style={{ fontSize: 18 }}>{item.label}</Text>
                                                                 </View>
                                                             )}
                                                         />
@@ -928,77 +946,77 @@ export default function Forms({ errorForm }: FormProps) {
                                                 </View>
                                                 {c.cargoType == 'Rolling Cargo' ? (
                                                     <View>
-                                                        <View style={{ width: '100%' }}>
-                                                            <Text style={{ fontSize: 12, fontWeight: 'bold', color: '#545454' }}>Brand:</Text>
+                                                        <View style={{ width: '100%', marginTop: 10 }}>
+                                                            <Text style={{ fontSize: 17, fontWeight: 'bold', color: '#545454' }}>Brand:</Text>
                                                             <View style={{ borderColor: '#B3B3B3', borderWidth: 1, borderRadius: 5 }}>
                                                                 <Dropdown onChange={(item) => handleOnUpdateCargo(p.id, cargoIndex, 'cargoBrand', item.label, 'cargoBrandID', item.value)} value={c.cargoBrandID}
-                                                                    data={cargoProperties?.data.brands.map((b: any) => ({ label: b.name, value: b.id }))} labelField="label" valueField="value" placeholder="Select Brand" style={{ height: 40, width: '100%', paddingHorizontal: 10 }}
+                                                                    data={cargoProperties?.data.brands.map((b: any) => ({ label: b.name, value: b.id }))} labelField="label" valueField="value" placeholder="Select Brand" style={{ height: 50, width: '100%', paddingHorizontal: 10 }}
                                                                     containerStyle={{
                                                                         alignSelf: 'flex-start',
                                                                         width: '90%',
                                                                     }}
-                                                                    selectedTextStyle={{ fontSize: 14, lineHeight: 35, }}
+                                                                    selectedTextStyle={{ fontSize: 18, lineHeight: 35, fontWeight: '600' }}
                                                                     renderRightIcon={() => (
                                                                         <Ionicons name="chevron-down" size={15} />
                                                                     )}
                                                                     dropdownPosition="bottom"
                                                                     renderItem={(item) => (
-                                                                        <View style={{ width: '80%', padding: 8 }}>
-                                                                            <Text>{item.label}</Text>
+                                                                        <View style={{ width: '80%', padding: 8, }}>
+                                                                            <Text style={{ fontSize: 18 }}>{item.label}</Text>
                                                                         </View>
                                                                     )}
                                                                 />
                                                             </View>
                                                         </View>
-                                                        <View style={{ marginTop: 5, flexDirection: 'row', justifyContent: 'space-between' }}>
+                                                        <View style={{ marginTop: 10, flexDirection: 'row', justifyContent: 'space-between' }}>
                                                             <View style={{ width: '50%' }}>
-                                                                <Text style={{ fontSize: 12, fontWeight: 'bold', color: '#545454' }}>{'Specifications (CC):'}</Text>
+                                                                <Text style={{ fontSize: 17, fontWeight: 'bold', color: '#545454' }}>{'Specifications (CC):'}</Text>
                                                                 <View style={{ borderColor: '#B3B3B3', borderWidth: 1, borderRadius: 5, height: 45, justifyContent: 'center' }}>
                                                                     <Dropdown onChange={(item) => handleOnUpdateCargo(p.id, cargoIndex, 'cargoSpecification', item.label, 'cargoSpecificationID', item.value)} value={c.cargoSpecificationID} 
-                                                                        data={cargoProperties.data.cargo_options.filter(opt => opt.specification).map((s: any) => ({ label: String(s.specification), value: s.id }))} labelField="label" valueField="value" placeholder="Select CC" style={{ height: 40, width: '100%', paddingHorizontal: 10 }}
+                                                                        data={cargoProperties.data.cargo_options.filter(opt => opt.specification).map((s: any) => ({ label: String(s.specification), value: s.id }))} labelField="label" valueField="value" placeholder="Select CC" style={{ height: 50, width: '100%', paddingHorizontal: 10 }}
                                                                         containerStyle={{
                                                                             alignSelf: 'flex-start',
                                                                             width: '42%',
                                                                         }}
-                                                                        selectedTextStyle={{ fontSize: 14, lineHeight: 35, }}
+                                                                        selectedTextStyle={{ fontSize: 18, lineHeight: 35, fontWeight: '600' }}
                                                                         renderRightIcon={() => (
                                                                             <Ionicons name="chevron-down" size={15} />
                                                                         )}
                                                                         dropdownPosition="bottom"
                                                                         renderItem={(item) => (
                                                                             <View style={{ width: '80%', padding: 8 }}>
-                                                                                <Text>{item.label}</Text>
+                                                                                <Text style={{ fontSize: 18 }}>{item.label}</Text>
                                                                             </View>
                                                                         )}
                                                                     />
                                                                 </View>
                                                             </View>
                                                             <View style={{ width: '48%' }}>
-                                                                <Text style={{ fontSize: 12, fontWeight: 'bold', color: '#545454' }}>Plate#:</Text>
+                                                                <Text style={{ fontSize: 17, fontWeight: 'bold', color: '#545454' }}>Plate#:</Text>
                                                                 <View style={{ borderColor: '#B3B3B3', borderWidth: 1, borderRadius: 5,height: 45, justifyContent: 'center'  }}>
-                                                                    <TextInput value={c.cargoPlateNo} onChangeText={(text) => updateCargo(p.id, cargoIndex, 'cargoPlateNo', text)} placeholder='Plate#' style={{ fontSize: 13 }} />
+                                                                    <TextInput value={c.cargoPlateNo} onChangeText={(text) => updateCargo(p.id, cargoIndex, 'cargoPlateNo', text)} placeholder='Plate#' style={{ fontSize: 19, fontWeight: '600' }} />
                                                                 </View>
                                                             </View>
                                                         </View>
                                                     </View>
                                                 ) : c.cargoType == 'Parcel' ? (
                                                     <View style={{ marginTop: 5 }}>
-                                                        <Text style={{ fontSize: 9, fontWeight: 'bold', color: '#545454' }}>Parcel Category:</Text>
+                                                        <Text style={{ fontSize: 17, fontWeight: 'bold', color: '#545454' }}>Parcel Category:</Text>
                                                         <View style={{ borderColor: '#B3B3B3', borderWidth: 1, borderRadius: 5 }}>
                                                             <Dropdown onChange={(item) => handleOnUpdateCargo(p.id, cargoIndex, 'parcelCategory', item.label, 'parcelCategoryID', item.value)} 
-                                                            value={c.parcelCategoryID} data={cargoProperties?.data.parcel_categories.map((category: any) => ({ label: category.name.slice(1, -1), value: category.id })) } labelField="label" valueField="value" placeholder="Select Category" style={{ height: 40, width: '100%', paddingHorizontal: 10 }}
+                                                            value={c.parcelCategoryID} data={cargoProperties?.data.parcel_categories.map((category: any) => ({ label: category.name.slice(1, -1), value: category.id })) } labelField="label" valueField="value" placeholder="Select Category" style={{ height: 50, width: '100%', paddingHorizontal: 10 }}
                                                                 containerStyle={{
                                                                     alignSelf: 'flex-start',
                                                                     width: '85%',
                                                                 }}
-                                                                selectedTextStyle={{ fontSize: 14, lineHeight: 35, }}
+                                                                selectedTextStyle={{ fontSize: 19, lineHeight: 35, fontWeight: '600' }}
                                                                 renderRightIcon={() => (
                                                                     <Ionicons name="chevron-down" size={15} />
                                                                 )}
                                                                 dropdownPosition="bottom"
                                                                 renderItem={(item) => (
                                                                     <View style={{ width: '80%', padding: 8 }}>
-                                                                        <Text>{item.label}</Text>
+                                                                        <Text style={{ fontSize: 18 }}>{item.label}</Text>
                                                                     </View>
                                                                 )}
                                                             />
@@ -1017,27 +1035,27 @@ export default function Forms({ errorForm }: FormProps) {
 
                         {passengers.filter(p => p.hasScanned == true && p.passType == 'Infant').map(inf => (
                             <View style={{ padding: 10, backgroundColor: '#fff', elevation: 5, borderRadius: 8, borderWidth: 1, borderColor: '#B3B3B3' }} key={inf.id}>
-                                <Text style={{ fontSize: 18, fontWeight: '900', color: '#cf2a3a', marginBottom: 5 }}>Infant Details</Text>
+                                <Text style={{ fontSize: 20, fontWeight: '900', color: '#cf2a3a', marginBottom: 5 }}>Infant Details</Text>
                                 <View style={{ marginTop: 20 }}>
-                                    <Text style={{ fontSize: 13, fontWeight: 'bold', color: '#545454' }}>Full Name:</Text>
+                                    <Text style={{ fontSize: 17, fontWeight: 'bold', color: '#545454' }}>Full Name:</Text>
                                     <View style={{ borderColor: '#B3B3B3', borderWidth: 1, borderRadius: 5, height: 45, justifyContent: 'center'  }}>
-                                        <TextInput value={inf.name} onChangeText={(text) => updatePassenger(inf.id, 'name', text)} keyboardType='numeric' placeholder='Name' style={{ fontSize: 13, fontWeight: '600' }} />
+                                        <TextInput value={inf.name} onChangeText={(text) => updatePassenger(inf.id, 'name', text)} keyboardType='numeric' placeholder='Name' style={{ fontSize: 19, fontWeight: '600' }} />
                                     </View>
                                 </View>
                                 <View style={{ marginTop: 5, flexDirection: 'row', gap: 8, alignItems: 'flex-end' }}>
                                     <View style={{ width: '40%' }}>
-                                        <Text style={{ fontSize: 13, fontWeight: 'bold', color: '#545454' }}>Age:</Text>
+                                        <Text style={{ fontSize: 17, fontWeight: 'bold', color: '#545454' }}>Age:</Text>
                                         <View style={{ borderColor: '#B3B3B3', borderWidth: 1, borderRadius: 5, height: 45, justifyContent: 'center'  }}>
-                                            <TextInput value={String(inf.age ?? '')} onChangeText={(text) => updatePassenger(inf.id, 'age', Number(text))} keyboardType='numeric' placeholder='Age' style={{ fontSize: 13, fontWeight: '600' }} />
+                                            <TextInput value={String(inf.age ?? '')} onChangeText={(text) => updatePassenger(inf.id, 'age', Number(text))} keyboardType='numeric' placeholder='Age' style={{ fontSize: 19, fontWeight: '600' }} />
                                         </View>
                                     </View>
                                     <View style={{ width: '56%', }}>
-                                        <Text style={{ fontSize: 13, fontWeight: 'bold', color: '#545454' }}>Gender:</Text>
+                                        <Text style={{ fontSize: 17, fontWeight: 'bold', color: '#545454' }}>Gender:</Text>
                                         <View style={{ flexDirection:'row', gap: 5 }}>
                                             {passGender.map((infntgender) => (
                                                 <TouchableOpacity onPress={() => updatePassenger(inf.id, 'gender', 'gender')} key={infntgender} style={{ backgroundColor: inf.gender == infntgender ? '#cf2a3a' : 'transparent',
                                                     borderColor: '#cf2a3a', borderWidth: 1, width: '50%', borderRadius: 5, justifyContent :'center', paddingVertical: 12 }}>
-                                                    <Text style={{ textAlign: 'center', fontSize: 14, fontWeight: '600', color: inf.gender == infntgender ? '#fff' : '#cf2a3a' }}>{infntgender}</Text>
+                                                    <Text style={{ textAlign: 'center', fontSize: 17, fontWeight: '600', color: inf.gender == infntgender ? '#fff' : '#cf2a3a' }}>{infntgender}</Text>
                                                 </TouchableOpacity>
                                             ))}
                                         </View>
@@ -1049,9 +1067,9 @@ export default function Forms({ errorForm }: FormProps) {
                         {hasPasses && (
                             <>
                                 <View style={{ padding: 10, backgroundColor: '#fff', elevation: 5, borderRadius: 8, borderWidth: 1, borderColor: '#B3B3B3' }}>
-                                    <Text style={{ fontSize: 12, fontWeight: 'bold', color: '#545454' }}>Approved by:</Text>
-                                    <View style={{ borderColor: '#B3B3B3', borderWidth: 1, borderRadius: 5, height: 45, justifyContent: 'center' }}>
-                                        <TextInput onChangeText={(text) => setApprovedBy(text)} value={approvedBy} placeholder='First Last' style={{ fontSize: 15, fontWeight: '600' }} />
+                                    <Text style={{ fontSize: 17, fontWeight: 'bold', color: '#545454' }}>Approved by:</Text>
+                                    <View style={{ borderColor: '#B3B3B3', borderWidth: 1, borderRadius: 5, height: 50, justifyContent: 'center' }}>
+                                        <TextInput onChangeText={(text) => setApprovedBy(text)} value={approvedBy} placeholder='First Last' style={{ fontSize: 19, fontWeight: '600' }} />
                                     </View>
                                 </View>
 

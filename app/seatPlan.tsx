@@ -52,13 +52,14 @@ export default function SeatPlan() {
     const hasPasses = useMemo(() => passengers.some(p => p.passType == 'Passes'), [passengers]);
     const hasSeat = useMemo(() => passengers.some(p => p.seatNumber != null), [passengers]);
 
+    
+
     useEffect(() => {
         passengersRef.current = passengers;
     }, [passengers]);
 
     useEffect(() => {
-        fetchAccom();
-        handleFetchTotalBookings(id);
+        handleFetchDependencies()
 
         const date = new Date();
         setYear(date.getFullYear().toString().slice(-2));
@@ -71,48 +72,12 @@ export default function SeatPlan() {
             setPassesIsHidden(false);
         }
     }, [passengers]);
-
-    const computedFare = useMemo(() => {
-        return passengers.reduce((sum, p) => {
-            const passengerFare = Number(p.fare || 0);
-
-            const cargoTotal = (p.cargo ?? []).reduce((cargoSum, c) => {
-                return cargoSum + (Number.isFinite(c.cargoAmount) ? Number(c.cargoAmount) : 0);
-            }, 0);
-
-            return sum + passengerFare + cargoTotal;
-        }, 0);
-
-    }, [passengers, paxCargoProperty]);
-
-
-    useEffect(() => {
-        setTotalFare(computedFare)
-    }, [computedFare])
     
     const handleSeatSelect = useCallback(() => {
         if(passengers.length == 0) {
             seatSheetRef.current?.snapToIndex(0);
         }
     }, [])
-
-    const fetchAccom = async () => {
-        try {
-            const accomType = await FetchAccommodations();
-
-            if(!accomType.error) {
-                const accomms: AccomsProps[] = accomType.data.map((a: any) => ({
-                    id: a?.id,
-                    name: a.name,
-                    code: a.code
-                }));
-
-                setAccommodations(accomms);
-            }
-        }catch(error: any) {
-            Alert.alert('Error', error.message)
-        }
-    }
 
     const handleRemoveSeat =  useCallback((seat: number | string, paxId: string | number) => {
         if (!seat) return;
@@ -179,18 +144,30 @@ export default function SeatPlan() {
         ), []
     )
 
-    const handleFetchTotalBookings = async (trip_id: number | null) => {
+    const handleFetchDependencies = useCallback(async() => {
         try {
-            if(!trip_id) return;
-            const totalBookingFetch = await FetchTotalBookings(trip_id);
-            
-            if(!totalBookingFetch.error) {
-                setTotalBookings(totalBookingFetch.total_paying);
+            const [accommodationTypes, totalBookingsCount] = await Promise.all([
+                FetchAccommodations(),
+                FetchTotalBookings(id)
+            ]);
+
+            if(!accommodationTypes.error) {
+                const accomms: AccomsProps[] = accommodationTypes.data.map((a: any) => ({
+                    id: a?.id,
+                    name: a.name,
+                    code: a.code
+                }));
+
+                setAccommodations(accomms);
+            }
+
+            if(!totalBookingsCount.error) {
+                setTotalBookings(totalBookingsCount.total_paying);
             }
         }catch(error: any) {
-            Alert.alert('Error', error.message);
+            Alert.alert('Error', error.message || 'Failed to fetch. Chech your internet connection and try again.');
         }
-    }
+    }, [])
 
 
     const vesselComponent = useMemo(() => {
@@ -206,7 +183,6 @@ export default function SeatPlan() {
 
     return (
         <GestureHandlerRootView style={{ flex: 1, backgroundColor: '#cf2a3a' }}>
-                
             <View style={{ height: '100%', overflow: 'hidden' }}>
                 <View style={{ height: 100, flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', paddingHorizontal: 20, paddingTop: 20 }}>
                     <TouchableOpacity onPress={() => {handleForceSeatRemoval(); router.back()}} style={{ zIndex: 1 }}>

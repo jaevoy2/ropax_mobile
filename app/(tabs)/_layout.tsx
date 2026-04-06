@@ -1,8 +1,11 @@
 import { Ionicons, MaterialCommunityIcons } from '@expo/vector-icons';
 import { Tabs } from 'expo-router';
 import { StatusBar, View } from 'react-native';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 export default function TabsLayout() {
+  const insets = useSafeAreaInsets();
+
   return (
     <>
       <StatusBar translucent backgroundColor="transparent" barStyle="light-content" />
@@ -10,7 +13,10 @@ export default function TabsLayout() {
         screenOptions={{
           headerShown: false, // ✅ hides all headers inside tabs
           tabBarActiveTintColor: '#CF2A3A',
-          tabBarStyle: { height: 60 },
+          tabBarStyle: { 
+            height: 60 + insets.bottom,
+            paddingBottom: insets.bottom
+          },
         }}
       >
         <Tabs.Screen

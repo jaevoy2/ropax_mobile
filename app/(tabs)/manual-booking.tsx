@@ -457,6 +457,7 @@ export default function ManualBooking() {
                     refreshControl={bookingType == 'Cargo' ? undefined : (
                         <RefreshControl refreshing={refresh} onRefresh={handleRefresh} colors={['#cf2a3a']} progressViewOffset={60} />
                     )}
+                    showsVerticalScrollIndicator={false}
                     nestedScrollEnabled={true}
                     style={{ flex: 1 }}
                 >

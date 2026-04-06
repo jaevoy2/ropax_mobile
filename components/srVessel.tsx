@@ -181,7 +181,6 @@ const SRVessel = ({ onSeatSelect, accommodations, seatAvailability, setParentLoa
                 Alert.alert('Error', 'Seat selection failed. Please try again later.');
             }
 
-            console.log('accoms: ', accomm_id, type, accommodations)
             const tempId = Crypto.randomUUID();
             
             setPassengers(prev => {
@@ -207,7 +206,6 @@ const SRVessel = ({ onSeatSelect, accommodations, seatAvailability, setParentLoa
             Alert.alert('Error', error.message);
         }
     }, [setPassengers, onSeatSelect])
-
 
     useEffect(() => {
         const fetchBookingsAndDisabledSeats = async () => {
@@ -242,7 +240,6 @@ const SRVessel = ({ onSeatSelect, accommodations, seatAvailability, setParentLoa
 
         fetchBookingsAndDisabledSeats();
     }, [])
-
     
     useEffect(() => {
         const channel = async () => {
