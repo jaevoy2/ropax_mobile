@@ -197,13 +197,15 @@ export default function BookingForm() {
                         <Forms errorForm={errorForm} />
                     </ScrollView>
 
-                    <TouchableOpacity onPress={() => handleSave()} style={{ backgroundColor: '#cf2a3a', width: '90%', alignSelf: 'center', borderRadius: 8, paddingVertical: 15 }}>
-                        {saveloading == true ? (
-                            <ActivityIndicator size='small' color={'#fff'} />
-                        ) : (
-                            <Text style={{ fontSize: 20, fontWeight: 'bold', textAlign: 'center', color: '#fff' }}>Proceed to Payment</Text>
-                        )}
-                    </TouchableOpacity>
+                    <View style={{ paddingHorizontal: 10 }}>
+                        <TouchableOpacity onPress={() => handleSave()} style={{ backgroundColor: '#cf2a3a', width: '100%', alignSelf: 'center', borderRadius: 8, paddingVertical: 15 }}>
+                            {saveloading == true ? (
+                                <ActivityIndicator size='small' color={'#fff'} />
+                            ) : (
+                                <Text style={{ fontSize: 20, fontWeight: 'bold', textAlign: 'center', color: '#fff' }}>Proceed to Payment</Text>
+                            )}
+                        </TouchableOpacity>
+                    </View>
                 </KeyboardAvoidingView>
             </View>
         </View>

@@ -14,8 +14,6 @@ const logo_text = require('@/assets/images/logo.png');
 const logo_icon = require('@/assets/images/logo_icon.png');
 const { height, width } = Dimensions.get('window');
 
-const bleManager = new BleManager();
-
 export default function TicketGenerator() {
     const { vessel, mobileCode, origin, destination, cashTendered, fareChange, totalFare, note, departure_time, refNumber, clearTrip } = useTrip();
     const { paxCargoProperty, setPaxCargoProperties } = useCargo();
@@ -23,8 +21,9 @@ export default function TicketGenerator() {
     const [tripDate, setTripDate] = useState('');
     const [time, setTime] = useState('');
     const [loading, setLoading] = useState(false);
-    const viewRef = useRef<View | null>(null);
     const insets = useSafeAreaInsets();
+    const bleManagerRef = useRef<BleManager | null>(null)
+    const scanTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
     // BLE states
     const [bleDevices, setBleDevices] = useState<Device[]>([]);
@@ -37,6 +36,7 @@ export default function TicketGenerator() {
     const passesCount = passengers.filter(p => p.passType == 'Passes');
 
     useEffect(() => {
+        bleManagerRef.current = new BleManager()
         const date = new Date();
         setTripDate(date.toLocaleDateString('en-US', { month: '2-digit', day: '2-digit', year: 'numeric' }));
 
@@ -50,7 +50,8 @@ export default function TicketGenerator() {
         timeFormat();
 
         return () => {
-            bleManager.destroy();
+            bleManagerRef.current?.destroy();
+            bleManagerRef.current = null;
         };
     }, []);
 
@@ -95,7 +96,7 @@ export default function TicketGenerator() {
         setScanning(true);
         setBleModalVisible(true);
 
-        bleManager.startDeviceScan(null, null, (error, device) => {
+        bleManagerRef.current?.startDeviceScan(null, null, (error, device) => {
             if (error) {
                 console.log('Scan error:', error);
                 setScanning(false);
@@ -111,19 +112,25 @@ export default function TicketGenerator() {
         });
 
         // Stop scan after 10 seconds
-        setTimeout(() => {
-            bleManager.stopDeviceScan();
-            setScanning(false);
+        scanTimeoutRef.current = setTimeout(() => {
+          bleManagerRef.current?.stopDeviceScan();
+          setScanning(false);  
         }, 10000);
+
+        return () => {
+            clearTimeout(scanTimeoutRef.current!);
+            bleManagerRef.current?.destroy();
+            bleManagerRef.current = null;
+        }
     };
 
     // ✅ Connect to selected printer
     const connectToDevice = async (device: Device) => {
         try {
             setBleLoading(true);
-            bleManager.stopDeviceScan();
+            bleManagerRef.current?.stopDeviceScan();
 
-            const connected = await bleManager.connectToDevice(device.id);
+            const connected = await bleManagerRef.current?.connectToDevice(device.id);
             await connected.discoverAllServicesAndCharacteristics();
 
             setConnectedDevice(connected);
@@ -305,7 +312,7 @@ export default function TicketGenerator() {
                     <View style={{ backgroundColor: '#fff', borderTopLeftRadius: 20, borderTopRightRadius: 20, padding: 20, maxHeight: height * 0.6 }}>
                         <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: 15 }}>
                             <Text style={{ fontSize: 18, fontWeight: 'bold' }}>Select Printer</Text>
-                            <TouchableOpacity onPress={() => { bleManager.stopDeviceScan(); setBleModalVisible(false); }}>
+                            <TouchableOpacity onPress={() => { bleManagerRef.current?.stopDeviceScan(); setBleModalVisible(false); }}>
                                 <Ionicons name="close" size={24} color="#cf2a3a" />
                             </TouchableOpacity>
                         </View>
@@ -352,7 +359,7 @@ export default function TicketGenerator() {
 
                 <View style={{ position: 'relative', height: '75%', top: -70 }}>
                     <ScrollView style={{ flex: 1 }}>
-                        <View style={{ backgroundColor: '#fff', left: '50%', transform: [{ translateX: '-50%' }], width: '90%', borderRadius: 10, padding: 10 }}>
+                        <View style={{ backgroundColor: '#fff', alignSelf: 'center', width: '90%', borderRadius: 10, padding: 10 }}>
                             <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', paddingVertical: 5, borderBottomWidth: 1, borderBlockColor: '#9B9B9B' }}>
                                 <View style={{ flexDirection: 'row', alignItems: 'center', gap: 5 }}>
                                     <Image source={logo_icon} style={{ width: 38, height: 37 }} />

@@ -88,8 +88,9 @@ export default function QRScanner() {
                 
                 router.replace(`/bookingInfo?bookingId=${bookingId}&paxId=${paxId}&refNum=${refNum}`)
             }
-        }catch(error) {
+        }catch(error: any) {
             Alert.alert('Error', error.message)
+            setScanned(false);
         }finally{
             setScreenLoading(false)
         }

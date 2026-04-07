@@ -49,7 +49,6 @@ export default function PaymentSummary() {
 
     const handleConfirmation = async () => {
         setLoading(true);
-        console.log(passengers, bookingId)
 
         if(cashTendered == 0 && !passengers.some(p => p.passType == 'Passes')) {
             setLoading(false);
@@ -74,7 +73,7 @@ export default function PaymentSummary() {
         }
 
         try {
-            const trip = { id, totalFare, fareChange, webCode } as TripContextProps;
+            const trip = { id, totalFare, webCode } as TripContextProps;
             if(passengers.length > 0 && passengers.some(p => p.hasScanned != true)) {
                 const response = await SaveBooking(trip, passengers, Number(stationID));
                 
@@ -84,7 +83,9 @@ export default function PaymentSummary() {
                         if(p.seatNumber) {
                             seatRemoval(p.seatNumber, id)
                         }
-                    })
+                    });
+
+                    router.push('/generateTicket');
                 }
             }else if(passengers.length > 0 && passengers.some(p => p.hasScanned == true)){
                 const response = await SaveBookingScan(trip, passengers, Number(stationID), bookingId);
@@ -100,8 +101,6 @@ export default function PaymentSummary() {
             }else {
                 const res = await SaveCargo(trip, paxCargoProperty)
             }
-
-            router.push('/generateTicket');
         }catch(error: any) {
             Alert.alert('Error', error.message);
         }finally {

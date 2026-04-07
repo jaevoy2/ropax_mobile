@@ -13,12 +13,10 @@ import BottomSheet, { BottomSheetBackdrop } from '@gorhom/bottom-sheet';
 import * as Crypto from 'expo-crypto';
 import { router } from "expo-router";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
-import { Alert, Dimensions, Image, ScrollView, Text, TouchableOpacity, View } from "react-native";
+import { Alert, Image, ScrollView, Text, TouchableOpacity, useWindowDimensions, View } from "react-native";
 import { GestureHandlerRootView } from 'react-native-gesture-handler';
 
 
-
-const { width, height } = Dimensions.get('window');
 const deck = require('@/assets/images/deck.png');
 const icon = require('@/assets/images/logo_icon.png');
 const text_logo = require('@/assets/images/logo.png');
@@ -43,8 +41,13 @@ export default function SeatPlan() {
     const [hasAvailableSeat, setHasAvailableSeat] = useState<boolean>(true);
     const passengersRef = useRef(passengers);
     const seatSheetRef = useRef<BottomSheet>(null);
-    const [isLoading, setIsLoading] = useState(true); 
+    const [isLoading, setIsLoading] = useState(true);
+    const { width, height } = useWindowDimensions();
 
+    const isTablet = width >= 600;
+    const bgImageHeight = isTablet ? height + 800 : height + 620;
+    const iconSize = isTablet ? { width: 55, height: 54 } : { width: 41, height: 40 };
+    const logoSize = isTablet ? { width: 160, height: 37 } : { width: 120, height: 28 };
 
     const seatSnapPoints = useMemo(() => ["30%"], []);
     const sheetIndex = useMemo(() => passengers.length > 0 ? 0 : -1, [passengers.length]);
@@ -203,17 +206,17 @@ export default function SeatPlan() {
                     <Text style={{ color: '#fff', fontSize: 16, fontWeight: 'bold', alignSelf: 'center', textAlign: 'center' }}>{vessel}</Text>
                     <Text style={{ textAlign: 'center', color: '#fff', fontSize: 10 }}>Vessel Seat Plan</Text>
                     <View style={{ paddingTop: 10, height: height - 60 }}>
-                        <ScrollView style={{ height: '100%' }} contentContainerStyle={{ paddingBottom: 20 }}>
+                        <ScrollView style={{ height }} contentContainerStyle={{ paddingBottom: 20 }}>
 
                             {!isLoading && (
-                                <Image source={deck} style={{ opacity: 0.5, width: '100%', height: height + 620, alignSelf: 'center', tintColor: '#ffffff' }} />
+                                <Image source={deck} style={{ opacity: 0.5, width: '105%', height: bgImageHeight, alignSelf: 'center', tintColor: '#ffffff' }} />
                             )}
 
-                            <View style={{ height: 300, width: '95%', zIndex: 5, position: 'absolute', alignSelf: 'center', alignItems: 'center', }}>
+                            <View style={{ height, width: '95%', zIndex: 5, position: 'absolute', alignSelf: 'center', alignItems: 'center', }}>
                                 {!isLoading && (
                                     <>
-                                        <Image source={icon} style={{ width: 41, height: 40, marginTop: 40 }} />
-                                        <Image source={text_logo} style={{ width: 120, height: 28, marginTop: 10 }} />
+                                        <Image source={icon} style={{ width: iconSize.width, height: iconSize.height, marginTop: 40 }} />
+                                        <Image source={text_logo} style={{ width: logoSize.width, height: logoSize.height, marginTop: 10 }} />
 
                                         <Text style={{ fontSize: 13, fontWeight: '900', color: '#fff', marginTop: 20, textAlign: 'center' }}>{totalBookings} TOTAL PAYING PASSENGERS</Text>
 

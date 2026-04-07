@@ -8,8 +8,9 @@ export default {
     orientation: "portrait",
     icon: "./assets/images/icon.png",
     scheme: "leopardsmobile",
+    owner: "beboy",
     userInterfaceStyle: "automatic",
-    newArchEnabled: true,
+    newArchEnabled: false,
     ios: {
       supportsTablet: true
     },
@@ -56,7 +57,7 @@ export default {
     },
     extra: {
       eas: {
-        projectId: "436c6e76-2b93-4c33-b8d4-6fa2a149ce3f"
+        projectId: "5ce06e3a-d819-4aba-bd7e-40755d1d8aa4"
       },
       API_URL: process.env.API_URL, 
       API_KEY: process.env.API_KEY,

@@ -490,8 +490,8 @@ export default function ManualBooking() {
                                             {trips.filter(t => t.hasDeparted).map((trip) => (
                                                 <View key={trip.trip_id} style={{ paddingHorizontal: 15, paddingVertical: 20, backgroundColor: '#fff', opacity: 0.5, borderRadius: 10, marginTop: 12, flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' }}>
                                                     <View>
-                                                        <Text style={{ fontWeight: 'bold', fontSize: 13, color: '#cf2a3a' }}>{trip.departure}</Text>
-                                                        <Text style={{ fontWeight: 'bold', fontSize: 13 }}>{`${trip.route_origin}  >  ${trip.route_destination} [ ${trip.vessel} ]`}</Text>
+                                                        <Text style={{ fontWeight: 'bold', fontSize: 15, color: '#cf2a3a' }}>{trip.departure}</Text>
+                                                        <Text style={{ fontWeight: 'bold', fontSize: 15 }}>{`${trip.route_origin}  >  ${trip.route_destination} [ ${trip.vessel} ]`}</Text>
                                                     </View>
                                                     <Ionicons name="chevron-forward" size={18} />
                                                 </View>

@@ -1,9 +1,9 @@
 import React, { useCallback, useEffect, useState } from 'react';
-import { Dimensions, Text, View } from 'react-native';
+import { Text, useWindowDimensions, View } from 'react-native';
 import { SeatPlan } from './srVessel';
 
 
-const { height, width } = Dimensions.get('window');
+const { height, width } = useWindowDimensions()
 
 type SrTouristSeatPlanProps = {
     passengerSeats: Set<number | string>;

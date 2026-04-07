@@ -611,7 +611,7 @@ export default function Forms({ errorForm }: FormProps) {
                                         <View style={{ flexDirection: 'row', flexWrap: 'wrap', gap: 5 }}>
                                             {paxsengerTypes.map((type) => (
                                                 <TouchableOpacity onPress={() => handleOnPaxTypeSelect(p.id, p.accommodationID, type?.id, type?.name, type.code)}
-                                                key={type.id} style={{ backgroundColor: p.passType == type?.name ? '#cf2a3a' : 'transparent', borderColor: '#cf2a3a', borderWidth: 1, paddingVertical: 9, width: '32%', borderRadius: 5  }}>
+                                                key={type.id} style={{ backgroundColor: p.passType == type?.name ? '#cf2a3a' : 'transparent', borderColor: '#cf2a3a', borderWidth: 1, paddingVertical: 9, justifyContent: 'center', width: '32%', borderRadius: 5  }}>
                                                     <Text style={{ textAlign: 'center', fontSize: 20, color: p.passType == type?.name ? '#fff' : '#cf2a3a', fontWeight: '600' }}>{type?.name}</Text>
                                                 </TouchableOpacity>
                                             ))}

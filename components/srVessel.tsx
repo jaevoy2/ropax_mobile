@@ -7,14 +7,15 @@ import { supabase } from '@/utils/supabase';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import * as Crypto from 'expo-crypto';
 import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
-import { Alert, Dimensions, Text, TouchableOpacity, View } from 'react-native';
+import { Alert, Text, TouchableOpacity, useWindowDimensions, View } from 'react-native';
+
 
 import { AccomsProps } from '@/app/seatPlan';
 import PreLoader from './preloader';
 import SRBClassSeatPlan from './srBClassSeatPlan';
 import SrToursitSeatPlan from './srToursitSeatPlan';
 
-const { height, width } = Dimensions.get('window');
+
 const specialSeats = [1, 2, 3, 4, 5, 6, 7, 8, 57, 58, 59, 60, 61, 62, 63, 64];
 
 export interface SeatProps { 
@@ -33,6 +34,8 @@ export interface SeatProps {
 }
 
 export const SeatPlan: React.FC<SeatProps> = React.memo(({ start, limit, passengerSeats, skipPattern = false, onSeatSelect, type, accomm_id, bookedSeats, seatChannel, seatAvailability, disabledSeats, alignItemsOn }) => {
+    const { height, width } = useWindowDimensions();
+
     const items = useMemo(() => {
         const seats = [];
 
@@ -79,6 +82,10 @@ export const SeatPlan: React.FC<SeatProps> = React.memo(({ start, limit, passeng
         seatAvailability?.(hasSeatAvailable)
     }, [hasSeatAvailable])
 
+    const isTablet = width >= 600;
+    const seatSize = Math.min(Math.max(width * 0.09, 33), 80);
+    const labelFontSize = isTablet ? 14 : 12;
+
 
     return (
         <View style={{ flexDirection: 'row', flexWrap: 'wrap', gap: 4, justifyContent: alignItemsOn == 'center' ? 'center' : 'flex-start' }}>
@@ -92,7 +99,7 @@ export const SeatPlan: React.FC<SeatProps> = React.memo(({ start, limit, passeng
                 return (
                     <TouchableOpacity disabled={!!booked || isPassenger || inChannel || isDisabled} 
                         onPress={() => onSeatSelect?.(seat, type, accomm_id)} key={seat}
-                        style={{ justifyContent: 'center', paddingVertical: 2, width: 33, height: 33, borderColor: isDisabled ? '#e0e0e0' : '#A9A9B2', borderWidth: 1, borderRadius: 3, 
+                        style={{ justifyContent: 'center', paddingVertical: 2, width: seatSize, height: seatSize, borderColor: isDisabled ? '#e0e0e0' : '#A9A9B2', borderWidth: 1, borderRadius: 3, 
                         backgroundColor: 
                             booked ? booked?.station?.color
                             : isDisabled ? '#e9e9e9'
@@ -100,7 +107,7 @@ export const SeatPlan: React.FC<SeatProps> = React.memo(({ start, limit, passeng
                             : specialSeatSet.has(seat) && !inChannel ? '#E6E2C6' 
                             : inChannel ? '#e6d1e9ff' : 'transparent'
                         }}>
-                        <Text style={{ fontSize: 14, textAlign: 'center', fontWeight: 'bold', 
+                        <Text style={{ fontSize: labelFontSize, textAlign: 'center', fontWeight: 'bold', 
                             color: booked || isPassenger || inChannel || isDisabled ? '#fff' : '#000' }}>
                                 {booked?.passTypeCode ?? seat}
                         </Text>
@@ -145,6 +152,7 @@ const SRVessel = ({ onSeatSelect, accommodations, seatAvailability, setParentLoa
     const tripIdRef = useRef(id);
     const [disabledSeats, setDisabledSeats] = useState<string[]>([]);
     const [isLoading, setIsLoading] = useState(true);
+    const { height, width } = useWindowDimensions();
     
     
     useEffect(() => { tripIdRef.current = id; }, [id]);
