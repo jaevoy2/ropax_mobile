@@ -1,5 +1,5 @@
 import { Ionicons } from '@expo/vector-icons';
-import React, { useRef } from 'react';
+import { useEffect, useRef } from 'react';
 import { Animated, Dimensions, Easing, Modal, Text, View } from 'react-native';
 
 const { height } = Dimensions.get('window')
@@ -7,24 +7,26 @@ const { height } = Dimensions.get('window')
 export default function PreLoader({ loading }: { loading: boolean }) {
     const motionAnim = useRef(new Animated.Value(1)).current;
 
-    if(loading == true) {
-        Animated.loop(
-            Animated.sequence([
-                Animated.timing(motionAnim, {
-                    toValue: -8,
-                    duration: 800,
-                    easing: Easing.inOut(Easing.ease),
-                    useNativeDriver: true
-                }),
-                Animated.timing(motionAnim, {
-                    toValue: 1,
-                    duration: 800,
-                    easing: Easing.inOut(Easing.ease),
-                    useNativeDriver: true
-                }),
-            ])
-        ).start()
-    }
+    useEffect(() => {
+        if(loading == true) {
+            Animated.loop(
+                Animated.sequence([
+                    Animated.timing(motionAnim, {
+                        toValue: -8,
+                        duration: 800,
+                        easing: Easing.inOut(Easing.ease),
+                        useNativeDriver: true
+                    }),
+                    Animated.timing(motionAnim, {
+                        toValue: 1,
+                        duration: 800,
+                        easing: Easing.inOut(Easing.ease),
+                        useNativeDriver: true
+                    }),
+                ])
+            ).start()
+        }
+    }, [loading])
 
 
     return (

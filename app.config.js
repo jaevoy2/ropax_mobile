@@ -8,13 +8,14 @@ export default {
     orientation: "portrait",
     icon: "./assets/images/icon.png",
     scheme: "leopardsmobile",
-    owner: "beboy",
+    owner: "beboy3",
     userInterfaceStyle: "automatic",
     newArchEnabled: false,
     ios: {
       supportsTablet: true
     },
     android: {
+      jsEngine: "hermes",
       adaptiveIcon: {
         foregroundImage: "./assets/icons/adaptive-icon.png",
         backgroundColor: "#ffffff"
@@ -57,7 +58,7 @@ export default {
     },
     extra: {
       eas: {
-        projectId: "5ce06e3a-d819-4aba-bd7e-40755d1d8aa4"
+        projectId: "73dc09c2-2460-473d-a820-0d34e1cf7c3a"
       },
       API_URL: process.env.API_URL, 
       API_KEY: process.env.API_KEY,

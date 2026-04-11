@@ -41,6 +41,8 @@ export default function TicketGenerator() {
         setTripDate(date.toLocaleDateString('en-US', { month: '2-digit', day: '2-digit', year: 'numeric' }));
 
         const timeFormat = () => {
+            if (!departure_time) return;
+
             let [hour, minute, second] = departure_time.split(':').map(Number);
             const suffix = hour >= 12 ? 'PM' : 'AM';
             hour = hour % 12 || 12;
@@ -98,7 +100,6 @@ export default function TicketGenerator() {
 
         bleManagerRef.current?.startDeviceScan(null, null, (error, device) => {
             if (error) {
-                console.log('Scan error:', error);
                 setScanning(false);
                 return;
             }
@@ -211,8 +212,8 @@ export default function TicketGenerator() {
         }
 
         lines.push(left(`Total Amount: P${Number(totalFare).toFixed(2)}`));
-        lines.push(left(`Cash Tendered: P${Number(cashTendered).toFixed(2)}`));
-        lines.push(left(`Change: P${Number(fareChange).toFixed(2)}`));
+        lines.push(left(`Cash Tendered: P${Number(cashTendered).toFixed(2)} ?? '--`));
+        lines.push(left(`Change: P${Number(fareChange).toFixed(2)} ?? '--`));
         lines.push(divider());
 
         if (note) {
@@ -325,13 +326,13 @@ export default function TicketGenerator() {
                             ) : (
                                 bleDevices.map((device) => (
                                     <TouchableOpacity
-                                        key={device.id}
+                                        key={device?.id}
                                         onPress={() => connectToDevice(device)}
                                         style={{ padding: 15, borderBottomColor: '#dadada', borderBottomWidth: 1, flexDirection: 'row', alignItems: 'center', gap: 10 }}>
                                         <Ionicons name="print" size={20} color="#cf2a3a" />
                                         <View>
                                             <Text style={{ fontWeight: 'bold' }}>{device.name}</Text>
-                                            <Text style={{ fontSize: 12, color: '#999' }}>{device.id}</Text>
+                                            <Text style={{ fontSize: 12, color: '#999' }}>{device?.id}</Text>
                                         </View>
                                     </TouchableOpacity>
                                 ))
@@ -477,7 +478,7 @@ export default function TicketGenerator() {
                                                 <Text style={{ fontSize: 14, fontWeight: '900', flexDirection: 'column' }}>Cargo</Text>
                                                 {passengers.flatMap(p => p.hasCargo ? 
                                                     p.cargo.map(c => (
-                                                        <View key={`${c.id}-${c.cargoBrand}`} style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' }}>
+                                                        <View key={`${c?.id}-${c.cargoBrand}`} style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' }}>
                                                             <View style={{ flexDirection: 'row', gap: 3 }}>
                                                                 <Text style={{ fontSize: 13, color: '#4b4b4bff' }}>{`${c.quantity}x`}</Text>
                                                                 <Text style={{ fontSize: 13, color: '#4b4b4bff' }}>
@@ -501,7 +502,7 @@ export default function TicketGenerator() {
                                     <View style={{ width: '100%', flexDirection: 'column' }}>
                                         <Text style={{ fontSize: 14, fontWeight: '900', flexDirection: 'column' }}>Cargo</Text>
                                         {paxCargoProperty.map((cargo: any) => (
-                                            <View key={`${cargo.id}-${cargo.cargoBrand}`} style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', marginLeft: 15, }}>
+                                            <View key={`${cargo?.id}-${cargo.cargoBrand}`} style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', marginLeft: 15, }}>
                                                 <View style={{ flexDirection: 'row', gap: 3 }}>
                                                     <Text style={{ fontSize: 12, color: '#4b4b4bff' }}>{`${cargo.quantity}x`}</Text>
                                                     <Text style={{ fontSize: 12, color: '#4b4b4bff' }}>

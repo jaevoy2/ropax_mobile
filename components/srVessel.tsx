@@ -34,6 +34,27 @@ export interface SeatProps {
 }
 
 export const SeatPlan: React.FC<SeatProps> = React.memo(({ start, limit, passengerSeats, skipPattern = false, onSeatSelect, type, accomm_id, bookedSeats, seatChannel, seatAvailability, disabledSeats, alignItemsOn }) => {
+    // Defensive context checks
+    const passengersCtx = usePassengers();
+    const tripCtx = useTrip();
+    if (!passengersCtx) {
+        return (
+            <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center', padding: 20 }}>
+                <Text style={{ fontSize: 16, fontWeight: 'bold', color: 'red', marginBottom: 10 }}>
+                    Error: Missing PassengersProvider
+                </Text>
+            </View>
+        );
+    }
+    if (!tripCtx) {
+        return (
+            <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center', padding: 20 }}>
+                <Text style={{ fontSize: 16, fontWeight: 'bold', color: 'red', marginBottom: 10 }}>
+                    Error: Missing TripProvider
+                </Text>
+            </View>
+        );
+    }
     const { height, width } = useWindowDimensions();
 
     const items = useMemo(() => {

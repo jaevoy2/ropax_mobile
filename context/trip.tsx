@@ -3,14 +3,14 @@ import React, { createContext, ReactNode, useContext, useState } from "react";
 export type TripContextProps = {
     id: number;
     vessel: string;
-    routeID: number;
+    routeID: number | null;
     origin: string;
     destination: string;
     vessel_id: number;
     totalFare: number;
     note?: string;
     departure_time: string;
-    fareChange: number;
+    fareChange: number | null;
     cashTendered: number;
     webCode: string;
     code: string;
@@ -20,7 +20,7 @@ export type TripContextProps = {
     approvedBy?: string;
     hasScanned?: boolean;
     tripAccom?: string;
-    bookingId?: number;
+    bookingId?: number | null;
     setVessel: React.Dispatch<React.SetStateAction<string>>;
     setRouteID: React.Dispatch<React.SetStateAction<number>>;
     setOrigin: React.Dispatch<React.SetStateAction<string>>;
@@ -30,7 +30,7 @@ export type TripContextProps = {
     setTotalFare: React.Dispatch<React.SetStateAction<number>>;
     setNote: React.Dispatch<React.SetStateAction<string>>;
     setDepartureTime: React.Dispatch<React.SetStateAction<string>>;
-    setFareChange: React.Dispatch<React.SetStateAction<number>>;
+    setFareChange: React.Dispatch<React.SetStateAction<number | null>>;
     setWebCode: React.Dispatch<React.SetStateAction<string>>;
     setCode: React.Dispatch<React.SetStateAction<string>>;
     setMobileCode: React.Dispatch<React.SetStateAction<string>>;
@@ -40,7 +40,7 @@ export type TripContextProps = {
     setApprovedBy: React.Dispatch<React.SetStateAction<string>>;
     setHasScanned: React.Dispatch<React.SetStateAction<boolean>>;
     setTripAccom: React.Dispatch<React.SetStateAction<string>>;
-    setBookingId: React.Dispatch<React.SetStateAction<number>>;
+    setBookingId: React.Dispatch<React.SetStateAction<number | null>>;
     clearTrip: () => void;
 }
 
@@ -69,7 +69,7 @@ export const TripProvider = ({ children }: TripProviderProps) => {
     const [note, setNote] = useState<string>('');
     const [isCargoable, setIsCargoable] = useState<number>(0);
     const [approvedBy, setApprovedBy] = useState('');
-    const [hasScanned, setHasScanned] = useState<boolean>(null);
+    const [hasScanned, setHasScanned] = useState<boolean>(false);
     const [tripAccom, setTripAccom] = useState('');
     const [bookingId, setBookingId] = useState<number | null>(null)
 
@@ -81,7 +81,7 @@ export const TripProvider = ({ children }: TripProviderProps) => {
         setDestination("");
         setVesselID(0);
         setTotalFare(0);
-        setFareChange(0);
+        setFareChange(null);
         setCashTendered(0);
         setWebCode("");
         setMobileCode("");

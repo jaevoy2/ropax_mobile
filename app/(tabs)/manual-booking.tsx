@@ -115,13 +115,12 @@ export default function ManualBooking() {
         }
     }, [trips])
 
-    // ✅ moved up so handleRefresh can safely call it
     const handleFetchCargoProps = async () => {
         try {
             const cargoPropsResponse = await FetchCargoProps();
             if (cargoPropsResponse) {
                 setCargoProperties(cargoPropsResponse as CargoProperties);
-                setCargoReady(true); // ✅ only mount CargoComponent after props are loaded
+                setCargoReady(true);
             }
         } catch (error) {
             console.log('Cargo props error:', error);

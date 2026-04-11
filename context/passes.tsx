@@ -52,10 +52,5 @@ export function PassesTypeProvider({ children }: { children: ReactNode }) {
 }
 
 export function usePassesType() {
-    const context = useContext(PassesTypeContext);
-    if (!context) {
-        throw new Error("usePassesType must be used within a PassesTypeProvider");
-    }
-
-    return context;
+    return useContext(PassesTypeContext) || undefined;
 }

@@ -13,7 +13,8 @@
     },
     "preview": {
       "android": {
-        "buildType": "apk"
+        "buildType": "apk",
+        "gradleCommand": ":app:assembleRelease"
       },
       "env": {
         "API_URL": "https://lmbs-staging.creativedevlabs.com/api/",

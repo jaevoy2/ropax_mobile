@@ -3,7 +3,7 @@ import { usePassengers } from "@/context/passenger";
 import { useTrip } from "@/context/trip";
 import { Ionicons } from "@expo/vector-icons";
 import { router } from "expo-router";
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import { ActivityIndicator, Alert, Dimensions, KeyboardAvoidingView, Platform, ScrollView, StyleSheet, Text, TouchableOpacity, View } from "react-native";
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
@@ -12,8 +12,24 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context';
 const { height, width } = Dimensions.get('screen');
 
 export default function BookingForm() {
-    const { passengers, clearPassengers } = usePassengers();
-    const { approvedBy, origin, destination } = useTrip()
+    // Defensive context checks
+    const passengersCtx = usePassengers();
+    const tripCtx = useTrip();
+    let missing = [];
+    if (!passengersCtx) missing.push('PassengerProvider');
+    if (!tripCtx) missing.push('TripProvider');
+    if (missing.length > 0) {
+        // Always show error in both dev and prod
+        return (
+            <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center', padding: 40, backgroundColor: '#fff' }}>
+                <Text style={{ color: 'red', fontWeight: 'bold', fontSize: 18, textAlign: 'center' }}>
+                    Error: Missing context provider{missing.length > 1 ? 's' : ''}: {missing.join(', ')}.\n\nPlease ensure all providers are correctly set up in _layout.tsx.
+                </Text>
+            </View>
+        );
+    }
+    const { passengers, clearPassengers } = passengersCtx;
+    const { approvedBy, setTotalFare } = tripCtx;
     const [saveloading, setSaveLoading] = useState(false);
     const [errorForm, setErrorForm] = useState<(string | number)[]>([]);
     const [year, setYear] = useState('');
@@ -31,7 +47,7 @@ export default function BookingForm() {
         }
     }
 
-    const handleSave = () => {
+    const handleSave = useCallback(() => {
         setSaveLoading(true);
         setErrorForm([]);
 
@@ -49,6 +65,7 @@ export default function BookingForm() {
                 setSaveLoading(false);
                 return;
             }
+            
             
             if(!passesType) {
                 if (invalidNameFormat) {
@@ -163,10 +180,20 @@ export default function BookingForm() {
                 return;
             }
 
+            const total = passengers.reduce((sum, p) => {
+                const passengerFare = Number(p.fare || 0);
+                const cargoTotal = (p.cargo ?? []).reduce((cargoSum, c) => {
+                    return cargoSum + (Number.isFinite(c.cargoAmount) ? Number(c.cargoAmount) : 0);
+                }, 0);
+                return sum + passengerFare + cargoTotal;
+            }, 0);
+
+            setTotalFare(total);
+
             router.push('/summary');
             setSaveLoading(false);
         }, 300);
-    }
+    }, [passengers, setTotalFare, approvedBy])
 
 
     return (
@@ -179,33 +206,18 @@ export default function BookingForm() {
             </View>
 
             <View style={styles.body}>
-                {/* <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginVertical: 15, paddingHorizontal: 10, borderColor: '#B3B3B3', borderWidth: 1, width: '95%', alignSelf: 'center', borderRadius: 8, padding: 8 }}>
-                    <View style={{ flexDirection: 'column', alignItems: 'flex-start' }}>
-                        <Text style={{ fontSize: 12 }}>Reference#:</Text>
-                        <Text style={{ fontWeight: '900', fontSize: 16, color: '#cf2a3a' }}>LMBS000000{year}{origin?.charAt(0)}{destination?.charAt(0)}</Text>
-                    </View>
-                    <View style={{ flexDirection: 'column', alignItems: 'flex-end' }}>
-                        <Text style={{ fontSize: 9, fontWeight: '900', color: '#cf2a3a' }}>Total Fare:</Text>
-                        <View style={{ borderColor: '#cf2a3a', backgroundColor: '#cf2a3b1a', borderWidth: 2, borderRadius: 5, flexDirection: 'row', alignItems: 'center', paddingHorizontal: 15 }}>
-                            <Text style={{ fontSize: 18, fontWeight: 'bold' }}>₱</Text>
-                            <TextInput value={String(totalFare != 0 ? totalFare.toFixed(2) : '')} onChangeText={(text) => setTotalFare(Number(text))} placeholder='00.00' style={{ fontWeight: '900', textAlign: 'right', fontSize: 18 }} keyboardType={'numeric'} />
-                        </View>
-                    </View>
-                </View> */}
                 <KeyboardAvoidingView style={{ flex: 1, paddingBottom: 100 }} behavior={Platform.OS === 'android' ? 'padding' : 'height'}>
                     <ScrollView keyboardShouldPersistTaps="handled" style={{ paddingHorizontal: 10, paddingBottom: 20, marginBottom: 15 }}>
                         <Forms errorForm={errorForm} />
                     </ScrollView>
 
-                    <View style={{ paddingHorizontal: 10 }}>
-                        <TouchableOpacity onPress={() => handleSave()} style={{ backgroundColor: '#cf2a3a', width: '100%', alignSelf: 'center', borderRadius: 8, paddingVertical: 15 }}>
-                            {saveloading == true ? (
-                                <ActivityIndicator size='small' color={'#fff'} />
-                            ) : (
-                                <Text style={{ fontSize: 20, fontWeight: 'bold', textAlign: 'center', color: '#fff' }}>Proceed to Payment</Text>
-                            )}
-                        </TouchableOpacity>
-                    </View>
+                    <TouchableOpacity onPress={() => handleSave()} style={{ backgroundColor: '#cf2a3a', width: '95%', alignSelf: 'center', borderRadius: 8, paddingVertical: 15 }}>
+                        {saveloading == true ? (
+                            <ActivityIndicator size='small' color={'#fff'} />
+                        ) : (
+                            <Text style={{ fontSize: 16, fontWeight: 'bold', textAlign: 'center', color: '#fff' }}>Proceed to Payment</Text>
+                        )}
+                    </TouchableOpacity>
                 </KeyboardAvoidingView>
             </View>
         </View>

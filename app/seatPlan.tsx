@@ -3,7 +3,6 @@ import { FetchTotalBookings } from "@/api/totalBookings";
 import L2Vessel from "@/components/L2Vessel";
 import SeatAccommAlert from '@/components/seatAccommAlert';
 import SRVessel from "@/components/srVessel";
-import { useCargo } from "@/context/cargoProps";
 import { usePassengers } from "@/context/passenger";
 import { usePassesType } from "@/context/passes";
 import { useTrip } from "@/context/trip";
@@ -29,10 +28,40 @@ export type AccomsProps = {
 }
 
 export default function SeatPlan() {
-    const { passengers, setPassengers } = usePassengers();
-    const { id, vessel, tripAccom, destination, origin, setTotalFare } = useTrip();
-    const { passesTypeID, passesTypeCode, passesTypeName } = usePassesType();
-    const { paxCargoProperty } = useCargo();
+    // Defensive context checks
+    const passengersCtx = usePassengers();
+    const tripCtx = useTrip();
+    const passesTypeCtx = usePassesType();
+    if (!passengersCtx) {
+        return (
+            <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center', padding: 20 }}>
+                <Text style={{ fontSize: 16, fontWeight: 'bold', color: 'red', marginBottom: 10 }}>
+                    Error: Missing PassengersProvider
+                </Text>
+            </View>
+        );
+    }
+    if (!tripCtx) {
+        return (
+            <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center', padding: 20 }}>
+                <Text style={{ fontSize: 16, fontWeight: 'bold', color: 'red', marginBottom: 10 }}>
+                    Error: Missing TripProvider
+                </Text>
+            </View>
+        );
+    }
+    if (!passesTypeCtx) {
+        return (
+            <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center', padding: 20 }}>
+                <Text style={{ fontSize: 16, fontWeight: 'bold', color: 'red', marginBottom: 10 }}>
+                    Error: Missing PassesTypeProvider
+                </Text>
+            </View>
+        );
+    }
+    const { passengers, setPassengers } = passengersCtx;
+    const { id, vessel, destination, origin } = tripCtx;
+    const { passesTypeID, passesTypeCode, passesTypeName } = passesTypeCtx;
     const [accommodations, setAccommodations] = useState<AccomsProps[] | null>(null);
     const [year, setYear] = useState('');
     const [totalBookings, setTotalBookings] = useState<number>(0);
@@ -58,15 +87,15 @@ export default function SeatPlan() {
     
 
     useEffect(() => {
-        passengersRef.current = passengers;
-    }, [passengers]);
-
-    useEffect(() => {
         handleFetchDependencies()
 
         const date = new Date();
         setYear(date.getFullYear().toString().slice(-2));
     }, []);
+
+    useEffect(() => {
+        passengersRef.current = passengers;
+    }, [passengers]);
 
     useEffect(() => {
         if(passengers && hasSeat) {
@@ -174,8 +203,6 @@ export default function SeatPlan() {
 
 
     const vesselComponent = useMemo(() => {
-        if(!accommodations) return null;
-
         return vessel == 'Mbca Leopards Sea Runner' || vessel == 'Sea Runner'
             ? <SRVessel onSeatSelect={handleSeatSelect} accommodations={accommodations} seatAvailability={setHasAvailableSeat} setParentLoading={setIsLoading} />
             : <L2Vessel onSeatSelect={handleSeatSelect} accommodations={accommodations} seatAvailability={setHasAvailableSeat} setParentLoading={setIsLoading} />

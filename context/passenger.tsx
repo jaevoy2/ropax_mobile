@@ -26,7 +26,6 @@ export type PassengerProps = {
     seatNumber?: number | string | null;
     trip?: string;
     fare?: number;
-    refNumber?: number;
     hasInfant?: boolean;
     hasScanned?: boolean;
     hasCargo?: boolean;
@@ -82,7 +81,7 @@ export const PassengerProvider: React.FC<{ children: React.ReactNode }> = ({ chi
         value: InfantProps[K]
     ) => setPassengers((prev) =>
         prev.map((p, passIndex) => { 
-            if (p.id !== id && passIndex !== index || !p.infant) return p;
+            if (p.id !== id || !p.infant) return p;
             return {
                 ...p,
                 infant: p.infant?.map((inf, i) =>

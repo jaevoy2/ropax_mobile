@@ -1,17 +1,18 @@
-    import { FetchPaxBookingInfo } from '@/api/paxBookingInfo';
+import { FetchPaxBookingInfo } from '@/api/paxBookingInfo';
 import { FetchTrips } from '@/api/trips';
 import CancelBooking from '@/components/cancelModal';
 import PreLoader from '@/components/preloader';
 import { useCargo } from '@/context/cargoProps';
-import { usePassengers } from '@/context/passenger';
+import { PassengerProps, usePassengers } from '@/context/passenger';
 import { useTrip } from '@/context/trip';
 import { Ionicons, MaterialCommunityIcons } from '@expo/vector-icons';
 import { router, useFocusEffect, useLocalSearchParams } from 'expo-router';
 import { useCallback, useState } from 'react';
 import { ActivityIndicator, Alert, Dimensions, KeyboardAvoidingView, Modal, Platform, Pressable, ScrollView, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 import { Calendar } from 'react-native-calendars';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
-    import { bookingStatuses } from './(tabs)/manage-booking';
+import { bookingStatuses } from './(tabs)/manage-booking';
 import { TripProps } from './(tabs)/manual-booking';
 
 
@@ -48,6 +49,7 @@ import { TripProps } from './(tabs)/manual-booking';
         passengerTypeId: number;
         passenger_type: string;
         accommodation: string;
+        paxTypeCode: string;
         accommodationTypeId: number;
         station?: string;
         fare?: number;
@@ -56,7 +58,7 @@ import { TripProps } from './(tabs)/manual-booking';
         forCancel?: boolean;
     }
 
-    export type TripInfo = {
+    export type ReshcedTripInfo = {
         vessel: string;
         id: number;
         vesselID: number;
@@ -87,15 +89,15 @@ import { TripProps } from './(tabs)/manual-booking';
     export default function BookingInfo() {
         const { cargoProperties, paxCargoProperty, setPaxCargoProperties } = useCargo();
         const { setPassengers, clearPassengers } = usePassengers();
-        const { setBookingId, clearTrip, setRouteID, setVessel, setID, setOrigin, setDestination, setVesselID, setCode, setWebCode, setDepartureTime, setMobileCode, setIsCargoable, setHasScanned, setTripAccom } = useTrip();
+        const { setRefNumber, setBookingId, clearTrip, setRouteID, setTotalFare, setVessel, setID, setOrigin, setDestination, setVesselID, setCode, setWebCode, setDepartureTime, setMobileCode, setIsCargoable, setHasScanned, setTripAccom } = useTrip();
         const { bookingId, paxId, refNum } = useLocalSearchParams();
         const [ loading, setLoading ] = useState(true);
         const [ paxInfo, setPaxInfo ] = useState<PaxInfo[]>([]);
         const [trips, setTrips] = useState<TripProps[] | null>(null);
-        const [tripInfo, setTripInfo] = useState<TripInfo | null>(null)
+        const [reschedTripInfo, setReschedTripInfo] = useState<ReshcedTripInfo | null>(null)
         const [percentages, setPercentages] = useState<PercentagesProps[]>([])
         const [formTab, setFormTab] = useState('Passengers');
-        const [totalFare, setTotalFare] = useState(0);
+        const [totalTripFare, setTotalTripFare] = useState(0);
         const [proceedLoading,  setProceedLoading] = useState(false)
         const [reschedModal, setReschedModal] = useState(false);
         const [tripDate, setTripDate] = useState('');
@@ -103,6 +105,8 @@ import { TripProps } from './(tabs)/manual-booking';
         const [cancelModal, setCancelModal] = useState(false);
         const [reschedLoading, setReschedLoading] = useState(true)
         const [calendar, setCalendar] = useState(false);
+        const insets = useSafeAreaInsets();
+        const [reprintLoading, setReprintLoading] = useState(false)
 
         const isOnlinePax = paxInfo.some(p => p?.station.toLowerCase() == 'online booking');
         const paxBookingStatus = bookingStatuses?.find(s => s.id == paxInfo[0]?.bookingStatus)?.label.toLowerCase();
@@ -192,8 +196,8 @@ import { TripProps } from './(tabs)/manual-booking';
             }
         }
 
-        const handleOnTripSelect = (vesselName: string, trip_id: number, routeId: number, origin: string, destination: string, mobileCode: string, code: string, web_code: string, departureTime: string, vesselID: number, cargoable: number) => {
-            setTripInfo({
+        const handleReschedTripSelect = (vesselName: string, trip_id: number, routeId: number, origin: string, destination: string, mobileCode: string, code: string, web_code: string, departureTime: string, vesselID: number, cargoable: number) => {
+            setReschedTripInfo({
                 vessel: vesselName,
                 id: trip_id,
                 vesselID: vesselID,
@@ -210,17 +214,17 @@ import { TripProps } from './(tabs)/manual-booking';
         }
 
         const handleReschedProceed = () => {
-            setVessel(tripInfo.vessel);
-            setID(tripInfo.id);
-            setVesselID(tripInfo.vesselID);
-            setRouteID(tripInfo.routeID)
-            setOrigin(tripInfo.origin);
-            setDestination(tripInfo.destination);
-            setMobileCode(tripInfo.mobileCode);
-            setCode(tripInfo.code);
-            setWebCode(tripInfo.webCode);
-            setDepartureTime(tripInfo.departureTime);
-            setIsCargoable(tripInfo.isCargoable);
+            setVessel(reschedTripInfo.vessel);
+            setID(reschedTripInfo.id);
+            setVesselID(reschedTripInfo.vesselID);
+            setRouteID(reschedTripInfo.routeID)
+            setOrigin(reschedTripInfo.origin);
+            setDestination(reschedTripInfo.destination);
+            setMobileCode(reschedTripInfo.mobileCode);
+            setCode(reschedTripInfo.code);
+            setWebCode(reschedTripInfo.webCode);
+            setDepartureTime(reschedTripInfo.departureTime);
+            setIsCargoable(reschedTripInfo.isCargoable);
             
             setTimeout(() => {
                 for(const pax of paxInfo) {
@@ -299,6 +303,7 @@ import { TripProps } from './(tabs)/manual-booking';
                         seatNumber: pax.bookings[0].pivot.seat_no,
                         passenger_type: pax.passenger_type.name,
                         passengerTypeId: pax.passenger_type.id,
+                        paxTypeCode: pax.passenger_type.passenger_types_code,
                         accommodation: pax.accommodation_type[0]?.name,
                         accommodationTypeId: pax.accommodation_type[0]?.id,
                         fare: pax.fares[0]?.fare ? pax.fares[0]?.fare : pax.bookings.find((r: any) => r.pivot)?.pivot?.fare,
@@ -316,7 +321,7 @@ import { TripProps } from './(tabs)/manual-booking';
 
                     setPaxInfo(paxData);
                     setPercentages(cancelPercents)
-                    setTotalFare(
+                    setTotalTripFare(
                         paxData.reduce((sum, passenger) => sum + Number(passenger?.fare), 0)
                     )
                 }
@@ -388,8 +393,54 @@ import { TripProps } from './(tabs)/manual-booking';
             router.push(`/addPaxCargo?departureTime=${paxInfo[0].departureTime}`)
         }
 
+        const handleReprint = () => {
+            setReprintLoading(true);
+
+            setTimeout(() => {
+                const paxData: PassengerProps[] = paxInfo.map(pax => ({
+                    pax_id: String(pax.id),
+                    id: String(pax.id),
+                    accommodation: pax.accommodation,
+                    accommodationID: pax.accommodationTypeId,
+                    passType: pax.passenger_type,
+                    passType_id: pax.passengerTypeId,
+                    passTypeCode: pax.paxTypeCode,
+                    name: pax.last_name + ', ' + pax.first_name,
+                    address: pax.address,
+                    age: pax.age,
+                    nationality: pax.nationality,
+                    contact: pax.contactNo,
+                    gender: pax.gender,
+                    seatNumber: pax.seatNumber,
+                    trip: pax.route,
+                    fare: pax.fare,
+                    bookingType: pax.bookingType
+                }));
+    
+                setPassengers(paxData);
+
+                setRefNumber(paxInfo[0].referenceNumber);
+                setTotalFare(paxInfo.reduce((sum, passenger) => sum + Number(passenger?.fare), 0))
+                setID(paxInfo[0].tripId);
+                setVessel(paxInfo[0].vessel);
+                setVesselID(paxInfo[0].vesselId);
+                setRouteID(paxInfo[0].routeId);
+                setOrigin(paxInfo[0].origin);
+                setDestination(paxInfo[0].destination)
+                setMobileCode(paxInfo[0].mobileCode);
+                setWebCode(paxInfo[0].webCode);
+                setCode(paxInfo[0].vesselCode);
+                setDepartureTime(paxInfo[0].departureTimeISO);
+                setIsCargoable(paxInfo[0].isCargoable);
+                
+                setReprintLoading(false)
+                router.push('/generateTicket')
+            }, 500);
+
+        }
+
         return (
-            <View style={{ flex: 1, backgroundColor: '#fafafa' }}>
+            <View style={{ flex: 1, backgroundColor: '#fafafa', paddingBottom: insets.bottom }}>
                 <View style={styles.headerContainer}>
                     <View style={{ flexDirection: 'row', alignItems: 'center', gap: 10 }}>
                         <Pressable onPress={() => router.back()}>
@@ -450,7 +501,7 @@ import { TripProps } from './(tabs)/manual-booking';
                                 </View>
                                 <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', paddingHorizontal: 10, paddingVertical: 12, backgroundColor: '#cf2a3b27', borderBottomRightRadius: 6, borderBottomLeftRadius: 6 }}>
                                     <Text style={{ color: '#cf2a3a', fontSize: 13, fontWeight: '800' }}>Total Amount</Text>
-                                    <Text style={{ fontSize: 16, fontWeight: '800', color: '#cf2a3a' }}>₱ {totalFare.toFixed(2)}</Text>
+                                    <Text style={{ fontSize: 16, fontWeight: '800', color: '#cf2a3a' }}>₱ {totalTripFare.toFixed(2)}</Text>
                                 </View>
                             </View>
 
@@ -468,7 +519,7 @@ import { TripProps } from './(tabs)/manual-booking';
                                 <View style={[styles.card,  { marginTop: 10 }]}>
                                     <Text style={{ padding: 10, borderBottomColor: '#dadada', borderBottomWidth: 1, fontWeight: 'bold' }}>Passenger/s</Text>
                                     {paxInfo.map((pax: any) =>(
-                                        <View key={pax.id} style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', width: width * 0.83, padding: 10 }}>
+                                        <View key={pax.id} style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', width: '100%', padding: 10 }}>
                                             <View style={{ flexDirection: 'row', alignItems: 'center' }}>
                                                 <Ionicons name={'person'} color={'#fff'} size={18} style={{ padding: 10, backgroundColor: '#cf2a3a', borderRadius: 50, marginRight: 10 }} />
                                                 <View style={{ flexDirection: 'column', width: '65%' }}>
@@ -522,13 +573,21 @@ import { TripProps } from './(tabs)/manual-booking';
                         <View style={{ paddingVertical: 10, borderTopColor: '#dadada', borderTopWidth: 1 }}>
                             {paxBookingStatus == 'confirmed' && !isOnlinePax && (
                                 <View style={styles.requestsContainer}>
-                                    <Pressable onPress={() => handleOnResched()} style={[styles.requestsBtn, { backgroundColor: '#FCCA03' }]}>
-                                        <Ionicons name={'reload'} size={16} />
-                                        <Text style={{ fontWeight: '800', fontSize: 12 }}>Reschedule Booking</Text>
-                                    </Pressable>
                                     <Pressable onPress={() => handleOnCancelModal()} style={[styles.requestsBtn, { backgroundColor: '#cf2a3a' }]}>
-                                        <MaterialCommunityIcons name={'cancel'} color={'#fff'} size={16} />
-                                        <Text style={{ color: '#fff', fontWeight: '800', fontSize: 12 }}>Cancel Booking</Text>
+                                        <MaterialCommunityIcons name={'cancel'} color={'#fff'} size={18} />
+                                        <Text style={{ color: '#fff', fontWeight: '800', fontSize: 14, }}>Cancel</Text>
+                                    </Pressable>
+                                    <Pressable onPress={() => handleOnResched()} style={[styles.requestsBtn, { backgroundColor: '#FCCA03' }]}>
+                                        <Ionicons name={'reload'} size={18} />
+                                        <Text style={{ fontWeight: '800', fontSize: 14, }}>Reschedule</Text>
+                                    </Pressable>
+                                    <Pressable onPress={() => handleReprint()} style={[styles.requestsBtn, { backgroundColor: '#25AD76' }]}>
+                                        {reprintLoading == true ? (
+                                            <ActivityIndicator size={'small'} color={'#fff'} />
+                                        ) : (
+                                            <Ionicons name={'print-outline'} color={'#fff'} size={20} />
+                                        )}
+                                        <Text style={{ color: '#fff', fontWeight: '800', fontSize: 14, }}>Re-print</Text>
                                     </Pressable>
                                 </View>
                             )}
@@ -575,23 +634,22 @@ import { TripProps } from './(tabs)/manual-booking';
                                             </View>
                                         )}
                                         { trips && trips.filter(t => t.hasDeparted == false).map((trip) => (
-                                            <TouchableOpacity onPress={() => handleOnTripSelect(trip.vessel, trip.trip_id, trip.route_id, trip.route_origin, trip.route_destination, trip.mobile_code, trip.code, trip.web_code, trip.departure_time, trip.vessel_id, trip.isCargoable)}
-                                                key={trip.trip_id} style={{ paddingHorizontal: 10, paddingVertical: 12, backgroundColor: tripInfo.id == trip.trip_id ? '#cf2a3a' : '#fff', borderColor: '#adadad', borderWidth: 1, borderRadius: 10, marginTop: 12, flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' }}>
+                                            <TouchableOpacity onPress={() => handleReschedTripSelect(trip.vessel, trip.trip_id, trip.route_id, trip.route_origin, trip.route_destination, trip.mobile_code, trip.code, trip.web_code, trip.departure_time, trip.vessel_id, trip.isCargoable)}
+                                                key={trip.trip_id} style={{ paddingHorizontal: 10, paddingVertical: 12, backgroundColor: reschedTripInfo.id == trip.trip_id ? '#cf2a3a' : '#fff', borderColor: '#adadad', borderWidth: 1, borderRadius: 10, marginTop: 12, flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' }}>
                                                 <View style={{ width: '78%' }}>
-                                                    <Text style={{ fontWeight: 'bold', fontSize: 11, color: tripInfo.id == trip.trip_id ? '#fff' : '#cf2a3a' }}>{`${trip.departure}`}</Text>
-                                                    <Text style={{ fontWeight: 'bold', fontSize: 11, color: tripInfo.id == trip.trip_id ? '#fff' : '#000' }}>{`${trip.route_origin}  >  ${trip.route_destination} [ ${trip.vessel} ]`}</Text>
+                                                    <Text style={{ fontWeight: 'bold', fontSize: 11, color: reschedTripInfo.id == trip.trip_id ? '#fff' : '#cf2a3a' }}>{`${trip.departure}`}</Text>
+                                                    <Text style={{ fontWeight: 'bold', fontSize: 11, color: reschedTripInfo.id == trip.trip_id ? '#fff' : '#000' }}>{`${trip.route_origin}  >  ${trip.route_destination} [ ${trip.vessel} ]`}</Text>
                                                 </View>
-                                                <Ionicons name="chevron-forward" size={18} color={tripInfo.id == trip.trip_id ? '#fff' : '#000'} />
+                                                <Ionicons name="chevron-forward" size={18} color={reschedTripInfo.id == trip.trip_id ? '#fff' : '#000'} />
                                             </TouchableOpacity>
                                         ))}
                                     </View>
-                                    <View style={{ paddingHorizontal: 20, marginTop: 10 }}>
-                                    </View>
-                                    <View style={{ paddingHorizontal: 20, paddingBottom: 20 }}>
+                                    <View style={{ paddingHorizontal: 20, marginTop: 10 }} />
+                                    <View style={{ padding: 20 }}>
                                         <TouchableOpacity onPress={() => handleReschedProceed()} style={{ marginTop: 30, padding: 10, backgroundColor: '#CF2A3A', borderRadius: 5 }}>
                                             <Text style={{ color: '#fff', textAlign: 'center' }}>Proceed</Text>
                                         </TouchableOpacity>
-                                        <TouchableOpacity onPress={() => {setReschedModal(false), setTripInfo(null)}} style={{ marginTop: 10, alignSelf: 'center' }}>
+                                        <TouchableOpacity onPress={() => {setReschedModal(false), setReschedTripInfo(null)}} style={{ marginTop: 10, alignSelf: 'center' }}>
                                             <Text style={{ color: '#cf2a3a', textAlign: 'center' }}>Cancel</Text>
                                         </TouchableOpacity>
                                     </View>
@@ -685,18 +743,19 @@ import { TripProps } from './(tabs)/manual-booking';
         requestsContainer: {
             flexDirection: 'row',
             alignItems: 'center',
-            justifyContent: 'center',
-            gap: 10,
+            justifyContent: 'space-between',
+            paddingHorizontal: 20
         },
         requestsBtn: {
-            paddingHorizontal: 10,
+            paddingHorizontal: 12,
             paddingVertical: 15,
             justifyContent: 'center',
             borderRadius: 8,
             elevation: 2,
             flexDirection: 'row',
             alignItems: 'center',
-            gap: 3
+            gap: 3,
+            width: width / 3 - 20
         },
         input: {
             width: 100,
