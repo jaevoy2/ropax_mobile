@@ -56,8 +56,9 @@ import { TripProps } from './(tabs)/manual-booking';
         bookingType: string;
         isCargoable: number;
         forCancel?: boolean;
+        hasCancelled?: boolean;
     }
-
+    
     export type ReshcedTripInfo = {
         vessel: string;
         id: number;
@@ -263,8 +264,15 @@ import { TripProps } from './(tabs)/manual-booking';
         const handleFetchInfo = async () => {
             try {
                 const response = await FetchPaxBookingInfo(Number(bookingId), Number(paxId), String(refNum));
-
+                
                 if(!response.error) {
+                    function verifyIfCancelled(paxId: number) {
+                        const cancellationIDs = new Set(response.cancellations
+                            // .filter((c: any) => c.booking_id == bookingId ?? [])
+                            // .flat();
+                    )}
+
+
                     const paxData: PaxInfo[] = response.data.map((pax: any) => ({
                         id: pax.id,
                         first_name: pax.first_name,
@@ -575,11 +583,11 @@ import { TripProps } from './(tabs)/manual-booking';
                                 <View style={styles.requestsContainer}>
                                     <Pressable onPress={() => handleOnCancelModal()} style={[styles.requestsBtn, { backgroundColor: '#cf2a3a' }]}>
                                         <MaterialCommunityIcons name={'cancel'} color={'#fff'} size={18} />
-                                        <Text style={{ color: '#fff', fontWeight: '800', fontSize: 14, }}>Cancel</Text>
+                                        <Text style={{ color: '#fff', fontWeight: '800', fontSize: 13, }}>Cancel</Text>
                                     </Pressable>
                                     <Pressable onPress={() => handleOnResched()} style={[styles.requestsBtn, { backgroundColor: '#FCCA03' }]}>
                                         <Ionicons name={'reload'} size={18} />
-                                        <Text style={{ fontWeight: '800', fontSize: 14, }}>Reschedule</Text>
+                                        <Text style={{ fontWeight: '800', fontSize: 13, }}>Reschedule</Text>
                                     </Pressable>
                                     <Pressable onPress={() => handleReprint()} style={[styles.requestsBtn, { backgroundColor: '#25AD76' }]}>
                                         {reprintLoading == true ? (
@@ -587,7 +595,7 @@ import { TripProps } from './(tabs)/manual-booking';
                                         ) : (
                                             <Ionicons name={'print-outline'} color={'#fff'} size={20} />
                                         )}
-                                        <Text style={{ color: '#fff', fontWeight: '800', fontSize: 14, }}>Re-print</Text>
+                                        <Text style={{ color: '#fff', fontWeight: '800', fontSize: 13, }}>Re-print</Text>
                                     </Pressable>
                                 </View>
                             )}
@@ -605,7 +613,7 @@ import { TripProps } from './(tabs)/manual-booking';
                 )}
 
                 {cancelModal == true && (
-                    <CancelBooking cancelModal={cancelModal} setCancelModal={setCancelModal} paxInfo={paxInfo} setPaxInfo={setPaxInfo} percents={percentages} bookingId={bookingId} />
+                    <CancelBooking cancelModal={cancelModal} setCancelModal={setCancelModal} paxInfo={paxInfo} setPaxInfo={setPaxInfo} percents={percentages} bookingId={bookingId}  />
                 )}
 
                 <Modal transparent animationType={'fade'} visible={reschedModal}>

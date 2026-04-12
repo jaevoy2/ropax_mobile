@@ -47,32 +47,13 @@ export default function SeatPlan() {
     const iconSize = isTablet ? { width: 55, height: 54 } : { width: 41, height: 40 };
     const logoSize = isTablet ? { width: 160, height: 37 } : { width: 120, height: 28 };
 
+    const sheetIndex = passengers.length > 0 ? 0 : -1;
     const seatSnapPoints = useMemo(() => ["30%"], []);
-    const sheetIndex = useMemo(() => passengers.length > 0 ? 0 : -1, [passengers.length]);
-
+    const nonInfantPax = useMemo(() => passengers.filter(p => p.passType != 'Infant'), [passengers]);
+    const hasEmptySeat = useMemo(() => nonInfantPax.filter(p => p.passType != 'Infant').some(p => p.seatNumber == ''), [nonInfantPax]);
     const hasPasses = useMemo(() => passengers.some(p => p.passType == 'Passes'), [passengers]);
     const hasSeat = useMemo(() => passengers.some(p => p.seatNumber != null), [passengers]);
 
-    
-
-    useEffect(() => {
-        handleFetchDependencies()
-
-        const date = new Date();
-        setYear(date.getFullYear().toString().slice(-2));
-    }, []);
-
-    useEffect(() => {
-        passengersRef.current = passengers;
-    }, [passengers]);
-
-    useEffect(() => {
-        if(passengers && hasSeat) {
-            setPassesIsHidden(true)
-        }else {
-            setPassesIsHidden(false);
-        }
-    }, [passengers]);
     
     const handleSeatSelect = useCallback(() => {
         if(passengers.length == 0) {
@@ -111,33 +92,26 @@ export default function SeatPlan() {
         });
     }, [id, errorForm, setPassengers]);
 
-    const handleForceSeatRemoval = () => {
+    const handleForceSeatRemoval = useCallback(() => {
         passengers.forEach(paxSeat => {
             const seat = paxSeat.seatNumber;
-
-            if(errorForm.includes(seat)) {
-                const updateErrorForm = errorForm.filter((e: any) => e != seat);
-                setErrorForm(updateErrorForm);
+            if (errorForm.includes(seat)) {
+                setErrorForm(prev => prev.filter((e: any) => e != seat));
             }
-
-            seatRemoval(seat, id)
+            seatRemoval(seat, id);
         });
-    }
+    }, [passengers, errorForm, id]);
 
-    const handleCreatePasses = () => {
+    const handleCreatePasses = useCallback(() => {
         setPassengers([]);
-
         const temp = Crypto.randomUUID();
-
         setTimeout(() => {
-            setPassengers([{ 
+            setPassengers([{
                 id: temp, passType_id: passesTypeID, passType: passesTypeName, passTypeCode: passesTypeCode
             }]);
-
         }, 400);
-
-        router.push('/bookingForm')
-    }
+        router.push('/bookingForm');
+    }, [setPassengers, passesTypeID, passesTypeName, passesTypeCode]);
 
     const renderBottomSheetBackdrop = useCallback(
         (props: any) => (
@@ -176,6 +150,26 @@ export default function SeatPlan() {
             ? <SRVessel onSeatSelect={handleSeatSelect} accommodations={accommodations} seatAvailability={setHasAvailableSeat} setParentLoading={setIsLoading} />
             : <L2Vessel onSeatSelect={handleSeatSelect} accommodations={accommodations} seatAvailability={setHasAvailableSeat} setParentLoading={setIsLoading} />
     }, [vessel, handleSeatSelect, accommodations]);
+
+
+    useEffect(() => {
+        handleFetchDependencies()
+
+        const date = new Date();
+        setYear(date.getFullYear().toString().slice(-2));
+    }, []);
+
+    useEffect(() => {
+        passengersRef.current = passengers;
+    }, [passengers]);
+
+    useEffect(() => {
+        if(passengers && hasSeat) {
+            setPassesIsHidden(true)
+        }else {
+            setPassesIsHidden(false);
+        }
+    }, [passengers]);
 
 
 
@@ -262,7 +256,7 @@ export default function SeatPlan() {
                         </View>
                     </View>
 
-                    <TouchableOpacity onPress={() => router.push('/bookingForm')} disabled={passengers.filter(p => p.passType != 'Infant').some(p => p.seatNumber == '')} style={{ backgroundColor: passengers.filter(p => p.passType != 'Infant').some(p => p.seatNumber == '') ? '#df5a68ff' : '#cf2a3a', width: '95%', alignSelf: 'center', borderRadius: 8, paddingVertical: 15, marginTop: 15 }}>
+                    <TouchableOpacity onPress={() => router.push('/bookingForm')} disabled={hasEmptySeat} style={{ backgroundColor: '#cf2a3a', opacity: hasEmptySeat ? 0.5 : 1, width: '95%', alignSelf: 'center', borderRadius: 8, paddingVertical: 15, marginTop: 15 }}>
                         <Text style={{ fontSize: 16, fontWeight: 'bold', textAlign: 'center', color: '#fff' }}>Continue</Text>
                     </TouchableOpacity>
                 </BottomSheet>

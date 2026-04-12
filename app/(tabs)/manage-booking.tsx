@@ -196,7 +196,7 @@ export default function ManageBooking() {
                 </Modal>
             )}
 
-            <View style={{ paddingTop: 50, height: 145, backgroundColor: '#cf2a3a', paddingHorizontal: 20, gap: 15 }}>
+            <View style={{ paddingTop: 50, height: 150, backgroundColor: '#cf2a3a', paddingHorizontal: 20, gap: 15 }}>
                 <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' }}>
                     <Text style={{ color: '#fff', fontSize: 20, fontWeight: 'bold' }}>Manage Bookings</Text>
                     <TouchableOpacity onPress={() => setCalendarVisible(true)}>
@@ -205,7 +205,7 @@ export default function ManageBooking() {
                 </View>
                 <View style={{ flexDirection: 'row', alignItems: 'center', gap: 10 }}>
                     <View style={{ position: 'relative', borderColor: '#cfcfcf73', backgroundColor: '#d4abab73', borderWidth: 1, borderRadius: 50, flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', paddingHorizontal: 10 }}>
-                        <TextInput onChangeText={(text) => {handleFilter(text), setSearchValue(text)}} value={searchValue} placeholder='Search' placeholderTextColor='#fff' style={{ fontSize: 13, fontWeight: '600', width: '90%', color: '#fff' }} />
+                        <TextInput onChangeText={(text) => {handleFilter(text), setSearchValue(text)}} value={searchValue} placeholder='Search' placeholderTextColor='#fff' style={{ fontSize: 15, fontWeight: '600', width: '90%', color: '#fff' }} />
                         <TouchableOpacity disabled={searchValue.length == 0} onPress={() => {setSearchValue(''), fetchBooking(date, null)}} style={{ borderLeftWidth: 1, borderLeftColor: '#cfcfcfd0', paddingLeft: 10 }}>
                             {searchValue.length > 0 ? (
                                 <Ionicons name={'close'} size={20} color={'#fff'} />

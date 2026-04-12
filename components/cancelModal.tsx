@@ -2,7 +2,7 @@ import { CancelPaxBooking } from '@/api/cancel';
 import { PaxInfo } from '@/app/bookingInfo';
 import { router } from 'expo-router';
 import React, { useEffect, useMemo, useState } from 'react';
-import { ActivityIndicator, Alert, Modal, ScrollView, Text, TextInput, TouchableOpacity, View } from 'react-native';
+import { ActivityIndicator, Alert, Modal, ScrollView, Switch, Text, TextInput, TouchableOpacity, View } from 'react-native';
 import { Checkbox } from 'react-native-paper';
 
 
@@ -22,36 +22,29 @@ export default function CancelBooking({ cancelModal, setCancelModal, paxInfo, se
     const [refundAmnt, setRefundAmnt] = useState(Number);
     const [submitLoading, setSubmitLoading] = useState(false);
     const [cancelReason, setCancelReason] = useState('');
+    const [isByMamangement, setIsByManagement] = useState(false);
+
 
     const forCancel = useMemo(() => {
-        return paxInfo.filter(p => p.forCancel == true && (p.passenger_type == 'Infant' && p.forCancel == true));
-    }, [paxInfo])
-
-    useMemo(() => {
-        const paxToCancel = paxInfo.filter(p => p.forCancel == true);
-        const total = paxToCancel.reduce((sum, passenger) => sum + Number(passenger?.fare), 0);
-
-        setTotalFare(total);
-    }, [paxInfo]);
-
-
-    useEffect(() => {
-        handleChargeComputation();
-        const notForCancel = paxInfo.some(p => p.forCancel != true);
-        setSelectAll(!notForCancel);
-    }, [paxInfo]);
-
+        return paxInfo.filter(p => p.forCancel == true && p.passenger_type != 'Infant')
+    },[paxInfo])
 
     const handleChargeComputation = () => {
         let fee: any;
 
-        if(paxInfo[0].tripStatus.toLowerCase() != 'Departed') {
-            fee = percents.find(p => p.situation.toLowerCase() == 'pre-departure').feePercentage
+        if(isByMamangement == true) {
+            fee = 0;
             setPercent(fee);
         }else {
-            fee = percents.find(p => p.situation.toLowerCase() == 'post-departure').feePercentage
-            setPercent(fee);
+            if(paxInfo[0].tripStatus.toLowerCase() != 'Departed') {
+                fee = percents.find(p => p.situation.toLowerCase() == 'pre-departure').feePercentage
+                setPercent(fee);
+            }else {
+                fee = percents.find(p => p.situation.toLowerCase() == 'post-departure').feePercentage
+                setPercent(fee);
+            }
         }
+
         
         const chargeAmnt = (fee / 100) * totalFare
         setCharge(chargeAmnt);
@@ -74,6 +67,23 @@ export default function CancelBooking({ cancelModal, setCancelModal, paxInfo, se
         ))
     }
 
+    useEffect(() => {
+        const paxToCancel = paxInfo.filter(p => p.forCancel == true);
+        
+        if(paxToCancel.length > 1) {
+            const total = paxToCancel.reduce((sum, passenger) => sum + Number(passenger?.fare), 0);
+            setTotalFare(total);
+        }
+
+        const tripTotalFare = paxInfo.reduce((sum, passenger) => sum + Number(passenger?.fare), 0);
+        setTotalFare(tripTotalFare)
+
+        handleChargeComputation();
+        const notForCancel = paxInfo.some(p => p.forCancel != true);
+        setSelectAll(!notForCancel);
+    }, [paxInfo, isByMamangement]);
+
+
 
     const handleSubmitCancellation = async () => {
         setSubmitLoading(true);
@@ -81,6 +91,11 @@ export default function CancelBooking({ cancelModal, setCancelModal, paxInfo, se
         if(!cancelReason.trim()) {
             setSubmitLoading(false)
             return Alert.alert('Invalid', 'Reason is required.');
+        }
+
+        if(forCancel.length < 1 && isByMamangement == false) {
+            setSubmitLoading(false)
+            return Alert.alert('Invalid', 'No passengers selected for cancellation.');   
         }
 
         try {
@@ -138,7 +153,7 @@ export default function CancelBooking({ cancelModal, setCancelModal, paxInfo, se
                             <View style={{ marginTop: 30 }}>
                                 <Text style={{ fontWeight: '600', marginBottom: 5 }}>Reason of Cancellation</Text>
                                 <View style={{ borderColor: '#dadada', borderWidth: 1, borderRadius: 5 }}>
-                                    <TextInput onChangeText={(text) => setCancelReason(text)} style={{ fontSize: 16 }} placeholder='e.g Emergency' />
+                                    <TextInput value={cancelReason ?? 'e.g Emergency'} onChangeText={(text) => setCancelReason(text)} style={{ fontSize: 16 }} />
                                 </View>
                             </View>
 
@@ -152,23 +167,49 @@ export default function CancelBooking({ cancelModal, setCancelModal, paxInfo, se
                                 </View>
                                 
                                 <View style={{ height: 140 }}>
-                                    <ScrollView style={{ flex: 1, borderWidth: 1, borderColor: '#dadada', borderRadius: 8, paddingHorizontal: 5 }}>
+                                    <ScrollView style={{ flex: 1, borderWidth: 1, borderColor: '#dadada', borderRadius: 8, paddingHorizontal: 5, width: '100%' }}>
                                         {paxInfo.map((p: any) => (
                                             <TouchableOpacity key={p.id} onPress={() => handleCancelPax(p.id)} style={{ flexDirection: 'row', alignItems: 'center' }}>
                                                 <Checkbox status={p.forCancel == true ? 'checked' : 'unchecked'} color='#cf2a3a' uncheckedColor="#999" />
-                                                <Text style={{ color: p.forCancel == true ? '#cf2a3a' : '#999', fontSize: 16 }}>{`${p.first_name} ${p.last_name} (${p.passenger_type})`}</Text>
+                                                <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', width: '85%' }}>
+                                                    <Text style={{ color: p.forCancel == true ? '#cf2a3a' : '#999', fontSize: 16, width: '75%' }}>{`${p.first_name} ${p.last_name}`}</Text>
+                                                    <Text style={{ color: p.forCancel == true ? '#cf2a3a' : '#999', fontSize: 16 }}>{`(${p.passenger_type})`}</Text>
+                                                </View>
                                             </TouchableOpacity>
                                         ))}
                                     </ScrollView>
                                 </View>
+
+                                {paxInfo[0].tripStatus.toLowerCase() != 'departed' && (
+                                    <View style={{ flexDirection: 'row', alignItems: 'center', gap: 5, marginTop: 15 }}>
+                                        <Switch 
+                                            value={isByMamangement}
+                                            thumbColor={isByMamangement ? '#cf2a3a' : '#bebebe'}
+                                            trackColor={{ false: '#e4e4e4', true: '#cf2a3a80' }}
+                                            onValueChange={() => setIsByManagement(!isByMamangement)}
+                                        />
+                                        <Text style={{ fontSize: 16, color: isByMamangement ? '#cf2a3a' : '#999' }}>By Management</Text>
+                                    </View>
+                                )}
                             </View>
 
                             <View style={{ paddingBottom: 20 }}>
-                                <TouchableOpacity disabled={forCancel.length == 0 || submitLoading} onPress={() => handleSubmitCancellation()} style={{ marginTop: 30, padding: 10, backgroundColor: '#CF2A3A', borderRadius: 5, opacity: forCancel.length == 0 ? 0.5 : 1 }}>
+                                <TouchableOpacity disabled={
+                                    (forCancel.length < 1 || 
+                                        cancelReason == '' || 
+                                        submitLoading) &&
+                                        isByMamangement == false
+                                    } 
+                                    onPress={() => handleSubmitCancellation()} 
+                                    style={{ marginTop: 30, padding: 10, backgroundColor: '#CF2A3A', borderRadius: 5, 
+                                    opacity: (forCancel.length == 0 || 
+                                        cancelReason == '') &&
+                                        isByMamangement == false ? 0.5 : 1 
+                                }}>
                                     {submitLoading == true ? (
                                         <ActivityIndicator size={'small'} color={'#fff'} style={{ alignSelf: 'center' }} />
                                     ) : (
-                                        <Text style={{ color: '#fff', textAlign: 'center' }}>Submit</Text>
+                                        <Text style={{ color: '#fff', textAlign: 'center', fontWeight: '600' }}>Submit</Text>
                                     )}
                                 </TouchableOpacity>
                                 <TouchableOpacity onPress={() => setCancelModal(false)} style={{ marginTop: 10, alignSelf: 'center' }}>
