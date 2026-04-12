@@ -49,33 +49,11 @@ type PaxListProps = {
     }
 }
 
-
 export default function Forms({ errorForm }: FormProps) {
-    // Defensive context checks
-    const passengersCtx = usePassengers();
-    const tripCtx = useTrip();
-    const passesTypeCtx = usePassesType();
-    const cargoCtx = useCargo();
-
-    if (!passengersCtx || !tripCtx || !passesTypeCtx || !cargoCtx) {
-        let missing = [];
-        if (!passengersCtx) missing.push('PassengerProvider');
-        if (!tripCtx) missing.push('TripProvider');
-        if (!passesTypeCtx) missing.push('PassesTypeProvider');
-        if (!cargoCtx) missing.push('CargoProvider');
-        return (
-            <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center', padding: 40 }}>
-                <Text style={{ color: 'red', fontWeight: 'bold', fontSize: 18, textAlign: 'center' }}>
-                    Error: Missing context provider{missing.length > 1 ? 's' : ''}: {missing.join(', ')}.\n\nPlease ensure all providers are correctly set up in _layout.tsx.
-                </Text>
-            </View>
-        );
-    }
-
-    const { passengers, setPassengers, updatePassenger, updateInfant, updateCargo } = passengersCtx;
-    const { vessel_id, routeID, isCargoable, approvedBy, setApprovedBy } = tripCtx;
-    const { passesTypeID, passesTypeCode, passesTypeName } = passesTypeCtx;
-    const { cargoProperties } = cargoCtx;
+    const { passengers, setPassengers, updatePassenger, updateInfant, updateCargo } = usePassengers();
+    const { vessel_id, routeID, isCargoable, approvedBy, setApprovedBy } = useTrip();
+    const { passesTypeID, passesTypeCode, passesTypeName } = usePassesType();
+    const { cargoProperties } = useCargo();
 
     const [passengerType, setPassengerType] = useState<PassTypeProps[] | null>(null);
     const [paxFares, setPaxFares] = useState<PaxFareProps[] | null>(null);
@@ -89,8 +67,6 @@ export default function Forms({ errorForm }: FormProps) {
     const InfantDropController = useRef<{ [key: string]: any }>({});
     const initializedInfantRefs = useRef<{ [key: string]: boolean }>({});
     const infantSearchRefs = useRef<{ [key: string]: any }>({});
-
-    // ── All derived values via useMemo ──
 
     const nonInfantPax = useMemo(() =>
         passengers.filter(p => p.passType !== 'Infant'),

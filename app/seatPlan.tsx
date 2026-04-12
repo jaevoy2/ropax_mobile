@@ -28,40 +28,9 @@ export type AccomsProps = {
 }
 
 export default function SeatPlan() {
-    // Defensive context checks
-    const passengersCtx = usePassengers();
-    const tripCtx = useTrip();
-    const passesTypeCtx = usePassesType();
-    if (!passengersCtx) {
-        return (
-            <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center', padding: 20 }}>
-                <Text style={{ fontSize: 16, fontWeight: 'bold', color: 'red', marginBottom: 10 }}>
-                    Error: Missing PassengersProvider
-                </Text>
-            </View>
-        );
-    }
-    if (!tripCtx) {
-        return (
-            <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center', padding: 20 }}>
-                <Text style={{ fontSize: 16, fontWeight: 'bold', color: 'red', marginBottom: 10 }}>
-                    Error: Missing TripProvider
-                </Text>
-            </View>
-        );
-    }
-    if (!passesTypeCtx) {
-        return (
-            <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center', padding: 20 }}>
-                <Text style={{ fontSize: 16, fontWeight: 'bold', color: 'red', marginBottom: 10 }}>
-                    Error: Missing PassesTypeProvider
-                </Text>
-            </View>
-        );
-    }
-    const { passengers, setPassengers } = passengersCtx;
-    const { id, vessel, destination, origin } = tripCtx;
-    const { passesTypeID, passesTypeCode, passesTypeName } = passesTypeCtx;
+    const { passengers, setPassengers } = usePassengers();
+    const { id, vessel, destination, origin } = useTrip();
+    const { passesTypeID, passesTypeCode, passesTypeName } = usePassesType();
     const [accommodations, setAccommodations] = useState<AccomsProps[] | null>(null);
     const [year, setYear] = useState('');
     const [totalBookings, setTotalBookings] = useState<number>(0);

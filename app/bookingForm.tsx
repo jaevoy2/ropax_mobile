@@ -12,24 +12,8 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context';
 const { height, width } = Dimensions.get('screen');
 
 export default function BookingForm() {
-    // Defensive context checks
-    const passengersCtx = usePassengers();
-    const tripCtx = useTrip();
-    let missing = [];
-    if (!passengersCtx) missing.push('PassengerProvider');
-    if (!tripCtx) missing.push('TripProvider');
-    if (missing.length > 0) {
-        // Always show error in both dev and prod
-        return (
-            <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center', padding: 40, backgroundColor: '#fff' }}>
-                <Text style={{ color: 'red', fontWeight: 'bold', fontSize: 18, textAlign: 'center' }}>
-                    Error: Missing context provider{missing.length > 1 ? 's' : ''}: {missing.join(', ')}.\n\nPlease ensure all providers are correctly set up in _layout.tsx.
-                </Text>
-            </View>
-        );
-    }
-    const { passengers, clearPassengers } = passengersCtx;
-    const { approvedBy, setTotalFare } = tripCtx;
+    const { passengers, clearPassengers } = usePassengers();
+    const { approvedBy, setTotalFare } = useTrip()
     const [saveloading, setSaveLoading] = useState(false);
     const [errorForm, setErrorForm] = useState<(string | number)[]>([]);
     const [year, setYear] = useState('');
