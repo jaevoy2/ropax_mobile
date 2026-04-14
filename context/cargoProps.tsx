@@ -1,4 +1,4 @@
-import React, { createContext, ReactNode, useContext, useState } from "react";
+import React, { createContext, ReactNode, useCallback, useContext, useMemo, useState } from "react";
 
 type CargoTypeProps = {
     id?: number;
@@ -81,7 +81,7 @@ export const CargoProvider = ({ children }: {children: ReactNode}) => {
     const [cargoProperties, setCargoProperties] = useState<CargoProperties | null>(null);
     const [paxCargoProperty, setPaxCargoProperties] = useState<PaxCargoProperties[]>([]);
 
-    const updatePaxCargoProperty = <K extends keyof PaxCargoProperties>(
+    const updatePaxCargoProperty = useCallback(<K extends keyof PaxCargoProperties>(
         indentifier: number,
         key: K,
         value: PaxCargoProperties[K]
@@ -90,11 +90,20 @@ export const CargoProvider = ({ children }: {children: ReactNode}) => {
             c.id == indentifier ? {
                 ...c, [key]: value
             }: c
-        ));
-    }
+        )); 
+    }, [])
+
+
+    const contextValue = useMemo(() => ({
+        cargoProperties, 
+        paxCargoProperty, 
+        setCargoProperties, 
+        setPaxCargoProperties, 
+        updatePaxCargoProperty
+    }), [cargoProperties, paxCargoProperty, setCargoProperties, setPaxCargoProperties, updatePaxCargoProperty])
     
     return (
-        <CargoContext.Provider value={{ cargoProperties, paxCargoProperty, setCargoProperties, setPaxCargoProperties, updatePaxCargoProperty }}>
+        <CargoContext.Provider value={ contextValue }>
             {children}
         </CargoContext.Provider>
     );

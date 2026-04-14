@@ -4,7 +4,7 @@ import { usePassengers } from '@/context/passenger';
 import { useTrip } from '@/context/trip';
 import { Ionicons, MaterialCommunityIcons } from '@expo/vector-icons';
 import { router } from 'expo-router';
-import React, { useEffect, useRef, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { Alert, Dimensions, Image, Modal, PermissionsAndroid, Platform, ScrollView, Text, TouchableOpacity, View } from 'react-native';
 import { BleManager, Device } from 'react-native-ble-plx';
 import QRCode from 'react-native-qrcode-svg';
@@ -425,7 +425,7 @@ export default function TicketGenerator() {
                                                             <Text style={{ fontSize: 13, width: '40%' }}>{`${p.name?.split(',')[1]?.trim().charAt(0)}. ${p.name?.split(',')[0]}`}</Text>
                                                             <Text style={{ fontSize: 13, width: 50, textAlign: 'center' }}>{p.passTypeCode}</Text>
                                                             <Text style={{ fontSize: 13, width: 50, textAlign: 'center' }}>{`${p.seatNumber}`}</Text>
-                                                            <Text style={{ fontSize: 13, width: 70, textAlign: 'right' }}>₱ {p.fare.toLocaleString('en-PH', { minimumFractionDigits: 2,  maximumFractionDigits: 2})}</Text>
+                                                            <Text style={{ fontSize: 13, width: 70, textAlign: 'right' }}>₱ {p?.fare?.toLocaleString('en-PH', { minimumFractionDigits: 2,  maximumFractionDigits: 2})}</Text>
                                                         </View>
                                                     ))}
                                                 </View>
@@ -439,7 +439,7 @@ export default function TicketGenerator() {
                                                             <Text style={{ fontSize: 13, width: '40%' }}>{`${p.name?.split(',')[1]?.trim().charAt(0)}. ${p.name?.split(',')[0]}`}</Text>
                                                             <Text style={{ fontSize: 13, width: 50, textAlign: 'center' }}>{p.passTypeCode}</Text>
                                                             <Text style={{ fontSize: 13, width: 50, textAlign: 'center' }}>{`${p.seatNumber}`}</Text>
-                                                            <Text style={{ fontSize: 13, width: 70, textAlign: 'right' }}>₱ {p.fare.toLocaleString('en-PH', { minimumFractionDigits: 2,  maximumFractionDigits: 2})}</Text>
+                                                            <Text style={{ fontSize: 13, width: 70, textAlign: 'right' }}>₱ {p?.fare?.toLocaleString('en-PH', { minimumFractionDigits: 2,  maximumFractionDigits: 2})}</Text>
                                                         </View>
                                                     ))}
                                                 </>
@@ -453,7 +453,7 @@ export default function TicketGenerator() {
                                                             <Text style={{ fontSize: 13, width: '40%' }}>{`${p.name?.split(',')[1]?.trim().charAt(0)}. ${p.name?.split(',')[0]}`}</Text>
                                                             <Text style={{ fontSize: 13, width: 50, textAlign: 'center' }}>{p.passTypeCode}</Text>
                                                             <Text style={{ fontSize: 13, width: 50, textAlign: 'center' }}>{`${p.seatNumber ?? 'N/A'}`}</Text>
-                                                            <Text style={{ fontSize: 13, width: 70, textAlign: 'right' }}>₱ {p.fare.toLocaleString('en-PH', { minimumFractionDigits: 2,  maximumFractionDigits: 2})}</Text>
+                                                            <Text style={{ fontSize: 13, width: 70, textAlign: 'right' }}>₱ {p?.fare?.toLocaleString('en-PH', { minimumFractionDigits: 2,  maximumFractionDigits: 2})}</Text>
                                                         </View>
                                                     ))}
                                                 </>
@@ -488,7 +488,7 @@ export default function TicketGenerator() {
                                                             </View>
                                                             <View style={{ flexDirection: 'row', alignItems: 'center', gap: 2 }}>
                                                                 <Text style={{ fontSize: 13 }}>₱ </Text>
-                                                                <Text style={{ fontSize: 13 }}>{c.cargoAmount.toLocaleString('en-PH', { minimumFractionDigits: 2,  maximumFractionDigits: 2})}</Text>
+                                                                <Text style={{ fontSize: 13 }}>{c?.cargoAmount?.toLocaleString('en-PH', { minimumFractionDigits: 2,  maximumFractionDigits: 2})}</Text>
                                                             </View>
                                                         </View>
                                                     )) : []
@@ -512,7 +512,7 @@ export default function TicketGenerator() {
                                                 </View>
                                                 <View style={{ flexDirection: 'row', alignItems: 'center', gap: 2 }}>
                                                     <Text style={{ fontSize: 12, color: '#4b4b4bff' }}>₱ </Text>
-                                                    <Text style={{ fontSize: 12, color: '#4b4b4bff' }}>{cargo.cargoAmount.toLocaleString('en-PH', { minimumFractionDigits: 2,  maximumFractionDigits: 2})}</Text>
+                                                    <Text style={{ fontSize: 12, color: '#4b4b4bff' }}>{cargo?.cargoAmount?.toLocaleString('en-PH', { minimumFractionDigits: 2,  maximumFractionDigits: 2})}</Text>
                                                 </View>
                                             </View>
                                         ))}
@@ -522,15 +522,15 @@ export default function TicketGenerator() {
                             <View style={{ borderBottomColor: note ? '#9B9B9B' : 'transparent', borderBottomWidth: note ? 1 : 0, paddingVertical: 10 }}>
                                 <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' }}>
                                     <Text style={{ fontSize: 14, fontWeight: '900' }}>Total Amount:</Text>
-                                    <Text style={{ fontSize: 14, fontWeight: '900', color: '#cf2a3a' }}>₱ {totalFare.toLocaleString('en-PH', { minimumFractionDigits: 2,  maximumFractionDigits: 2 })}</Text>
+                                    <Text style={{ fontSize: 14, fontWeight: '900', color: '#cf2a3a' }}>₱ {totalFare?.toLocaleString('en-PH', { minimumFractionDigits: 2,  maximumFractionDigits: 2 })}</Text>
                                 </View>
                                 <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' }}>
                                     <Text style={{ fontSize: 13 }}>Cash Tendered:</Text>
-                                    <Text style={{ fontSize: 13 }}>₱ {cashTendered.toLocaleString('en-PH', { minimumFractionDigits: 2,  maximumFractionDigits: 2 })}</Text>
+                                    <Text style={{ fontSize: 13 }}>₱ {cashTendered?.toLocaleString('en-PH', { minimumFractionDigits: 2,  maximumFractionDigits: 2 })}</Text>
                                 </View>
                                 <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' }}>
                                     <Text style={{ fontSize: 13 }}>Change:</Text>
-                                    <Text style={{ fontSize: 13 }}>₱ {fareChange.toLocaleString('en-PH', { minimumFractionDigits: 2,  maximumFractionDigits: 2 })}</Text>
+                                    <Text style={{ fontSize: 13 }}>₱ {fareChange?.toLocaleString('en-PH', { minimumFractionDigits: 2,  maximumFractionDigits: 2 })?? '0.00'}</Text>
                                 </View>
                             </View>
                             {note &&(

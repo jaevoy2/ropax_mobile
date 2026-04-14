@@ -266,13 +266,17 @@ import { TripProps } from './(tabs)/manual-booking';
                 const response = await FetchPaxBookingInfo(Number(bookingId), Number(paxId), String(refNum));
                 
                 if(!response.error) {
-                    function verifyIfCancelled(paxId: number) {
-                        const cancellationIDs = new Set(response.cancellations
-                            // .filter((c: any) => c.booking_id == bookingId ?? [])
-                            // .flat();
-                    )}
+                    function verifyIfCancelled() {
+                        // const cancellationIDs = new Set(response.cancellations
+                        //     .filter((c: any) => c.booking_id == bookingId || [])
+                        //     .flat()
+                        // );
 
+                        console.log(response);
+                    }
+                    
 
+                    // verifyIfCancelled()
                     const paxData: PaxInfo[] = response.data.map((pax: any) => ({
                         id: pax.id,
                         first_name: pax.first_name,

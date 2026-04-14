@@ -1,4 +1,4 @@
-import React, { createContext, useContext, useState } from "react";
+import React, { createContext, useCallback, useContext, useMemo, useState } from "react";
 
 export type ExpenseProps = {
     id:number;
@@ -24,16 +24,24 @@ const ExpenseContext = createContext<ExpenseContextType | undefined>(undefined);
 export const ExpenseProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
     const [expenses, setExpenses] = useState<ExpenseProps[]>([]);
 
-    const updateExpense = <K extends keyof ExpenseProps>(
+    const updateExpense = useCallback(<K extends keyof ExpenseProps>(
         indentifier: number,
         key: K,
         value: ExpenseProps[K]
-    ) => setExpenses((prev) => 
-        prev.map((e) => e.id == indentifier ? { ...e, [key]: value }: e)
-    )
+    ) => {
+        setExpenses(prev => 
+            prev.map((e) => e.id == indentifier ? { ...e, [key]: value }: e)
+        );
+    }, [])
+
+    const contextValue = useMemo(() => ({
+        expenses, 
+        setExpenses, 
+        updateExpense
+    }), [expenses, setExpenses, updateExpense])
 
     return (
-        <ExpenseContext.Provider value={{ expenses, setExpenses, updateExpense }}>
+        <ExpenseContext.Provider value={ contextValue }>
             { children }
         </ExpenseContext.Provider>
     )

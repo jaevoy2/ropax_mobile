@@ -10,6 +10,8 @@ import { AutocompleteDropdown } from 'react-native-autocomplete-dropdown';
 import { Dropdown } from 'react-native-element-dropdown';
 import { Checkbox } from 'react-native-paper';
 import { InfantProps, usePassengers } from '../context/passenger';
+import PreLoader from './preloader';
+
 
 const passGender = ['Male', 'Female'];
 
@@ -55,6 +57,7 @@ export default function Forms({ errorForm }: FormProps) {
     const { passesTypeID, passesTypeCode, passesTypeName } = usePassesType();
     const { cargoProperties } = useCargo();
 
+    const [isLoading, setIsLoading] = useState(true)
     const [passengerType, setPassengerType] = useState<PassTypeProps[] | null>(null);
     const [paxFares, setPaxFares] = useState<PaxFareProps[] | null>(null);
     const [paxlists, setPaxLists] = useState<PaxListProps[]>([]);
@@ -360,8 +363,6 @@ export default function Forms({ errorForm }: FormProps) {
         );
     }, [paxFares, routeID, vessel_id, setPassengers]);
 
-    // ── Effects ──
-
     useEffect(() => {
         const paxTypeAndLists = async () => {
             try {
@@ -387,6 +388,8 @@ export default function Forms({ errorForm }: FormProps) {
                 }
             } catch (error: any) {
                 Alert.alert('Error', error.message);
+            }finally {
+                setIsLoading(false)
             }
         };
         paxTypeAndLists();
@@ -417,429 +420,435 @@ export default function Forms({ errorForm }: FormProps) {
     return (
         <View>
             <View style={{ height: '100%', marginTop: 10, flexDirection: 'column', gap: 20 }}>
-                {(nonInfantPax ?? []).map((p, index) => (
-                    <View key={p.id} style={{ position: 'relative', borderColor: errorForm.includes(p.seatNumber ?? '') ? '#cf2a3a' : '#B3B3B3', borderWidth: 1, borderRadius: 8, paddingHorizontal: 10, paddingVertical: 10, backgroundColor: '#fff', elevation: 5 }}>
-                        {hasPasses && index != 0 && (
-                            <TouchableOpacity onPress={() => handlePassesRemove(p.id)} style={{ position: 'absolute', right: -5, top: -15 }}>
-                                <Ionicons name={'close-circle'} size={40} color={'#cf2a3a'} />
-                            </TouchableOpacity>
-                        )}
-                        <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' }}>
-                            {p.passType != 'Passes' && (
-                                <View style={{ flexDirection: 'column', alignItems: 'flex-start' }}>
-                                    <Text style={{ color: '#cf2a3a', fontSize: 16, fontWeight: '900' }}>{p.accommodation} Seat#</Text>
-                                    <Text style={{ textAlign: 'center', fontWeight: 'bold', fontSize: 20, color: '#cf2a3a', borderColor: '#cf2a3a', backgroundColor: '#cf2a3b1a', borderWidth: 1, paddingVertical: 8, paddingHorizontal: 25, borderRadius: 5 }}>
-                                        {p.seatNumber}
-                                    </Text>
-                                </View>
-                            )}
-                            <View style={{ flexDirection: 'column', alignItems: 'flex-start' }}>
-                                <Text style={{ fontSize: 16, fontWeight: 'bold', color: '#545454' }}>Fare:</Text>
-                                <View style={{ borderColor: '#FFC107', backgroundColor: '#ffc10727', borderWidth: 2, borderRadius: 5, flexDirection: 'row', alignItems: 'center', paddingHorizontal: 15 }}>
-                                    <Text style={{ fontSize: 16, fontWeight: '900' }}>₱</Text>
-                                    <TextInput
-                                        onChangeText={(text) => updatePassenger(p.id, 'fare', Number(text.replace(/[^0-9.]/g, '')))}
-                                        value={String(p?.fare?.toLocaleString('en-PH', { minimumFractionDigits: 2, maximumFractionDigits: 2 }) ?? '')}
-                                        keyboardType={'numeric'} placeholder='0.00'
-                                        style={{ fontWeight: '900', textAlign: 'right', fontSize: 20, color: '#000' }}
-                                    />
-                                </View>
-                            </View>
-                        </View>
-
-                        {p.passType != 'Passes' && (
-                            <View style={{ flexDirection: 'column', alignItems: 'flex-start', marginTop: 15, gap: 5 }}>
-                                <View style={{ flexDirection: 'row', flexWrap: 'wrap', gap: 5 }}>
-                                    {paxsengerTypes.map((type) => (
-                                        <TouchableOpacity
-                                            onPress={() => handleOnPaxTypeSelect(p.id, p.accommodationID, type?.id, type?.name, type.code)}
-                                            key={type.id}
-                                            style={{ backgroundColor: p.passType == type?.name ? '#cf2a3a' : 'transparent', borderColor: '#cf2a3a', borderWidth: 1, paddingVertical: 9, justifyContent: 'center', width: '32%', borderRadius: 5 }}>
-                                            <Text style={{ textAlign: 'center', fontSize: 20, color: p.passType == type?.name ? '#fff' : '#cf2a3a', fontWeight: '600' }}>{type?.name}</Text>
-                                        </TouchableOpacity>
-                                    ))}
-                                </View>
-                            </View>
-                        )}
-
-                        <View style={{ marginTop: 20 }}>
-                            <Text style={{ fontSize: 17, fontWeight: 'bold', color: '#545454' }}>Full Name:</Text>
-                            <View style={{ borderWidth: 1, borderColor: '#B3B3B3', borderRadius: 5, height: 55, justifyContent: 'center' }}>
-                                <AutocompleteDropdown
-                                    key={p.id}
-                                    ref={ref => { if (ref) searchRefs.current[p.id] = ref; }}
-                                    controller={controller => {
-                                        if (controller) {
-                                            dropdownController.current[p.id] = controller;
-                                            if (p.name && !initializedRefs.current[p.id]) {
-                                                controller.setInputText(p.name);
-                                                initializedRefs.current[p.id] = true;
-                                            }
-                                        }
-                                    }}
-                                    flatListProps={{ keyboardShouldPersistTaps: 'handled', nestedScrollEnabled: true }}
-                                    direction={Platform.select({ android: 'down' })}
-                                    onClear={() => handleClearAutoComplete(p.id)}
-                                    dataSet={suggestions[p.id] ?? formattedPaxList}
-                                    closeOnBlur={true}
-                                    onSelectItem={item => { item && handleOnAutoComplete(item.id, p.id, p.accommodationID); }}
-                                    onChangeText={(text) => {
-                                        handleOnSearch(text.trim(), p.id);
-                                        updatePassenger(p.id, 'name', text);
-                                    }}
-                                    debounce={300}
-                                    suggestionsListContainerStyle={{ backgroundColor: '#f0f0f0' }}
-                                    suggestionsListMaxHeight={Dimensions.get('window').height * 0.3}
-                                    useFilter={false}
-                                    textInputProps={{
-                                        placeholder: 'Last Name, First Name',
-                                        autoCorrect: false,
-                                        autoCapitalize: 'none',
-                                        style: { backgroundColor: '#fff', color: '#000', borderWidth: 1, borderColor: 'transparent', borderRadius: 2, fontWeight: '600', fontSize: 20, paddingHorizontal: 5, height: 50 }
-                                    }}
-                                    rightButtonsContainerStyle={{ right: 8, backgroundColor: '#fff', alignSelf: 'center' }}
-                                    inputContainerStyle={{ borderRadius: 0, borderColor: '#B3B3B3' }}
-                                    trimSearchText={true}
-                                    containerStyle={{ flexGrow: 1, flexShrink: 1 }}
-                                    showChevron={false}
-                                    renderItem={(item) => <Text style={{ color: '#000', backgroundColor: '#f0f0f0', justifyContent: 'center', borderRadius: 5, fontSize: 16, paddingHorizontal: 5, paddingVertical: 15 }}>{item.title}</Text>}
-                                />
-                            </View>
-                        </View>
-
-                        <View style={{ width: '100%', marginTop: 10 }}>
-                            <Text style={{ fontSize: 17, fontWeight: 'bold', color: '#545454' }}>Gender:</Text>
-                            <View style={{ flexDirection: 'row', gap: 5, justifyContent: 'center' }}>
-                                {passGender.map((gender) => (
-                                    <TouchableOpacity onPress={() => updatePassenger(p.id, 'gender', gender)} key={gender}
-                                        style={{ backgroundColor: p.gender == gender ? '#cf2a3a' : 'transparent', borderColor: '#cf2a3a', borderWidth: 1, width: '49%', borderRadius: 5, justifyContent: 'center', paddingVertical: 11 }}>
-                                        <Text style={{ textAlign: 'center', fontSize: 18, fontWeight: '600', color: p.gender == gender ? '#fff' : '#cf2a3a' }}>{gender}</Text>
-                                    </TouchableOpacity>
-                                ))}
-                            </View>
-                        </View>
-
-                        <View style={{ marginTop: 10, flexDirection: 'row', gap: 8, alignItems: 'flex-end' }}>
-                            <View style={{ width: '40%' }}>
-                                <Text style={{ fontSize: 17, fontWeight: 'bold', color: '#545454' }}>Age:</Text>
-                                <View style={{ borderColor: '#B3B3B3', borderWidth: 1, borderRadius: 5, height: 50, justifyContent: 'center' }}>
-                                    <TextInput value={String(p?.age ?? '')} onChangeText={(text) => updatePassenger(p.id, 'age', Number(text))} keyboardType='numeric' placeholder='Age' style={{ fontSize: 19, fontWeight: '600' }} />
-                                </View>
-                            </View>
-                            <View style={{ width: '57.5%' }}>
-                                <Text style={{ fontSize: 17, fontWeight: 'bold', color: '#545454' }}>Contact#:</Text>
-                                <View style={{ borderColor: '#B3B3B3', borderWidth: 1, borderRadius: 5, height: 50, justifyContent: 'center' }}>
-                                    <TextInput value={p.contact ?? ''} placeholder='+63' keyboardType={'numeric'} onChangeText={(text) => updatePassenger(p.id, 'contact', text)} style={{ fontSize: 19, fontWeight: '600' }} />
-                                </View>
-                            </View>
-                        </View>
-
-                        <View style={{ marginTop: 10, flexDirection: 'row', gap: 8 }}>
-                            <View style={{ width: '40%' }}>
-                                <Text style={{ fontSize: 17, fontWeight: 'bold', color: '#545454' }}>Nationality:</Text>
-                                <View style={{ borderColor: '#B3B3B3', borderWidth: 1, borderRadius: 5, height: 50, justifyContent: 'center' }}>
-                                    <TextInput value={p.nationality ?? 'Filipino'} onChangeText={(text) => updatePassenger(p.id, 'nationality', text)} defaultValue='Filipino' style={{ fontSize: 19, fontWeight: '600' }} />
-                                </View>
-                            </View>
-                            <View style={{ width: '57.5%' }}>
-                                <Text style={{ fontSize: 17, fontWeight: 'bold', color: '#545454' }}>Address:</Text>
-                                <View style={{ borderColor: '#B3B3B3', borderWidth: 1, borderRadius: 5, height: 50, justifyContent: 'center' }}>
-                                    <TextInput value={p.address ?? ''} onChangeText={(text) => updatePassenger(p.id, 'address', text)} placeholder='Address' style={{ fontSize: 19, fontWeight: '600' }} />
-                                </View>
-                            </View>
-                        </View>
-
-                        <View style={{ marginTop: 5, flexDirection: 'row', alignItems: 'flex-end', justifyContent: 'space-between' }}>
-                            <View style={{ flexDirection: 'row', gap: 20 }}>
-                                <TouchableOpacity
-                                    disabled={p.passType == 'Child'}
-                                    onPress={() => hasInfantChecker(p.id, passengerType?.find(i => i?.name == 'Infant')?.id ?? 0)}
-                                    style={{ flexDirection: 'row', alignItems: 'center', marginTop: 15 }}>
-                                    <Checkbox status={p.hasInfant ? 'checked' : 'unchecked'} color='#cf2a3a' uncheckedColor="#999" />
-                                    <Text style={{ fontSize: 20 }}>Infant</Text>
-                                </TouchableOpacity>
-                                {isCargoable != 0 && (
-                                    <TouchableOpacity onPress={() => hasCargoChecker(p.id)} style={{ flexDirection: 'row', alignItems: 'center', marginTop: 15 }}>
-                                        <Checkbox status={p.hasCargo ? 'checked' : 'unchecked'} color='#cf2a3a' uncheckedColor="#999" />
-                                        <Text style={{ fontSize: 20 }}>Cargo</Text>
+                {isLoading == true ? (
+                    <PreLoader loading={isLoading} />
+                ) : (
+                    <>
+                        {(nonInfantPax ?? []).map((p, index) => (
+                            <View key={p.id} style={{ position: 'relative', borderColor: errorForm.includes(p.seatNumber ?? '') ? '#cf2a3a' : '#B3B3B3', borderWidth: 1, borderRadius: 8, paddingHorizontal: 10, paddingVertical: 10, backgroundColor: '#fff', elevation: 5 }}>
+                                {hasPasses && index != 0 && (
+                                    <TouchableOpacity onPress={() => handlePassesRemove(p.id)} style={{ position: 'absolute', right: -5, top: -15 }}>
+                                        <Ionicons name={'close-circle'} size={40} color={'#cf2a3a'} />
                                     </TouchableOpacity>
                                 )}
-                            </View>
-                        </View>
-
-                        {p.hasInfant && (
-                            <View style={{ marginTop: 30 }}>
-                                <View style={{ flexDirection: 'row', alignItems: 'flex-end', justifyContent: 'space-between', borderTopWidth: 1, borderTopColor: '#949494', paddingTop: 8 }}>
-                                    <Text style={{ fontSize: 20, fontWeight: '900', color: '#cf2a3a', marginBottom: 5 }}>Infant Details</Text>
-                                    <TouchableOpacity
-                                        onPress={() => {
-                                            const infantTypeId = passengerType?.find(i => i.name == 'Infant')?.id!;
-                                            if (!hasPasses) {
-                                                addInfant(p.seatNumber!, { name: '', gender: '', age: 0, passType_id: infantTypeId });
-                                            } else {
-                                                addInfant(index, { name: '', gender: '', age: 0, passType_id: infantTypeId });
-                                            }
-                                        }}
-                                        style={{ backgroundColor: '#cf2a3a', borderColor: '#cf2a3a', borderWidth: 1, padding: 8, elevation: 3, borderRadius: 5, flexDirection: 'row', gap: 5, alignItems: 'center' }}>
-                                        <Ionicons name={'add'} size={20} color={'#fff'} />
-                                        <Text style={{ color: '#fff', fontWeight: '600', fontSize: 18 }}>Add Infant</Text>
-                                    </TouchableOpacity>
-                                </View>
-                                {p.infant?.map((i, infantIdx) => (
-                                    <View key={`${p.name}-${infantIdx}`}>
-                                        <View style={{ marginTop: 30 }}>
-                                            <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' }}>
-                                                <Text style={{ fontSize: 17, fontWeight: 'bold', color: '#545454' }}>Full Name:</Text>
-                                                {infantIdx != 0 && (
-                                                    <TouchableOpacity onPress={() => removeInfant(p.seatNumber!, infantIdx)} style={{ flexDirection: 'row', alignItems: 'center' }}>
-                                                        <Ionicons name={'close'} size={20} color={'#cf2a3a'} />
-                                                        <Text style={{ color: '#cf2a3a', fontWeight: '600', fontSize: 19 }}>Remove</Text>
-                                                    </TouchableOpacity>
-                                                )}
-                                            </View>
-                                            <View style={{ borderColor: '#B3B3B3', borderWidth: 1, borderRadius: 5, height: 55, justifyContent: 'center' }}>
-                                                <AutocompleteDropdown
-                                                    key={`${p.id}-${infantIdx}`}
-                                                    ref={ref => { if (ref) infantSearchRefs.current[`${p.id}-${infantIdx}`] = ref; }}
-                                                    controller={controller => {
-                                                        if (controller) {
-                                                            InfantDropController.current[`${p.id}-${infantIdx}`] = controller;
-                                                            if (i.name && !initializedInfantRefs.current[`${p.id}-${infantIdx}`]) {
-                                                                controller.setInputText(i.name);
-                                                                initializedInfantRefs.current[`${p.id}-${infantIdx}`] = true;
-                                                            }
-                                                        }
-                                                    }}
-                                                    direction={Platform.select({ android: 'down' })}
-                                                    onClear={() => handleInfantClearAutoComplete(p.pax_id, infantIdx)}
-                                                    dataSet={infantSuggestions[`${p.id}-${infantIdx}`] ?? formattedInfantList}
-                                                    closeOnBlur={true}
-                                                    flatListProps={{ keyboardShouldPersistTaps: 'handled', nestedScrollEnabled: true }}
-                                                    onSelectItem={item => { item && handleOnInfantAutoComplete(item.id, p.id, p.accommodationID, infantIdx); }}
-                                                    onChangeText={(text) => {
-                                                        handleOnInfantSearch(text.trim(), p.id);
-                                                        updateInfant(p.id, infantIdx, 'name', text);
-                                                    }}
-                                                    debounce={300}
-                                                    suggestionsListContainerStyle={{ backgroundColor: '#f0f0f0' }}
-                                                    suggestionsListMaxHeight={Dimensions.get('window').height * 0.18}
-                                                    useFilter={false}
-                                                    textInputProps={{
-                                                        placeholder: 'Last Name, First Name',
-                                                        autoCorrect: false,
-                                                        autoCapitalize: 'none',
-                                                        style: { backgroundColor: '#fff', color: '#000', borderWidth: 1, borderColor: 'transparent', borderRadius: 2, fontSize: 20, fontWeight: '600', paddingHorizontal: 5, height: 50 }
-                                                    }}
-                                                    rightButtonsContainerStyle={{ right: 8, backgroundColor: '#fff', alignSelf: 'center' }}
-                                                    inputContainerStyle={{ borderRadius: 0, borderColor: '#B3B3B3' }}
-                                                    trimSearchText={true}
-                                                    containerStyle={{ flexGrow: 1, flexShrink: 1 }}
-                                                    showChevron={false}
-                                                    renderItem={(item) => <Text style={{ color: '#000', backgroundColor: '#f0f0f0', paddingVertical: 15, paddingHorizontal: 5, borderRadius: 5 }}>{item.title}</Text>}
-                                                />
-                                            </View>
+                                <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' }}>
+                                    {p.passType != 'Passes' && (
+                                        <View style={{ flexDirection: 'column', alignItems: 'flex-start' }}>
+                                            <Text style={{ color: '#cf2a3a', fontSize: 16, fontWeight: '900' }}>{p.accommodation} Seat#</Text>
+                                            <Text style={{ textAlign: 'center', fontWeight: 'bold', fontSize: 20, color: '#cf2a3a', borderColor: '#cf2a3a', backgroundColor: '#cf2a3b1a', borderWidth: 1, paddingVertical: 8, paddingHorizontal: 25, borderRadius: 5 }}>
+                                                {p.seatNumber}
+                                            </Text>
                                         </View>
-                                        <View style={{ marginTop: 10, flexDirection: 'row', gap: 8, alignItems: 'flex-end' }}>
-                                            <View style={{ width: '40%' }}>
-                                                <Text style={{ fontSize: 17, fontWeight: 'bold', color: '#545454' }}>Age:</Text>
-                                                <View style={{ borderColor: '#B3B3B3', borderWidth: 1, borderRadius: 5, height: 50, justifyContent: 'center' }}>
-                                                    <TextInput value={String(i.age ?? '')} onChangeText={(text) => updateInfant(p.id, infantIdx, 'age', Number(text))} keyboardType='numeric' placeholder='Age' style={{ fontSize: 19, fontWeight: '600' }} />
-                                                </View>
-                                            </View>
-                                            <View style={{ width: '56%' }}>
-                                                <Text style={{ fontSize: 17, fontWeight: 'bold', color: '#545454' }}>Gender:</Text>
-                                                <View style={{ flexDirection: 'row', gap: 5 }}>
-                                                    {passGender.map((infntgender) => (
-                                                        <TouchableOpacity onPress={() => updateInfant(p.id, infantIdx, 'gender', infntgender)} key={infntgender}
-                                                            style={{ backgroundColor: p.infant?.[infantIdx]?.gender == infntgender ? '#cf2a3a' : 'transparent', borderColor: '#cf2a3a', borderWidth: 1, width: '50%', borderRadius: 5, justifyContent: 'center', paddingVertical: 12 }}>
-                                                            <Text style={{ textAlign: 'center', fontSize: 16, fontWeight: '600', color: p.infant?.[infantIdx]?.gender == infntgender ? '#fff' : '#cf2a3a' }}>{infntgender}</Text>
-                                                        </TouchableOpacity>
-                                                    ))}
-                                                </View>
-                                            </View>
+                                    )}
+                                    <View style={{ flexDirection: 'column', alignItems: 'flex-start' }}>
+                                        <Text style={{ fontSize: 16, fontWeight: 'bold', color: '#545454' }}>Fare:</Text>
+                                        <View style={{ borderColor: '#FFC107', backgroundColor: '#ffc10727', borderWidth: 2, borderRadius: 5, flexDirection: 'row', alignItems: 'center', paddingHorizontal: 15 }}>
+                                            <Text style={{ fontSize: 16, fontWeight: '900' }}>₱</Text>
+                                            <TextInput
+                                                onChangeText={(text) => updatePassenger(p.id, 'fare', Number(text.replace(/[^0-9.]/g, '')))}
+                                                value={String(p?.fare?.toLocaleString('en-PH', { minimumFractionDigits: 2, maximumFractionDigits: 2 }) ?? '')}
+                                                keyboardType={'numeric'} placeholder='0.00'
+                                                style={{ fontWeight: '900', textAlign: 'right', fontSize: 20, color: '#000' }}
+                                            />
                                         </View>
                                     </View>
-                                ))}
-                            </View>
-                        )}
-
-                        {p.hasCargo == true && (
-                            <View style={{ marginTop: 40 }}>
-                                <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'flex-end', marginBottom: 10, borderTopColor: '#949494', borderTopWidth: 1, paddingTop: 8 }}>
-                                    <Text style={{ fontSize: 20, fontWeight: '900', color: '#cf2a3a', marginBottom: 5 }}>Cargo Details</Text>
-                                    <TouchableOpacity onPress={() => addPaxCargo(p.seatNumber!, { cargoAmount: 0.00, quantity: 1 })}
-                                        style={{ backgroundColor: '#cf2a3a', borderColor: '#cf2a3a', borderWidth: 1, padding: 8, borderRadius: 5, flexDirection: 'row', gap: 5, alignItems: 'center' }}>
-                                        <Ionicons name={'add'} size={20} color={'#fff'} />
-                                        <Text style={{ color: '#fff', fontWeight: '600', fontSize: 19 }}>Add Cargo</Text>
-                                    </TouchableOpacity>
                                 </View>
-                                {(p.cargo ?? []).map((c, cargoIndex) => (
-                                    <View key={`${p.id}-${cargoIndex}`}>
-                                        {cargoIndex != 0 && (
-                                            <TouchableOpacity onPress={() => removeCargo(p.seatNumber, index, cargoIndex)} style={{ flexDirection: 'row', alignItems: 'center', marginVertical: 10, alignSelf: 'flex-end' }}>
-                                                <Ionicons name={'close'} size={20} color={'#cf2a3a'} />
+        
+                                {p.passType != 'Passes' && (
+                                    <View style={{ flexDirection: 'column', alignItems: 'flex-start', marginTop: 15, gap: 5 }}>
+                                        <View style={{ flexDirection: 'row', flexWrap: 'wrap', gap: 5 }}>
+                                            {paxsengerTypes.map((type) => (
+                                                <TouchableOpacity
+                                                    onPress={() => handleOnPaxTypeSelect(p.id, p.accommodationID, type?.id, type?.name, type.code)}
+                                                    key={type.id}
+                                                    style={{ backgroundColor: p.passType == type?.name ? '#cf2a3a' : 'transparent', borderColor: '#cf2a3a', borderWidth: 1, paddingVertical: 9, justifyContent: 'center', width: '32%', borderRadius: 5 }}>
+                                                    <Text style={{ textAlign: 'center', fontSize: 20, color: p.passType == type?.name ? '#fff' : '#cf2a3a', fontWeight: '600' }}>{type?.name}</Text>
+                                                </TouchableOpacity>
+                                            ))}
+                                        </View>
+                                    </View>
+                                )}
+        
+                                <View style={{ marginTop: 20 }}>
+                                    <Text style={{ fontSize: 17, fontWeight: 'bold', color: '#545454' }}>Full Name:</Text>
+                                    <View style={{ borderWidth: 1, borderColor: '#B3B3B3', borderRadius: 5, height: 55, justifyContent: 'center' }}>
+                                        <AutocompleteDropdown
+                                            key={p.id}
+                                            ref={ref => { if (ref) searchRefs.current[p.id] = ref; }}
+                                            controller={controller => {
+                                                if (controller) {
+                                                    dropdownController.current[p.id] = controller;
+                                                    if (p.name && !initializedRefs.current[p.id]) {
+                                                        controller.setInputText(p.name);
+                                                        initializedRefs.current[p.id] = true;
+                                                    }
+                                                }
+                                            }}
+                                            flatListProps={{ keyboardShouldPersistTaps: 'handled', nestedScrollEnabled: true }}
+                                            direction={Platform.select({ android: 'down' })}
+                                            onClear={() => handleClearAutoComplete(p.id)}
+                                            dataSet={suggestions[p.id] ?? formattedPaxList}
+                                            closeOnBlur={true}
+                                            onSelectItem={item => { item && handleOnAutoComplete(item.id, p.id, p.accommodationID); }}
+                                            onChangeText={(text) => {
+                                                handleOnSearch(text.trim(), p.id);
+                                                updatePassenger(p.id, 'name', text);
+                                            }}
+                                            debounce={300}
+                                            suggestionsListContainerStyle={{ backgroundColor: '#f0f0f0' }}
+                                            suggestionsListMaxHeight={Dimensions.get('window').height * 0.3}
+                                            useFilter={false}
+                                            textInputProps={{
+                                                placeholder: 'Last Name, First Name',
+                                                autoCorrect: false,
+                                                autoCapitalize: 'none',
+                                                style: { backgroundColor: '#fff', color: '#000', borderWidth: 1, borderColor: 'transparent', borderRadius: 2, fontWeight: '600', fontSize: 20, paddingHorizontal: 5, height: 50 }
+                                            }}
+                                            rightButtonsContainerStyle={{ right: 8, backgroundColor: '#fff', alignSelf: 'center' }}
+                                            inputContainerStyle={{ borderRadius: 0, borderColor: '#B3B3B3' }}
+                                            trimSearchText={true}
+                                            containerStyle={{ flexGrow: 1, flexShrink: 1 }}
+                                            showChevron={false}
+                                            renderItem={(item) => <Text style={{ color: '#000', backgroundColor: '#f0f0f0', justifyContent: 'center', borderRadius: 5, fontSize: 16, paddingHorizontal: 5, paddingVertical: 15 }}>{item.title}</Text>}
+                                        />
+                                    </View>
+                                </View>
+        
+                                <View style={{ width: '100%', marginTop: 10 }}>
+                                    <Text style={{ fontSize: 17, fontWeight: 'bold', color: '#545454' }}>Gender:</Text>
+                                    <View style={{ flexDirection: 'row', gap: 5, justifyContent: 'center' }}>
+                                        {passGender.map((gender) => (
+                                            <TouchableOpacity onPress={() => updatePassenger(p.id, 'gender', gender)} key={gender}
+                                                style={{ backgroundColor: p.gender == gender ? '#cf2a3a' : 'transparent', borderColor: '#cf2a3a', borderWidth: 1, width: '49%', borderRadius: 5, justifyContent: 'center', paddingVertical: 11 }}>
+                                                <Text style={{ textAlign: 'center', fontSize: 18, fontWeight: '600', color: p.gender == gender ? '#fff' : '#cf2a3a' }}>{gender}</Text>
+                                            </TouchableOpacity>
+                                        ))}
+                                    </View>
+                                </View>
+        
+                                <View style={{ marginTop: 10, flexDirection: 'row', gap: 8, alignItems: 'flex-end' }}>
+                                    <View style={{ width: '40%' }}>
+                                        <Text style={{ fontSize: 17, fontWeight: 'bold', color: '#545454' }}>Age:</Text>
+                                        <View style={{ borderColor: '#B3B3B3', borderWidth: 1, borderRadius: 5, height: 50, justifyContent: 'center' }}>
+                                            <TextInput value={String(p?.age ?? '')} onChangeText={(text) => updatePassenger(p.id, 'age', Number(text))} keyboardType='numeric' placeholder='Age' style={{ fontSize: 19, fontWeight: '600' }} />
+                                        </View>
+                                    </View>
+                                    <View style={{ width: '57.5%' }}>
+                                        <Text style={{ fontSize: 17, fontWeight: 'bold', color: '#545454' }}>Contact#:</Text>
+                                        <View style={{ borderColor: '#B3B3B3', borderWidth: 1, borderRadius: 5, height: 50, justifyContent: 'center' }}>
+                                            <TextInput value={p.contact ?? ''} placeholder='+63' keyboardType={'numeric'} onChangeText={(text) => updatePassenger(p.id, 'contact', text)} style={{ fontSize: 19, fontWeight: '600' }} />
+                                        </View>
+                                    </View>
+                                </View>
+        
+                                <View style={{ marginTop: 10, flexDirection: 'row', gap: 8 }}>
+                                    <View style={{ width: '40%' }}>
+                                        <Text style={{ fontSize: 17, fontWeight: 'bold', color: '#545454' }}>Nationality:</Text>
+                                        <View style={{ borderColor: '#B3B3B3', borderWidth: 1, borderRadius: 5, height: 50, justifyContent: 'center' }}>
+                                            <TextInput value={p.nationality ?? 'Filipino'} onChangeText={(text) => updatePassenger(p.id, 'nationality', text)} defaultValue='Filipino' style={{ fontSize: 19, fontWeight: '600' }} />
+                                        </View>
+                                    </View>
+                                    <View style={{ width: '57.5%' }}>
+                                        <Text style={{ fontSize: 17, fontWeight: 'bold', color: '#545454' }}>Address:</Text>
+                                        <View style={{ borderColor: '#B3B3B3', borderWidth: 1, borderRadius: 5, height: 50, justifyContent: 'center' }}>
+                                            <TextInput value={p.address ?? ''} onChangeText={(text) => updatePassenger(p.id, 'address', text)} placeholder='Address' style={{ fontSize: 19, fontWeight: '600' }} />
+                                        </View>
+                                    </View>
+                                </View>
+        
+                                <View style={{ marginTop: 5, flexDirection: 'row', alignItems: 'flex-end', justifyContent: 'space-between' }}>
+                                    <View style={{ flexDirection: 'row', gap: 20 }}>
+                                        <TouchableOpacity
+                                            disabled={p.passType == 'Child'}
+                                            onPress={() => hasInfantChecker(p.id, passengerType?.find(i => i?.name == 'Infant')?.id ?? 0)}
+                                            style={{ flexDirection: 'row', alignItems: 'center', marginTop: 15 }}>
+                                            <Checkbox status={p.hasInfant ? 'checked' : 'unchecked'} color='#cf2a3a' uncheckedColor="#999" />
+                                            <Text style={{ fontSize: 20 }}>Infant</Text>
+                                        </TouchableOpacity>
+                                        {isCargoable != 0 && (
+                                            <TouchableOpacity onPress={() => hasCargoChecker(p.id)} style={{ flexDirection: 'row', alignItems: 'center', marginTop: 15 }}>
+                                                <Checkbox status={p.hasCargo ? 'checked' : 'unchecked'} color='#cf2a3a' uncheckedColor="#999" />
+                                                <Text style={{ fontSize: 20 }}>Cargo</Text>
                                             </TouchableOpacity>
                                         )}
-                                        <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', paddingBottom: 5 }}>
-                                            <View style={{ flexDirection: 'column', alignSelf: 'flex-start' }}>
-                                                <Text style={{ fontSize: 17, fontWeight: 'bold', color: '#545454' }}>Amount:</Text>
-                                                <View style={{ borderColor: '#FFC107', backgroundColor: '#ffc10727', borderWidth: 2, borderRadius: 5, flexDirection: 'row', alignItems: 'center', paddingHorizontal: 15, paddingVertical: 8 }}>
-                                                    <Text style={{ fontSize: 20 }}>₱ </Text>
-                                                    <Text style={{ fontWeight: 'bold', textAlign: 'right', fontSize: 20 }}>
-                                                        {ComputedCargoAmount(c).amount.toLocaleString('en-PH', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
-                                                    </Text>
-                                                </View>
-                                            </View>
-                                            {c.cargoType && c.cargoType != 'Rolling Cargo' && (
-                                                <View style={{ flexDirection: 'column', alignItems: 'flex-end' }}>
-                                                    <Text style={{ fontSize: 17, fontWeight: 'bold', color: '#545454' }}>Quantity:</Text>
-                                                    <View style={{ flexDirection: 'row', alignItems: 'center', borderColor: '#B3B3B3', paddingHorizontal: 5, borderWidth: 1, borderRadius: 5 }}>
-                                                        <TouchableOpacity disabled={c.quantity == 1} onPress={() => handleCargoQuantity('minus', cargoIndex, p.id)} style={{ paddingRight: 5 }}>
-                                                            <Ionicons name={'remove'} size={25} color={c.quantity == 1 ? "#d4d4d4ff" : undefined} />
-                                                        </TouchableOpacity>
-                                                        <Text style={{ paddingHorizontal: 14, fontSize: 20, fontWeight: 'bold', borderRightColor: '#B3B3B3', borderLeftColor: '#B3B3B3', borderLeftWidth: 1, borderRightWidth: 1, paddingVertical: 5 }}>
-                                                            {c.quantity}
-                                                        </Text>
-                                                        <TouchableOpacity onPress={() => handleCargoQuantity('add', cargoIndex, p.id)} style={{ paddingLeft: 5 }}>
-                                                            <Ionicons name={'add'} size={25} />
-                                                        </TouchableOpacity>
+                                    </View>
+                                </View>
+        
+                                {p.hasInfant && (
+                                    <View style={{ marginTop: 30 }}>
+                                        <View style={{ flexDirection: 'row', alignItems: 'flex-end', justifyContent: 'space-between', borderTopWidth: 1, borderTopColor: '#949494', paddingTop: 8 }}>
+                                            <Text style={{ fontSize: 20, fontWeight: '900', color: '#cf2a3a', marginBottom: 5 }}>Infant Details</Text>
+                                            <TouchableOpacity
+                                                onPress={() => {
+                                                    const infantTypeId = passengerType?.find(i => i.name == 'Infant')?.id!;
+                                                    if (!hasPasses) {
+                                                        addInfant(p.seatNumber!, { name: '', gender: '', age: 0, passType_id: infantTypeId });
+                                                    } else {
+                                                        addInfant(index, { name: '', gender: '', age: 0, passType_id: infantTypeId });
+                                                    }
+                                                }}
+                                                style={{ backgroundColor: '#cf2a3a', borderColor: '#cf2a3a', borderWidth: 1, padding: 8, elevation: 3, borderRadius: 5, flexDirection: 'row', gap: 5, alignItems: 'center' }}>
+                                                <Ionicons name={'add'} size={20} color={'#fff'} />
+                                                <Text style={{ color: '#fff', fontWeight: '600', fontSize: 18 }}>Add Infant</Text>
+                                            </TouchableOpacity>
+                                        </View>
+                                        {p.infant?.map((i, infantIdx) => (
+                                            <View key={`${p.name}-${infantIdx}`}>
+                                                <View style={{ marginTop: 30 }}>
+                                                    <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' }}>
+                                                        <Text style={{ fontSize: 17, fontWeight: 'bold', color: '#545454' }}>Full Name:</Text>
+                                                        {infantIdx != 0 && (
+                                                            <TouchableOpacity onPress={() => removeInfant(p.seatNumber!, infantIdx)} style={{ flexDirection: 'row', alignItems: 'center' }}>
+                                                                <Ionicons name={'close'} size={20} color={'#cf2a3a'} />
+                                                                <Text style={{ color: '#cf2a3a', fontWeight: '600', fontSize: 19 }}>Remove</Text>
+                                                            </TouchableOpacity>
+                                                        )}
+                                                    </View>
+                                                    <View style={{ borderColor: '#B3B3B3', borderWidth: 1, borderRadius: 5, height: 55, justifyContent: 'center' }}>
+                                                        <AutocompleteDropdown
+                                                            key={`${p.id}-${infantIdx}`}
+                                                            ref={ref => { if (ref) infantSearchRefs.current[`${p.id}-${infantIdx}`] = ref; }}
+                                                            controller={controller => {
+                                                                if (controller) {
+                                                                    InfantDropController.current[`${p.id}-${infantIdx}`] = controller;
+                                                                    if (i.name && !initializedInfantRefs.current[`${p.id}-${infantIdx}`]) {
+                                                                        controller.setInputText(i.name);
+                                                                        initializedInfantRefs.current[`${p.id}-${infantIdx}`] = true;
+                                                                    }
+                                                                }
+                                                            }}
+                                                            direction={Platform.select({ android: 'down' })}
+                                                            onClear={() => handleInfantClearAutoComplete(p.pax_id, infantIdx)}
+                                                            dataSet={infantSuggestions[`${p.id}-${infantIdx}`] ?? formattedInfantList}
+                                                            closeOnBlur={true}
+                                                            flatListProps={{ keyboardShouldPersistTaps: 'handled', nestedScrollEnabled: true }}
+                                                            onSelectItem={item => { item && handleOnInfantAutoComplete(item.id, p.id, p.accommodationID, infantIdx); }}
+                                                            onChangeText={(text) => {
+                                                                handleOnInfantSearch(text.trim(), p.id);
+                                                                updateInfant(p.id, infantIdx, 'name', text);
+                                                            }}
+                                                            debounce={300}
+                                                            suggestionsListContainerStyle={{ backgroundColor: '#f0f0f0' }}
+                                                            suggestionsListMaxHeight={Dimensions.get('window').height * 0.18}
+                                                            useFilter={false}
+                                                            textInputProps={{
+                                                                placeholder: 'Last Name, First Name',
+                                                                autoCorrect: false,
+                                                                autoCapitalize: 'none',
+                                                                style: { backgroundColor: '#fff', color: '#000', borderWidth: 1, borderColor: 'transparent', borderRadius: 2, fontSize: 20, fontWeight: '600', paddingHorizontal: 5, height: 50 }
+                                                            }}
+                                                            rightButtonsContainerStyle={{ right: 8, backgroundColor: '#fff', alignSelf: 'center' }}
+                                                            inputContainerStyle={{ borderRadius: 0, borderColor: '#B3B3B3' }}
+                                                            trimSearchText={true}
+                                                            containerStyle={{ flexGrow: 1, flexShrink: 1 }}
+                                                            showChevron={false}
+                                                            renderItem={(item) => <Text style={{ color: '#000', backgroundColor: '#f0f0f0', paddingVertical: 15, paddingHorizontal: 5, borderRadius: 5 }}>{item.title}</Text>}
+                                                        />
                                                     </View>
                                                 </View>
-                                            )}
-                                        </View>
-                                        <View style={{ width: '100%' }}>
-                                            <Text style={{ fontSize: 17, fontWeight: 'bold', color: '#545454' }}>Cargo Type:</Text>
-                                            <View style={{ borderColor: '#B3B3B3', borderWidth: 1, borderRadius: 5 }}>
-                                                <Dropdown
-                                                    onChange={(item) => handleOnUpdateCargo(p.id, cargoIndex, 'cargoType', item.label, 'cargoTypeID', item.value)}
-                                                    value={c.cargoTypeID}
-                                                    data={cargoProperties?.data?.cargo_types?.map((type: any) => ({ label: type.name, value: type.id })) ?? []}
-                                                    labelField="label" valueField="value" placeholder="Select Cargo Type"
-                                                    style={{ height: 50, width: '100%', paddingHorizontal: 10 }}
-                                                    containerStyle={{ alignSelf: 'flex-start', width: '90%' }}
-                                                    selectedTextStyle={{ fontSize: 18, lineHeight: 35, fontWeight: '600' }}
-                                                    renderRightIcon={() => <Ionicons name="chevron-down" size={18} />}
-                                                    dropdownPosition="bottom"
-                                                    renderItem={(item) => <View style={{ width: '80%', padding: 8 }}><Text style={{ fontSize: 18 }}>{item.label}</Text></View>}
-                                                />
+                                                <View style={{ marginTop: 10, flexDirection: 'row', gap: 8, alignItems: 'flex-end' }}>
+                                                    <View style={{ width: '40%' }}>
+                                                        <Text style={{ fontSize: 17, fontWeight: 'bold', color: '#545454' }}>Age:</Text>
+                                                        <View style={{ borderColor: '#B3B3B3', borderWidth: 1, borderRadius: 5, height: 50, justifyContent: 'center' }}>
+                                                            <TextInput value={String(i.age ?? '')} onChangeText={(text) => updateInfant(p.id, infantIdx, 'age', Number(text))} keyboardType='numeric' placeholder='Age' style={{ fontSize: 19, fontWeight: '600' }} />
+                                                        </View>
+                                                    </View>
+                                                    <View style={{ width: '56%' }}>
+                                                        <Text style={{ fontSize: 17, fontWeight: 'bold', color: '#545454' }}>Gender:</Text>
+                                                        <View style={{ flexDirection: 'row', gap: 5 }}>
+                                                            {passGender.map((infntgender) => (
+                                                                <TouchableOpacity onPress={() => updateInfant(p.id, infantIdx, 'gender', infntgender)} key={infntgender}
+                                                                    style={{ backgroundColor: p.infant?.[infantIdx]?.gender == infntgender ? '#cf2a3a' : 'transparent', borderColor: '#cf2a3a', borderWidth: 1, width: '50%', borderRadius: 5, justifyContent: 'center', paddingVertical: 12 }}>
+                                                                    <Text style={{ textAlign: 'center', fontSize: 16, fontWeight: '600', color: p.infant?.[infantIdx]?.gender == infntgender ? '#fff' : '#cf2a3a' }}>{infntgender}</Text>
+                                                                </TouchableOpacity>
+                                                            ))}
+                                                        </View>
+                                                    </View>
+                                                </View>
                                             </View>
+                                        ))}
+                                    </View>
+                                )}
+        
+                                {p.hasCargo == true && (
+                                    <View style={{ marginTop: 40 }}>
+                                        <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'flex-end', marginBottom: 10, borderTopColor: '#949494', borderTopWidth: 1, paddingTop: 8 }}>
+                                            <Text style={{ fontSize: 20, fontWeight: '900', color: '#cf2a3a', marginBottom: 5 }}>Cargo Details</Text>
+                                            <TouchableOpacity onPress={() => addPaxCargo(p.seatNumber!, { cargoAmount: 0.00, quantity: 1 })}
+                                                style={{ backgroundColor: '#cf2a3a', borderColor: '#cf2a3a', borderWidth: 1, padding: 8, borderRadius: 5, flexDirection: 'row', gap: 5, alignItems: 'center' }}>
+                                                <Ionicons name={'add'} size={20} color={'#fff'} />
+                                                <Text style={{ color: '#fff', fontWeight: '600', fontSize: 19 }}>Add Cargo</Text>
+                                            </TouchableOpacity>
                                         </View>
-                                        {c.cargoType == 'Rolling Cargo' ? (
-                                            <View>
-                                                <View style={{ width: '100%', marginTop: 10 }}>
-                                                    <Text style={{ fontSize: 17, fontWeight: 'bold', color: '#545454' }}>Brand:</Text>
+                                        {(p.cargo ?? []).map((c, cargoIndex) => (
+                                            <View key={`${p.id}-${cargoIndex}`}>
+                                                {cargoIndex != 0 && (
+                                                    <TouchableOpacity onPress={() => removeCargo(p.seatNumber, index, cargoIndex)} style={{ flexDirection: 'row', alignItems: 'center', marginVertical: 10, alignSelf: 'flex-end' }}>
+                                                        <Ionicons name={'close'} size={20} color={'#cf2a3a'} />
+                                                    </TouchableOpacity>
+                                                )}
+                                                <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', paddingBottom: 5 }}>
+                                                    <View style={{ flexDirection: 'column', alignSelf: 'flex-start' }}>
+                                                        <Text style={{ fontSize: 17, fontWeight: 'bold', color: '#545454' }}>Amount:</Text>
+                                                        <View style={{ borderColor: '#FFC107', backgroundColor: '#ffc10727', borderWidth: 2, borderRadius: 5, flexDirection: 'row', alignItems: 'center', paddingHorizontal: 15, paddingVertical: 8 }}>
+                                                            <Text style={{ fontSize: 20 }}>₱ </Text>
+                                                            <Text style={{ fontWeight: 'bold', textAlign: 'right', fontSize: 20 }}>
+                                                                {ComputedCargoAmount(c).amount.toLocaleString('en-PH', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+                                                            </Text>
+                                                        </View>
+                                                    </View>
+                                                    {c.cargoType && c.cargoType != 'Rolling Cargo' && (
+                                                        <View style={{ flexDirection: 'column', alignItems: 'flex-end' }}>
+                                                            <Text style={{ fontSize: 17, fontWeight: 'bold', color: '#545454' }}>Quantity:</Text>
+                                                            <View style={{ flexDirection: 'row', alignItems: 'center', borderColor: '#B3B3B3', paddingHorizontal: 5, borderWidth: 1, borderRadius: 5 }}>
+                                                                <TouchableOpacity disabled={c.quantity == 1} onPress={() => handleCargoQuantity('minus', cargoIndex, p.id)} style={{ paddingRight: 5 }}>
+                                                                    <Ionicons name={'remove'} size={25} color={c.quantity == 1 ? "#d4d4d4ff" : undefined} />
+                                                                </TouchableOpacity>
+                                                                <Text style={{ paddingHorizontal: 14, fontSize: 20, fontWeight: 'bold', borderRightColor: '#B3B3B3', borderLeftColor: '#B3B3B3', borderLeftWidth: 1, borderRightWidth: 1, paddingVertical: 5 }}>
+                                                                    {c.quantity}
+                                                                </Text>
+                                                                <TouchableOpacity onPress={() => handleCargoQuantity('add', cargoIndex, p.id)} style={{ paddingLeft: 5 }}>
+                                                                    <Ionicons name={'add'} size={25} />
+                                                                </TouchableOpacity>
+                                                            </View>
+                                                        </View>
+                                                    )}
+                                                </View>
+                                                <View style={{ width: '100%' }}>
+                                                    <Text style={{ fontSize: 17, fontWeight: 'bold', color: '#545454' }}>Cargo Type:</Text>
                                                     <View style={{ borderColor: '#B3B3B3', borderWidth: 1, borderRadius: 5 }}>
                                                         <Dropdown
-                                                            onChange={(item) => handleOnUpdateCargo(p.id, cargoIndex, 'cargoBrand', item.label, 'cargoBrandID', item.value)}
-                                                            value={c.cargoBrandID}
-                                                            data={cargoProperties?.data?.brands?.map((b: any) => ({ label: b.name, value: b.id })) ?? []}
-                                                            labelField="label" valueField="value" placeholder="Select Brand"
+                                                            onChange={(item) => handleOnUpdateCargo(p.id, cargoIndex, 'cargoType', item.label, 'cargoTypeID', item.value)}
+                                                            value={c.cargoTypeID}
+                                                            data={cargoProperties?.data?.cargo_types?.map((type: any) => ({ label: type.name, value: type.id })) ?? []}
+                                                            labelField="label" valueField="value" placeholder="Select Cargo Type"
                                                             style={{ height: 50, width: '100%', paddingHorizontal: 10 }}
                                                             containerStyle={{ alignSelf: 'flex-start', width: '90%' }}
                                                             selectedTextStyle={{ fontSize: 18, lineHeight: 35, fontWeight: '600' }}
-                                                            renderRightIcon={() => <Ionicons name="chevron-down" size={15} />}
+                                                            renderRightIcon={() => <Ionicons name="chevron-down" size={18} />}
                                                             dropdownPosition="bottom"
                                                             renderItem={(item) => <View style={{ width: '80%', padding: 8 }}><Text style={{ fontSize: 18 }}>{item.label}</Text></View>}
                                                         />
                                                     </View>
                                                 </View>
-                                                <View style={{ marginTop: 10, flexDirection: 'row', justifyContent: 'space-between' }}>
-                                                    <View style={{ width: '50%' }}>
-                                                        <Text style={{ fontSize: 17, fontWeight: 'bold', color: '#545454' }}>{'Specifications (CC):'}</Text>
-                                                        <View style={{ borderColor: '#B3B3B3', borderWidth: 1, borderRadius: 5, height: 45, justifyContent: 'center' }}>
+                                                {c.cargoType == 'Rolling Cargo' ? (
+                                                    <View>
+                                                        <View style={{ width: '100%', marginTop: 10 }}>
+                                                            <Text style={{ fontSize: 17, fontWeight: 'bold', color: '#545454' }}>Brand:</Text>
+                                                            <View style={{ borderColor: '#B3B3B3', borderWidth: 1, borderRadius: 5 }}>
+                                                                <Dropdown
+                                                                    onChange={(item) => handleOnUpdateCargo(p.id, cargoIndex, 'cargoBrand', item.label, 'cargoBrandID', item.value)}
+                                                                    value={c.cargoBrandID}
+                                                                    data={cargoProperties?.data?.brands?.map((b: any) => ({ label: b.name, value: b.id })) ?? []}
+                                                                    labelField="label" valueField="value" placeholder="Select Brand"
+                                                                    style={{ height: 50, width: '100%', paddingHorizontal: 10 }}
+                                                                    containerStyle={{ alignSelf: 'flex-start', width: '90%' }}
+                                                                    selectedTextStyle={{ fontSize: 18, lineHeight: 35, fontWeight: '600' }}
+                                                                    renderRightIcon={() => <Ionicons name="chevron-down" size={15} />}
+                                                                    dropdownPosition="bottom"
+                                                                    renderItem={(item) => <View style={{ width: '80%', padding: 8 }}><Text style={{ fontSize: 18 }}>{item.label}</Text></View>}
+                                                                />
+                                                            </View>
+                                                        </View>
+                                                        <View style={{ marginTop: 10, flexDirection: 'row', justifyContent: 'space-between' }}>
+                                                            <View style={{ width: '50%' }}>
+                                                                <Text style={{ fontSize: 17, fontWeight: 'bold', color: '#545454' }}>{'Specifications (CC):'}</Text>
+                                                                <View style={{ borderColor: '#B3B3B3', borderWidth: 1, borderRadius: 5, height: 45, justifyContent: 'center' }}>
+                                                                    <Dropdown
+                                                                        onChange={(item) => handleOnUpdateCargo(p.id, cargoIndex, 'cargoSpecification', item.label, 'cargoSpecificationID', item.value)}
+                                                                        value={c.cargoSpecificationID}
+                                                                        data={cargoProperties?.data?.cargo_options?.filter((opt: any) => opt.specification).map((s: any) => ({ label: String(s.specification), value: s.id })) ?? []}
+                                                                        labelField="label" valueField="value" placeholder="Select CC"
+                                                                        style={{ height: 50, width: '100%', paddingHorizontal: 10 }}
+                                                                        containerStyle={{ alignSelf: 'flex-start', width: '42%' }}
+                                                                        selectedTextStyle={{ fontSize: 18, lineHeight: 35, fontWeight: '600' }}
+                                                                        renderRightIcon={() => <Ionicons name="chevron-down" size={15} />}
+                                                                        dropdownPosition="bottom"
+                                                                        renderItem={(item) => <View style={{ width: '80%', padding: 8 }}><Text style={{ fontSize: 18 }}>{item.label}</Text></View>}
+                                                                    />
+                                                                </View>
+                                                            </View>
+                                                            <View style={{ width: '48%' }}>
+                                                                <Text style={{ fontSize: 17, fontWeight: 'bold', color: '#545454' }}>Plate#:</Text>
+                                                                <View style={{ borderColor: '#B3B3B3', borderWidth: 1, borderRadius: 5, height: 45, justifyContent: 'center' }}>
+                                                                    <TextInput value={c.cargoPlateNo} onChangeText={(text) => updateCargo(p.id, cargoIndex, 'cargoPlateNo', text)} placeholder='Plate#' style={{ fontSize: 19, fontWeight: '600' }} />
+                                                                </View>
+                                                            </View>
+                                                        </View>
+                                                    </View>
+                                                ) : c.cargoType == 'Parcel' ? (
+                                                    <View style={{ marginTop: 5 }}>
+                                                        <Text style={{ fontSize: 17, fontWeight: 'bold', color: '#545454' }}>Parcel Category:</Text>
+                                                        <View style={{ borderColor: '#B3B3B3', borderWidth: 1, borderRadius: 5 }}>
                                                             <Dropdown
-                                                                onChange={(item) => handleOnUpdateCargo(p.id, cargoIndex, 'cargoSpecification', item.label, 'cargoSpecificationID', item.value)}
-                                                                value={c.cargoSpecificationID}
-                                                                data={cargoProperties?.data?.cargo_options?.filter((opt: any) => opt.specification).map((s: any) => ({ label: String(s.specification), value: s.id })) ?? []}
-                                                                labelField="label" valueField="value" placeholder="Select CC"
+                                                                onChange={(item) => handleOnUpdateCargo(p.id, cargoIndex, 'parcelCategory', item.label, 'parcelCategoryID', item.value)}
+                                                                value={c.parcelCategoryID}
+                                                                data={cargoProperties?.data?.parcel_categories?.map((category: any) => ({ label: category.name.slice(1, -1), value: category.id })) ?? []}
+                                                                labelField="label" valueField="value" placeholder="Select Category"
                                                                 style={{ height: 50, width: '100%', paddingHorizontal: 10 }}
-                                                                containerStyle={{ alignSelf: 'flex-start', width: '42%' }}
-                                                                selectedTextStyle={{ fontSize: 18, lineHeight: 35, fontWeight: '600' }}
+                                                                containerStyle={{ alignSelf: 'flex-start', width: '85%' }}
+                                                                selectedTextStyle={{ fontSize: 19, lineHeight: 35, fontWeight: '600' }}
                                                                 renderRightIcon={() => <Ionicons name="chevron-down" size={15} />}
                                                                 dropdownPosition="bottom"
                                                                 renderItem={(item) => <View style={{ width: '80%', padding: 8 }}><Text style={{ fontSize: 18 }}>{item.label}</Text></View>}
                                                             />
                                                         </View>
                                                     </View>
-                                                    <View style={{ width: '48%' }}>
-                                                        <Text style={{ fontSize: 17, fontWeight: 'bold', color: '#545454' }}>Plate#:</Text>
-                                                        <View style={{ borderColor: '#B3B3B3', borderWidth: 1, borderRadius: 5, height: 45, justifyContent: 'center' }}>
-                                                            <TextInput value={c.cargoPlateNo} onChangeText={(text) => updateCargo(p.id, cargoIndex, 'cargoPlateNo', text)} placeholder='Plate#' style={{ fontSize: 19, fontWeight: '600' }} />
-                                                        </View>
-                                                    </View>
-                                                </View>
+                                                ) : (
+                                                    <View />
+                                                )}
                                             </View>
-                                        ) : c.cargoType == 'Parcel' ? (
-                                            <View style={{ marginTop: 5 }}>
-                                                <Text style={{ fontSize: 17, fontWeight: 'bold', color: '#545454' }}>Parcel Category:</Text>
-                                                <View style={{ borderColor: '#B3B3B3', borderWidth: 1, borderRadius: 5 }}>
-                                                    <Dropdown
-                                                        onChange={(item) => handleOnUpdateCargo(p.id, cargoIndex, 'parcelCategory', item.label, 'parcelCategoryID', item.value)}
-                                                        value={c.parcelCategoryID}
-                                                        data={cargoProperties?.data?.parcel_categories?.map((category: any) => ({ label: category.name.slice(1, -1), value: category.id })) ?? []}
-                                                        labelField="label" valueField="value" placeholder="Select Category"
-                                                        style={{ height: 50, width: '100%', paddingHorizontal: 10 }}
-                                                        containerStyle={{ alignSelf: 'flex-start', width: '85%' }}
-                                                        selectedTextStyle={{ fontSize: 19, lineHeight: 35, fontWeight: '600' }}
-                                                        renderRightIcon={() => <Ionicons name="chevron-down" size={15} />}
-                                                        dropdownPosition="bottom"
-                                                        renderItem={(item) => <View style={{ width: '80%', padding: 8 }}><Text style={{ fontSize: 18 }}>{item.label}</Text></View>}
-                                                    />
-                                                </View>
-                                            </View>
-                                        ) : (
-                                            <View />
-                                        )}
+                                        ))}
                                     </View>
-                                ))}
+                                )}
                             </View>
+                        ))}
+        
+                        {scannedInfantPax.map(inf => (
+                            <View style={{ padding: 10, backgroundColor: '#fff', elevation: 5, borderRadius: 8, borderWidth: 1, borderColor: '#B3B3B3' }} key={inf.id}>
+                                <Text style={{ fontSize: 20, fontWeight: '900', color: '#cf2a3a', marginBottom: 5 }}>Infant Details</Text>
+                                <View style={{ marginTop: 20 }}>
+                                    <Text style={{ fontSize: 17, fontWeight: 'bold', color: '#545454' }}>Full Name:</Text>
+                                    <View style={{ borderColor: '#B3B3B3', borderWidth: 1, borderRadius: 5, height: 45, justifyContent: 'center' }}>
+                                        <TextInput value={inf.name} onChangeText={(text) => updatePassenger(inf.id, 'name', text)} placeholder='Name' style={{ fontSize: 19, fontWeight: '600' }} />
+                                    </View>
+                                </View>
+                                <View style={{ marginTop: 5, flexDirection: 'row', gap: 8, alignItems: 'flex-end' }}>
+                                    <View style={{ width: '40%' }}>
+                                        <Text style={{ fontSize: 17, fontWeight: 'bold', color: '#545454' }}>Age:</Text>
+                                        <View style={{ borderColor: '#B3B3B3', borderWidth: 1, borderRadius: 5, height: 45, justifyContent: 'center' }}>
+                                            <TextInput value={String(inf.age ?? '')} onChangeText={(text) => updatePassenger(inf.id, 'age', Number(text))} keyboardType='numeric' placeholder='Age' style={{ fontSize: 19, fontWeight: '600' }} />
+                                        </View>
+                                    </View>
+                                    <View style={{ width: '56%' }}>
+                                        <Text style={{ fontSize: 17, fontWeight: 'bold', color: '#545454' }}>Gender:</Text>
+                                        <View style={{ flexDirection: 'row', gap: 5 }}>
+                                            {passGender.map((infntgender) => (
+                                                <TouchableOpacity onPress={() => updatePassenger(inf.id, 'gender', infntgender)} key={infntgender}
+                                                    style={{ backgroundColor: inf.gender == infntgender ? '#cf2a3a' : 'transparent', borderColor: '#cf2a3a', borderWidth: 1, width: '50%', borderRadius: 5, justifyContent: 'center', paddingVertical: 12 }}>
+                                                    <Text style={{ textAlign: 'center', fontSize: 17, fontWeight: '600', color: inf.gender == infntgender ? '#fff' : '#cf2a3a' }}>{infntgender}</Text>
+                                                </TouchableOpacity>
+                                            ))}
+                                        </View>
+                                    </View>
+                                </View>
+                            </View>
+                        ))}
+        
+                        {hasPasses && (
+                            <>
+                                <View style={{ padding: 10, backgroundColor: '#fff', elevation: 5, borderRadius: 8, borderWidth: 1, borderColor: '#B3B3B3' }}>
+                                    <Text style={{ fontSize: 17, fontWeight: 'bold', color: '#545454' }}>Approved by:</Text>
+                                    <View style={{ borderColor: '#B3B3B3', borderWidth: 1, borderRadius: 5, height: 50, justifyContent: 'center' }}>
+                                        <TextInput onChangeText={(text) => setApprovedBy(text)} value={approvedBy} placeholder='First Last' style={{ fontSize: 19, fontWeight: '600' }} />
+                                    </View>
+                                </View>
+                                <Pressable onPress={() => handleAddPasses()} style={{ flexDirection: 'row', alignItems: 'center', alignSelf: 'center', paddingVertical: 10, paddingHorizontal: 15, borderRadius: 8, backgroundColor: '#cf2a3a', elevation: 2 }}>
+                                    <Ionicons name={'add'} color={'#fff'} size={20} />
+                                    <Text style={{ color: '#fff', fontWeight: '600' }}>Add Passes</Text>
+                                </Pressable>
+                            </>
                         )}
-                    </View>
-                ))}
-
-                {scannedInfantPax.map(inf => (
-                    <View style={{ padding: 10, backgroundColor: '#fff', elevation: 5, borderRadius: 8, borderWidth: 1, borderColor: '#B3B3B3' }} key={inf.id}>
-                        <Text style={{ fontSize: 20, fontWeight: '900', color: '#cf2a3a', marginBottom: 5 }}>Infant Details</Text>
-                        <View style={{ marginTop: 20 }}>
-                            <Text style={{ fontSize: 17, fontWeight: 'bold', color: '#545454' }}>Full Name:</Text>
-                            <View style={{ borderColor: '#B3B3B3', borderWidth: 1, borderRadius: 5, height: 45, justifyContent: 'center' }}>
-                                <TextInput value={inf.name} onChangeText={(text) => updatePassenger(inf.id, 'name', text)} placeholder='Name' style={{ fontSize: 19, fontWeight: '600' }} />
-                            </View>
-                        </View>
-                        <View style={{ marginTop: 5, flexDirection: 'row', gap: 8, alignItems: 'flex-end' }}>
-                            <View style={{ width: '40%' }}>
-                                <Text style={{ fontSize: 17, fontWeight: 'bold', color: '#545454' }}>Age:</Text>
-                                <View style={{ borderColor: '#B3B3B3', borderWidth: 1, borderRadius: 5, height: 45, justifyContent: 'center' }}>
-                                    <TextInput value={String(inf.age ?? '')} onChangeText={(text) => updatePassenger(inf.id, 'age', Number(text))} keyboardType='numeric' placeholder='Age' style={{ fontSize: 19, fontWeight: '600' }} />
-                                </View>
-                            </View>
-                            <View style={{ width: '56%' }}>
-                                <Text style={{ fontSize: 17, fontWeight: 'bold', color: '#545454' }}>Gender:</Text>
-                                <View style={{ flexDirection: 'row', gap: 5 }}>
-                                    {passGender.map((infntgender) => (
-                                        <TouchableOpacity onPress={() => updatePassenger(inf.id, 'gender', infntgender)} key={infntgender}
-                                            style={{ backgroundColor: inf.gender == infntgender ? '#cf2a3a' : 'transparent', borderColor: '#cf2a3a', borderWidth: 1, width: '50%', borderRadius: 5, justifyContent: 'center', paddingVertical: 12 }}>
-                                            <Text style={{ textAlign: 'center', fontSize: 17, fontWeight: '600', color: inf.gender == infntgender ? '#fff' : '#cf2a3a' }}>{infntgender}</Text>
-                                        </TouchableOpacity>
-                                    ))}
-                                </View>
-                            </View>
-                        </View>
-                    </View>
-                ))}
-
-                {hasPasses && (
-                    <>
-                        <View style={{ padding: 10, backgroundColor: '#fff', elevation: 5, borderRadius: 8, borderWidth: 1, borderColor: '#B3B3B3' }}>
-                            <Text style={{ fontSize: 17, fontWeight: 'bold', color: '#545454' }}>Approved by:</Text>
-                            <View style={{ borderColor: '#B3B3B3', borderWidth: 1, borderRadius: 5, height: 50, justifyContent: 'center' }}>
-                                <TextInput onChangeText={(text) => setApprovedBy(text)} value={approvedBy} placeholder='First Last' style={{ fontSize: 19, fontWeight: '600' }} />
-                            </View>
-                        </View>
-                        <Pressable onPress={() => handleAddPasses()} style={{ flexDirection: 'row', alignItems: 'center', alignSelf: 'center', paddingVertical: 10, paddingHorizontal: 15, borderRadius: 8, backgroundColor: '#cf2a3a', elevation: 2 }}>
-                            <Ionicons name={'add'} color={'#fff'} size={20} />
-                            <Text style={{ color: '#fff', fontWeight: '600' }}>Add Passes</Text>
-                        </Pressable>
                     </>
                 )}
             </View>

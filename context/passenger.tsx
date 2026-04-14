@@ -1,4 +1,4 @@
-import React, { createContext, useContext, useState } from "react";
+import React, { createContext, useCallback, useContext, useMemo, useState } from "react";
 import { PaxCargoProperties } from "./cargoProps";
 
 export type InfantProps = {
@@ -64,23 +64,29 @@ const PassengerContext = createContext<PassengerContextType | undefined>(undefin
 
 export const PassengerProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
     const [passengers, setPassengers] = useState<PassengerProps[]>([]);
-    const clearPassengers = () => setPassengers([]);
 
-    const updatePassenger = <K extends keyof PassengerProps>(
+    const clearPassengers = useCallback(() => {
+        setPassengers([]);
+    }, []);
+
+    const updatePassenger = useCallback(<K extends keyof PassengerProps>(
         id: number | string,
         key: K,
         value: PassengerProps[K]
-    ) => setPassengers(prev => 
-        prev.map((p) => p.id == id ? { ...p, [key]: value }: p )
-    );
+    ) => {
+        setPassengers(prev => 
+            prev.map((p) => p.id == id ? { ...p, [key]: value }: p )
+        );
+    }, []);
 
-    const updateInfant = <K extends keyof InfantProps> (
+    const updateInfant = useCallback(<K extends keyof InfantProps> (
         id: number | string,
         index: number,
         key: K,
         value: InfantProps[K]
-    ) => setPassengers((prev) =>
-        prev.map((p, passIndex) => { 
+    ) => {
+        setPassengers(prev =>
+            prev.map(p => { 
             if (p.id !== id || !p.infant) return p;
             return {
                 ...p,
@@ -88,29 +94,40 @@ export const PassengerProvider: React.FC<{ children: React.ReactNode }> = ({ chi
                     i === index ? { ...inf, [key]: value }: inf
                 )
             }
-        })
-    );
+        }))
+    }, []);
 
-    const updateCargo = <K extends keyof PaxCargoProperties> (
+    const updateCargo = useCallback(<K extends keyof PaxCargoProperties> (
         id: number | string,
         cargoIndex: number,
         key: K,
         value: PaxCargoProperties[K]
-    ) => setPassengers((prev) => 
-        prev.map((p, index) => {
-            if (!p.cargo || id != p.id) return p;
-            return {
-                ...p,
-                cargo: p.cargo.map((c, i) =>
-                    i === cargoIndex ? { ...c, [key]: value } : c
-                )
-            }
-        })
-    );
+    ) => {
+        setPassengers(prev => 
+            prev.map(p => {
+                if (!p.cargo || id != p.id) return p;
+                return {
+                    ...p,
+                    cargo: p.cargo.map((c, i) =>
+                        i === cargoIndex ? { ...c, [key]: value } : c
+                    )
+                }
+            })
+        )
+    }, []);
 
+
+    const contextValue = useMemo(() => ({
+        passengers, 
+        setPassengers, 
+        clearPassengers, 
+        updatePassenger, 
+        updateInfant, 
+        updateCargo
+    }), [passengers, clearPassengers, updatePassenger, updateInfant, updateCargo])
 
     return (
-        <PassengerContext.Provider value={{ passengers, setPassengers, clearPassengers, updatePassenger, updateInfant, updateCargo }}>
+        <PassengerContext.Provider value={ contextValue }>
             { children }
         </PassengerContext.Provider>
     )

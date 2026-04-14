@@ -17,8 +17,8 @@
         "gradleCommand": ":app:assembleRelease"
       },
       "env": {
-        "API_URL": "https://lmbs-staging.creativedevlabs.com/api/",
-        "API_KEY": "CZdYda2Hvbr4Yv4dcGWaFMRTGpFQeg2C2op9pRxgWdxh0QaBnGazBi0L0MXT",
+        "API_URL": "http://192.168.100.21:8000/api/",
+        "API_KEY": "2mvaHXt2hfi38PST2cLfU0faJDLccGsSGB2lp9gGHUgGgw4m010XzFG2WQCU",
         "ORIGIN": "http://ropax-online-booking.test/",
         "PUBLIC_SUPABASE_URL": "https://hzibgpzxgdvdwpncraxu.supabase.co",
         "PUBLIC_ANON_KEY": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imh6aWJncHp4Z2R2ZHdwbmNyYXh1Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzMwNjE4MjQsImV4cCI6MjA4ODYzNzgyNH0.dj5U7ZMmMXIldglkXmtZcasu3Iy7ROe9lm9JExDw7yc"

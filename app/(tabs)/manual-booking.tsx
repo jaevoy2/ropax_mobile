@@ -11,11 +11,9 @@ import { Ionicons, MaterialCommunityIcons } from "@expo/vector-icons";
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { router } from 'expo-router';
 import { useCallback, useEffect, useRef, useState } from "react";
-import { Alert, Animated, Dimensions, Modal, RefreshControl, ScrollView, Text, TouchableOpacity, View } from "react-native";
+import { Alert, Animated, Modal, RefreshControl, ScrollView, Text, TouchableOpacity, useWindowDimensions, View } from "react-native";
 import { Calendar } from 'react-native-calendars';
 import { GestureHandlerRootView, Pressable } from 'react-native-gesture-handler';
-
-const { height, width } = Dimensions.get('window');
 
 export type TripProps = {
     trip_id: number;
@@ -66,6 +64,7 @@ export default function ManualBooking() {
     const { id, setRouteID, setVessel, setID, setOrigin, setDestination, setVesselID, setCode, setWebCode, setDepartureTime, setMobileCode, setIsCargoable } = useTrip();
     const { passengers, clearPassengers } = usePassengers();
     const { setCargoProperties } = useCargo();
+    const { height, width } = useWindowDimensions();
     const [bookingType, setBookingType] = useState<string>('Walk-In');
     const [trips, setTrips] = useState<TripProps[] | null>(null);
     const [totalBookings, setTotalBookings] = useState<TotalBookingProps[] | null>(null);
@@ -495,6 +494,7 @@ export default function ManualBooking() {
                                                     <Ionicons name="chevron-forward" size={18} />
                                                 </View>
                                             ))}
+                                            
                                         </>
                                     )}
                                 </>

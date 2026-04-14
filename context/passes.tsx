@@ -1,5 +1,5 @@
 import { FetchPassengerType } from "@/api/passengerType";
-import React, { createContext, ReactNode, useContext, useEffect, useState } from "react";
+import React, { createContext, ReactNode, useContext, useEffect, useMemo, useState } from "react";
 
 type PassesProps = {
     passesTypeID: number;
@@ -11,7 +11,7 @@ type PassesProps = {
 }
 
 
-const PassesTypeContext = createContext<PassesProps | null>(null);
+const PassesTypeContext = createContext<PassesProps | undefined>(undefined);
 
 export function PassesTypeProvider({ children }: { children: ReactNode }) {
     const [passesTypeID, setPassesTypeID] = useState(0);
@@ -43,14 +43,29 @@ export function PassesTypeProvider({ children }: { children: ReactNode }) {
     }, []);
 
 
+    const contextValue = useMemo(() => ({
+        passesTypeID, 
+        passesTypeName, 
+        passesTypeCode, 
+        setPassesTypeID, 
+        setPassesTypeName, 
+        setPassesTypeCode
+    }), [passesTypeID, passesTypeName, passesTypeCode])
+
     return (
-        <PassesTypeContext.Provider value={{ passesTypeID, passesTypeName, passesTypeCode, setPassesTypeID, setPassesTypeName, setPassesTypeCode }}>
+        <PassesTypeContext.Provider value={ contextValue }>
             { children }
         </PassesTypeContext.Provider>
     )
 
 }
 
-export function usePassesType() {
-    return useContext(PassesTypeContext) || undefined;
+export function usePassesType() { 
+    const context = useContext(PassesTypeContext);
+    if(!context) {
+        throw new Error('usePassengers must be used within PassengerProvider');
+    }
+
+    return context;
+
 }

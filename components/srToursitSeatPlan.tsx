@@ -3,8 +3,6 @@ import { Text, useWindowDimensions, View } from 'react-native';
 import { SeatPlan } from './srVessel';
 
 
-const { height, width } = useWindowDimensions()
-
 type SrTouristSeatPlanProps = {
     passengerSeats: Set<number | string>;
     seatChannel: Set<string>;
@@ -21,8 +19,8 @@ type SrTouristSeatPlanProps = {
 
 
 const SrToursitSeatPlan = ({ passengerSeats, seatChannel, bookedSeats, assignseat, TouristAccoms, isDisabled, seatAvailability, disabledSeats }: SrTouristSeatPlanProps) => {
-    
     const [seatStates, setSeatStates] = useState<boolean[]>([]);
+    const { height, width } = useWindowDimensions()
 
     const handleSeatAvailability = useCallback((index: number, hasAvailable: boolean) => {
         setSeatStates(prev => {
