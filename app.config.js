@@ -8,7 +8,7 @@ export default {
     orientation: "portrait",
     icon: "./assets/images/icon.png",
     scheme: "leopardsmobile",
-    owner: "jaevoy3",
+    owner: "jvoy",
     userInterfaceStyle: "automatic",
     newArchEnabled: false,
     ios: {
@@ -58,7 +58,7 @@ export default {
     },
     extra: {
       eas: {
-        projectId: "6c5a5666-b3f9-4d55-b8ca-f9aaa1b29362"
+        projectId: "e7223344-8b1c-463d-b5d2-df411d97c436"
       },
       API_URL: process.env.API_URL, 
       API_KEY: process.env.API_KEY,

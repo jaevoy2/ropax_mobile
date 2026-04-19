@@ -23,9 +23,7 @@ const SRBClassSeatPlan = ({ passengerSeats, seatChannel, bookedSeatMap, assignse
 
 
     const isTablet = width >= 600;
-    // Column container width scales with screen
     const columnWidth = isTablet ? 120 : 90;
-    // Seat button size: 35% of columnWidth minus gap, kept as fixed px for consistency
     const seatSize = Math.floor(columnWidth * 0.40);
     const labelFontSize = isTablet ? 15 : 12;
     const titleFontSize = isTablet ? 18 : 16;
@@ -102,24 +100,22 @@ const SRBClassSeatPlan = ({ passengerSeats, seatChannel, bookedSeatMap, assignse
                 width: '80%',
                 alignSelf: 'center',
             }}>
-                {/* Column 1 */}
+
                 <View style={{ flexDirection: 'row', flexWrap: 'wrap', width: columnWidth, gap: 4, justifyContent: 'center' }}>
-                    <Text style={{ fontWeight: 'bold', textAlign: 'center', fontSize: labelFontSize, marginBottom: 4, width: '100%' }}>Senior/PWD</Text>
+                    <Text style={{ fontWeight: 'bold', textAlign: 'center', fontSize: labelFontSize, marginBottom: 4, width: '100%', color: '#000' }}>Senior/PWD</Text>
                     {seatColumn1.map(seat => renderSeat(
                         seat,
                         seat === 'A' || seat === 'B' ? '#E6E2C6' : 'transparent'
                     ))}
                 </View>
 
-                {/* Column 2 */}
                 <View style={{ flexDirection: 'row', flexWrap: 'wrap', width: columnWidth, gap: 4, justifyContent: 'center' }}>
-                    <Text style={{ fontWeight: 'bold', textAlign: 'center', fontSize: labelFontSize, marginBottom: 4, width: '100%' }}>Senior/PWD</Text>
+                    <Text style={{ fontWeight: 'bold', textAlign: 'center', fontSize: labelFontSize, marginBottom: 4, width: '100%', color: '#000' }}>Senior/PWD</Text>
                     {seatColumn2.map(seat => renderSeat(seat, '#E6E2C6'))}
                 </View>
 
-                {/* Column 3 */}
                 <View style={{ flexDirection: 'row', flexWrap: 'wrap', width: columnWidth, gap: 4, justifyContent: 'center' }}>
-                    <Text style={{ fontWeight: 'bold', textAlign: 'center', fontSize: labelFontSize, marginBottom: 4, width: '100%' }}>Senior/PWD</Text>
+                    <Text style={{ fontWeight: 'bold', textAlign: 'center', fontSize: labelFontSize, marginBottom: 4, width: '100%', color: '#000' }}>Senior/PWD</Text>
                     {seatColumn3.map(seat => renderSeat(
                         seat,
                         seat === 'C' || seat === 'D' ? '#E6E2C6' : 'transparent'

@@ -1,3 +1,4 @@
+import { BleProvider } from "@/context/BLEManager";
 import { CargoProvider } from "@/context/cargoProps";
 import { ExpenseProvider } from "@/context/expense";
 import { PassengerProvider } from "@/context/passenger";
@@ -69,23 +70,25 @@ export default function RootLayout() {
               <PassengerProvider>
                 <ExpenseProvider>
                   <PassesTypeProvider>
-                    <AutocompleteDropdownContextProvider>
-                      <StatusBar barStyle={'light-content'} backgroundColor={'transparent'} translucent />
+                    <BleProvider>
+                      <AutocompleteDropdownContextProvider>
+                        <StatusBar barStyle={'light-content'} backgroundColor={'transparent'} translucent />
 
-                      <Stack>
-                          <Stack.Screen name="index" options={{ headerShown: false }} />
-                          <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
-                          <Stack.Screen name="seatPlan" options={{ headerShown: false }} />
-                          <Stack.Screen name="generateTicket" options={{ headerShown: false }} />
-                          <Stack.Screen name="summary" options={{ headerShown: false }} />
-                          <Stack.Screen name="bookingInfo" options={{ headerShown: false }} />
-                          <Stack.Screen name="scanner" options={{ headerShown: false }} />
-                          <Stack.Screen name="bookingForm" options={{ headerShown: false }} />
-                          <Stack.Screen name="addPaxCargo" options={{ headerShown: false }} />
-                          <Stack.Screen name="expenses" options={{ headerShown: false }} />
-                          <Stack.Screen name="addExpenses" options={{ headerShown: false }} />
-                      </Stack>
-                    </AutocompleteDropdownContextProvider>
+                        <Stack>
+                            <Stack.Screen name="index" options={{ headerShown: false }} />
+                            <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
+                            <Stack.Screen name="seatPlan" options={{ headerShown: false }} />
+                            <Stack.Screen name="generateTicket" options={{ headerShown: false }} />
+                            <Stack.Screen name="summary" options={{ headerShown: false }} />
+                            <Stack.Screen name="bookingInfo" options={{ headerShown: false }} />
+                            <Stack.Screen name="scanner" options={{ headerShown: false }} />
+                            <Stack.Screen name="bookingForm" options={{ headerShown: false }} />
+                            <Stack.Screen name="addPaxCargo" options={{ headerShown: false }} />
+                            <Stack.Screen name="expenses" options={{ headerShown: false }} />
+                            <Stack.Screen name="addExpenses" options={{ headerShown: false }} />
+                        </Stack>
+                      </AutocompleteDropdownContextProvider>
+                    </BleProvider>
                   </PassesTypeProvider>
                 </ExpenseProvider>
               </PassengerProvider>

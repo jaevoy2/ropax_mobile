@@ -273,8 +273,8 @@ const L2Vessel = ({ onSeatSelect, accommodations, seatAvailability, setParentLoa
     }, [id]);
 
     const passengerSeats = useMemo(() => new Set(passengers.map((p) => p.seatNumber)), [passengers]);
-    const TouristAccoms = useMemo(() => accommodations?.find((accom) => accom?.name == 'Tourist'), [accommodations]);
-    const BClassAccomms = useMemo(() => accommodations?.find((accom) => bClassNames.includes(accom?.name)), [accommodations]);
+    const TouristAccoms = useMemo(() => accommodations?.find((accom) => accom?.id == 2), [accommodations]);
+    const BClassAccomms = useMemo(() => accommodations?.find((accom) => accom?.id == 1), [accommodations]);
     const seatChannel = useMemo(() => new Set(seatSelectionChannel), [seatSelectionChannel]);
     console.log('trip accom', tripAccom)
 

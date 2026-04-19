@@ -8,7 +8,7 @@ import { seatRemoval } from '@/utils/channel';
 import { Ionicons } from '@expo/vector-icons';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { router } from 'expo-router';
-import React, { useEffect, useState } from 'react';
+import { useEffect, useState } from 'react';
 import { ActivityIndicator, Alert, Dimensions, KeyboardAvoidingView, Platform, ScrollView, Text, TextInput, TouchableOpacity, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
@@ -138,7 +138,7 @@ export default function PaymentSummary() {
                             <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' }}>
                                 <Text style={{ color: '#646464', fontSize: 15, }}>Cash Tendered</Text>
                                 <View style={{ flexDirection: 'row', alignItems: 'center', gap: 5, borderBottomColor: "#cf2a3a", borderBottomWidth: 1 }}>
-                                    <Text style={{ fontSize: 20, fontWeight: '600' }}>₱</Text>
+                                    <Text style={{ fontSize: 20, fontWeight: '600', color: '#000' }}>₱</Text>
                                     <TextInput onChangeText={(text) => setPassCashTendered(Number(text))} keyboardType={'numeric'} placeholder='0.00' style={{ width: 100, fontSize: 25, height: 55, fontWeight: 'bold', color: '#000', backgroundColor: '#fafafa', textAlign: 'right', paddingHorizontal: 3, borderColor: '#fafafa' }} />
                                 </View>
                             </View>

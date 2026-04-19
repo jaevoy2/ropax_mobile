@@ -2,6 +2,7 @@ import { AddCategory } from '@/api/addCategory';
 import { FetchCategories } from '@/api/fetchCategories';
 import { SaveExpenses } from '@/api/saveExpenses';
 import { FetchTrips } from '@/api/trips';
+import PreLoader from '@/components/preloader';
 import { useExpense } from '@/context/expense';
 import { Ionicons } from '@expo/vector-icons';
 import { CameraType, CameraView, useCameraPermissions } from 'expo-camera';
@@ -39,8 +40,7 @@ export default function AddExpenses() {
     const [trips, setTrips] = useState<TripProps[] | null>(null);
     const [categories, setCategories] = useState<CategoryProps[]>([])
     const [date, setDate] = useState('');
-    const [screenLoading, setScreenLoading] = useState(false);
-    const [contentLoading, setContentLoading] = useState(false);
+    const [screenLoading, setScreenLoading] = useState(true);
     const [saveExpenseSpinner, setSaveExpenseSpinner] = useState(false);
     const [selectedTrip, setSelectedTrip] = useState(0);
     const [modal, setModal] = useState(false);
@@ -162,7 +162,6 @@ export default function AddExpenses() {
     }
 
     useEffect(() => {
-        handleFetchCategories();
         expenseImgTempDir();
 
         const getDate = new Date();
@@ -176,17 +175,19 @@ export default function AddExpenses() {
         }
 
         const formattedDate = date.toLocaleDateString('en-US', options);
-        handleFetchTrips(today);
+        handleFetchDependencies(today)
         setDate(formattedDate);
     }, []);
 
-
-    const handleFetchTrips = async (queryDate: string) => {
+    const handleFetchDependencies = useCallback(async(queryDate: string) => {
         try {
-            const tripsFetch = await FetchTrips(queryDate);
-
-            if(tripsFetch) {
-                const tripsData: TripProps[] = tripsFetch.data.map((t: any) => ({
+            const [tripsFetched, fetchedCategories] = await Promise.all([
+                FetchTrips(queryDate),
+                FetchCategories()
+            ]);
+    
+            if(!tripsFetched.error) {
+                const tripsData: TripProps[] = tripsFetched.data.map((t: any) => ({
                     trip_id: t.id,
                     vessel: t.trip.vessel.code,
                     route_origin: t.trip.route.origin,
@@ -203,15 +204,24 @@ export default function AddExpenses() {
                         }
                     )
                 }))
-
+    
                 setTrips(tripsData);
             }
+    
+            if(!fetchedCategories.error) {
+                const categories: CategoryProps[] = fetchedCategories.categories.map((c: any) => ({
+                    categoryID: c.id,
+                    name: c.name
+                }))
+    
+                setCategories(categories);
+            }
         }catch(error: any) {
-            Alert.alert('Error', error.message);
-        }finally{
-            setContentLoading(false);
+            Alert.alert('Error', error.message)   
+        }finally {
+            setScreenLoading(false)
         }
-    }
+    }, [trips, categories])
 
     const dropdownCategory = useMemo(() => {
         return (categories || []).map((c) => ({
@@ -230,23 +240,6 @@ export default function AddExpenses() {
             }))
         }
     }, [trips])
-
-    const handleFetchCategories = async () => {
-        try {
-            const response = await FetchCategories();
-
-            if(!response.error) {
-                const categories: CategoryProps[] = response.categories.map((c: any) => ({
-                    categoryID: c.id,
-                    name: c.name
-                }))
-
-                setCategories(categories);
-            }
-        }catch(error: any) {
-            Alert.alert('Error', error.message);
-        }
-    }
 
     const handleAddCategory = async () => {
         setCategorySpinner(true);
@@ -364,150 +357,155 @@ export default function AddExpenses() {
                 </TouchableOpacity>
                 <Text style={{ fontSize: 20, color: '#fff', fontWeight: 'bold', textAlign: 'center' }}>Add Daily Expense</Text>
             </View>
-            <View style={{ flex: 1, marginTop: 20 }}>
-                <View style={{ paddingHorizontal: 20 }}>
-                    <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', backgroundColor: '#fff', borderRadius: 10, padding: 20, elevation: 5 }}>
-                        <View style={{ flexDirection: 'column' }}>
-                            <Text style={{ fontSize: 12 }}>Date:</Text>
-                            <Text style={{ color: '#CF2A3A', fontSize: 15, fontWeight: '900' }}>{date}</Text>
-                        </View>
-                        <TouchableOpacity disabled={trips && trips.length == 0} onPress={() => addExpenseForm()} style={{ flexDirection: 'row', alignItems: 'center', paddingHorizontal: 15, paddingVertical: 8, backgroundColor: trips?.length == 0 ? '#d8727c' : '#cf2a3a', justifyContent: 'center', borderRadius: 5 }}>
-                            <Ionicons name='add' size={20} color={'#fff'} />
-                            <Text style={{ fontWeight: 'bold', color: '#fff' }}>Add</Text>
-                        </TouchableOpacity>
-                    </View>
-                </View>
 
-                {trips && trips.length == 0 ? (
-                    <View style={{ height: height / 2, justifyContent: 'center' }}>
-                        <Text style={{ color: '#7A7A85', textAlign: 'center' }}>No Trip Available  To Add Expense</Text>
-                    </View>
-                ) : (
-                    <View style={{ flex: 1 }}>
-                        <View style={{ paddingHorizontal: 20, marginTop: 20 }}>
-                            <Text style={{ fontSize: 14, fontWeight: 'bold', color: '#545454' }}>Trip Schedules:</Text>
-                            <View style={{ borderRadius: 5, flexDirection: 'row', elevation: 5, justifyContent: 'space-between', alignItems: 'center', backgroundColor: '#fff' }}>
-                                <Dropdown onChange={handleTripChange} 
-                                    value={selectedTrip || undefined} 
-                                    data={tripDropdown} 
-                                    labelField="label" 
-                                    valueField="id" 
-                                    placeholder="Select Trip Schedule" 
-                                    style={{ height: 50, width: '100%', paddingHorizontal: 10 }}
-                                    containerStyle={{
-                                        alignSelf: 'flex-start',
-                                        width: '88%',
-                                    }}
-                                    selectedTextStyle={{ fontWeight: '700', fontSize: 14, color: '#cf2a3a', lineHeight: 35, }}
-                                    renderRightIcon={() => (
-                                        <Ionicons name="chevron-down" size={15} />
-                                    )}
-                                    dropdownPosition="bottom"
-                                    renderItem={(item) => (
-                                        <View style={{ width: '100%', padding: 8, backgroundColor: '#fff' }}>
-                                            <Text style={{ color: '#cf2a3a', fontWeight: '600' }}>{item.label}</Text>
-                                        </View>
-                                    )}
-                                />
+            {screenLoading == true ? (
+                <PreLoader loading={screenLoading} />
+            ) : (
+                <View style={{ flex: 1, marginTop: 20 }}>
+                    <View style={{ paddingHorizontal: 20 }}>
+                        <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', backgroundColor: '#fff', borderRadius: 10, padding: 20, elevation: 5 }}>
+                            <View style={{ flexDirection: 'column' }}>
+                                <Text style={{ fontSize: 12 }}>Date:</Text>
+                                <Text style={{ color: '#CF2A3A', fontSize: 15, fontWeight: '900' }}>{date}</Text>
                             </View>
+                            <TouchableOpacity disabled={trips && trips.length == 0} onPress={() => addExpenseForm()} style={{ flexDirection: 'row', alignItems: 'center', paddingHorizontal: 15, paddingVertical: 8, backgroundColor: trips?.length == 0 ? '#d8727c' : '#cf2a3a', justifyContent: 'center', borderRadius: 5 }}>
+                                <Ionicons name='add' size={20} color={'#fff'} />
+                                <Text style={{ fontWeight: 'bold', color: '#fff' }}>Add</Text>
+                            </TouchableOpacity>
                         </View>
-                        <KeyboardAvoidingView style={{ flex: 1, marginTop: 10 }} behavior={Platform.OS === 'android' ? 'padding' : 'height'}>
-                            <ScrollView keyboardShouldPersistTaps="handled" style={{ flex: 1 }}>
-                                <View style={{ paddingHorizontal: 20, paddingBottom: 80, flex: 1 }}>
-                                    {expenses.map((e) => (
-                                        <View key={e.id} style={{ padding: 10, borderRadius: 8, backgroundColor: '#fff', elevation: 5, marginBottom: 10 }}>
-                                            {e.id !== 1 && (
-                                                <TouchableOpacity onPress={() => removeExpenseForm(e.id)}  style={{ alignSelf: 'flex-end' }} >
-                                                    <Ionicons name={'close'} size={25} color={'#cf2a3a'}/>
-                                                </TouchableOpacity>
-                                            )}
-                                            <View>
-                                                <Text style={{ fontSize: 14, fontWeight: 'bold', color: '#545454' }}>Description</Text>
-                                                <View style={{ borderColor: '#B3B3B3', borderWidth: 1, borderRadius: 5 }}>
-                                                    <TextInput value={e.description} onChangeText={(text) => updateExpense(e.id, 'description', text)} placeholder='e.g. Vessel Oil' style={{ fontSize: 13 }} />
-                                                </View>
-                                            </View>
-                                            <View style={{ marginTop: 5, flexDirection: 'row', gap: 8, alignItems: 'flex-end' }}>
-                                                <View style={{ width: '25%' }}>
-                                                    <Text style={{ fontSize: 14, fontWeight: 'bold', color: '#545454' }}>Amount:</Text>
-                                                    <View style={{ borderColor: '#B3B3B3', borderWidth: 1, borderRadius: 5, flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', paddingHorizontal: 5 }}>
-                                                        <Text style={{ fontWeight: 'bold', fontSize: 16, marginTop: -5 }}>₱</Text>
-                                                        <TextInput onChangeText={(text) => updateExpense(e.id, 'amount', Number(text))} keyboardType='numeric' placeholder='0.00' style={{ fontSize: 14, textAlign: 'right', fontWeight: '600' }} />
-                                                    </View>
-                                                </View>
-                                                <View style={{ width: '72.5%' }}>
-                                                    <Text style={{ fontSize: 14, fontWeight: 'bold', color: '#545454' }}>Category</Text>
-                                                    <View style={{ borderColor: '#B3B3B3', borderWidth: 1, borderRadius: 5, flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' }}>
-                                                        <Dropdown onChange={item => updateExpense(e.id, 'expense_category_id', item.id)} value={e.expense_category_id || undefined} data={dropdownCategory} labelField="label" valueField="id" placeholder="Select Category" 
-                                                            style={{ height: 40, width: '80%', paddingHorizontal: 10 }}
-                                                            containerStyle={{
-                                                                alignSelf: 'flex-start',
-                                                                width: '50%',
-                                                            }}
-                                                            selectedTextStyle={{ fontWeight: '500', fontSize: 12, lineHeight: 35, }}
-                                                            renderRightIcon={() => (
-                                                                <Ionicons name="chevron-down" size={15} />
-                                                            )}
-                                                            dropdownPosition="bottom"
-                                                            renderItem={(item) => (
-                                                                <View style={{ width: '80%', padding: 8 }}>
-                                                                <Text>{item.label}</Text>
-                                                                </View>
-                                                            )}
-                                                        />
-                                                        <TouchableOpacity onPress={() => setModal(true)} style={{ borderLeftColor: '#B3B3B3', borderLeftWidth: 1, height: '100%', padding: 8 }} >
-                                                            <Ionicons name='add' size={20}/>
-                                                        </TouchableOpacity>
-                                                    </View>
-                                                </View>
-                                            </View>
-                                            <View style={{ marginTop: 5 }}>
-                                                {/* <Text style={{ fontSize: 10, fontWeight: 'bold', color: '#545454' }}>Image</Text>
-                                                <TouchableOpacity disabled={e.image_uri != null} onPress={() => handleOnCapture(e.id)} style={{ borderColor: '#b3b3b3', borderWidth: 1, borderRadius: 5, height: 90, justifyContent: 'center', position: 'relative' }}>
-                                                    {e.image_uri == null ? (
-                                                        <View style={{ backgroundColor: '#f8f8f8', borderRadius: 5, height: '100%', justifyContent: 'center' }}>
-                                                            <Text style={{ textAlign: 'center', color: '#a3a3a3' }}>Tap to capture image.</Text>
-                                                        </View>
-                                                    ) : (
-                                                        <>
-                                                            <Image source={{ uri: e.image_uri }} resizeMode={'cover'} style={{ width: '95%', height: '90%', alignSelf: 'center' }} />
-                                                            <View style={{ position: 'absolute', bottom: 0, width: '100%', height: 10 }} />
-                                                            <View style={{ position: 'absolute', alignSelf: 'center', backgroundColor: '#2e2e2e48', height: '100%', width: '100%', justifyContent: 'center', alignItems: 'center', borderRadius: 3 }}>
-                                                                <TouchableOpacity onPress={() => updateExpense(e.id, 'image_uri', null)} style={{ flexDirection: 'row', alignItems: 'center', borderColor: '#fff', borderWidth: 1, padding: 5 }}>
-                                                                    <Ionicons name={'close'} color={'#fff'} size={18} />
-                                                                    <Text style={{ color: '#fff' }}>Remove</Text>
-                                                                </TouchableOpacity>
-                                                            </View>
-                                                            <LinearGradient
-                                                                colors={[
-                                                                'rgba(0, 200, 83, 0)',
-                                                                'rgba(2, 224, 95, 0.15)',
-                                                                'rgba(1, 226, 95, 0.4)',
-                                                                'rgba(3, 226, 96, 0.8)',
-                                                                ]}
-                                                                style={{ flex: 1, height: 40, position: 'absolute', width: '100%', bottom: 0, zIndex: 2 }}
-                                                            />
-                                                        </>
-                                                    )}
-                                                </TouchableOpacity> */}
-                                            </View>
-                                        </View>
-                                    ))}
-                                </View>
-                            </ScrollView>
-                            <View style={{ paddingVertical: 20, backgroundColor: '#fff', paddingHorizontal: 20, }}>
-                                <TouchableOpacity disabled={saveExpenseSpinner || trips?.length == 0} onPress={handleSaveExpense} style={{ width: '100%', paddingVertical: 13, borderRadius: 8   , alignSelf: 'center', backgroundColor: trips?.length == 0 ? '#d8727c' : '#cf2a3a' }}>
-                                    {saveExpenseSpinner == true ? (
-                                        <ActivityIndicator size="small" color="#fff" style={{ marginRight: 10 }} />
-                                    ) : (
-                                        <Text style={{ fontWeight: 'bold', color: '#fff', textAlign: 'center', fontSize: 18 }}>Save</Text>
-                                    )}
-                                </TouchableOpacity>
-                            </View>
-                        </KeyboardAvoidingView>
                     </View>
-                )}
-            </View>
+
+                    {trips && trips.length == 0 ? (
+                        <View style={{ height: height / 2, justifyContent: 'center' }}>
+                            <Text style={{ color: '#7A7A85', textAlign: 'center' }}>No Trip Available  To Add Expense</Text>
+                        </View>
+                    ) : (
+                        <View style={{ flex: 1 }}>
+                            <View style={{ paddingHorizontal: 20, marginTop: 20 }}>
+                                <Text style={{ fontSize: 14, fontWeight: 'bold', color: '#545454' }}>Trip Schedules:</Text>
+                                <View style={{ borderRadius: 5, flexDirection: 'row', elevation: 5, justifyContent: 'space-between', alignItems: 'center', backgroundColor: '#fff' }}>
+                                    <Dropdown onChange={handleTripChange} 
+                                        value={selectedTrip || undefined} 
+                                        data={tripDropdown} 
+                                        labelField="label" 
+                                        valueField="id" 
+                                        placeholder="Select Trip Schedule" 
+                                        style={{ height: 50, width: '100%', paddingHorizontal: 10 }}
+                                        containerStyle={{
+                                            alignSelf: 'flex-start',
+                                            width: '88%',
+                                        }}
+                                        selectedTextStyle={{ fontWeight: '700', fontSize: 14, color: '#cf2a3a', lineHeight: 35, }}
+                                        renderRightIcon={() => (
+                                            <Ionicons name="chevron-down" size={15} />
+                                        )}
+                                        dropdownPosition="bottom"
+                                        renderItem={(item) => (
+                                            <View style={{ width: '100%', padding: 8, backgroundColor: '#fff' }}>
+                                                <Text style={{ color: '#cf2a3a', fontWeight: '600' }}>{item.label}</Text>
+                                            </View>
+                                        )}
+                                    />
+                                </View>
+                            </View>
+                            <KeyboardAvoidingView style={{ flex: 1, marginTop: 10 }} behavior={Platform.OS === 'android' ? 'padding' : 'height'}>
+                                <ScrollView keyboardShouldPersistTaps="handled" style={{ flex: 1 }}>
+                                    <View style={{ paddingHorizontal: 20, paddingBottom: 80, flex: 1 }}>
+                                        {expenses.map((e) => (
+                                            <View key={e.id} style={{ padding: 10, borderRadius: 8, backgroundColor: '#fff', elevation: 5, marginBottom: 10 }}>
+                                                {e.id !== 1 && (
+                                                    <TouchableOpacity onPress={() => removeExpenseForm(e.id)}  style={{ alignSelf: 'flex-end' }} >
+                                                        <Ionicons name={'close'} size={25} color={'#cf2a3a'}/>
+                                                    </TouchableOpacity>
+                                                )}
+                                                <View>
+                                                    <Text style={{ fontSize: 14, fontWeight: 'bold', color: '#545454' }}>Description</Text>
+                                                    <View style={{ borderColor: '#B3B3B3', borderWidth: 1, borderRadius: 5 }}>
+                                                        <TextInput value={e.description} onChangeText={(text) => updateExpense(e.id, 'description', text)} placeholder='e.g. Vessel Oil' style={{ fontSize: 13 }} />
+                                                    </View>
+                                                </View>
+                                                <View style={{ marginTop: 5, flexDirection: 'row', gap: 8, alignItems: 'flex-end' }}>
+                                                    <View style={{ width: '25%' }}>
+                                                        <Text style={{ fontSize: 14, fontWeight: 'bold', color: '#545454' }}>Amount:</Text>
+                                                        <View style={{ borderColor: '#B3B3B3', borderWidth: 1, borderRadius: 5, flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', paddingHorizontal: 5 }}>
+                                                            <Text style={{ fontWeight: 'bold', fontSize: 16, marginTop: -5 }}>₱</Text>
+                                                            <TextInput onChangeText={(text) => updateExpense(e.id, 'amount', Number(text))} keyboardType='numeric' placeholder='0.00' style={{ fontSize: 14, textAlign: 'right', fontWeight: '600' }} />
+                                                        </View>
+                                                    </View>
+                                                    <View style={{ width: '72.5%' }}>
+                                                        <Text style={{ fontSize: 14, fontWeight: 'bold', color: '#545454' }}>Category</Text>
+                                                        <View style={{ borderColor: '#B3B3B3', borderWidth: 1, borderRadius: 5, flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' }}>
+                                                            <Dropdown onChange={item => updateExpense(e.id, 'expense_category_id', item.id)} value={e.expense_category_id || undefined} data={dropdownCategory} labelField="label" valueField="id" placeholder="Select Category" 
+                                                                style={{ height: 40, width: '80%', paddingHorizontal: 10 }}
+                                                                containerStyle={{
+                                                                    alignSelf: 'flex-start',
+                                                                    width: '50%',
+                                                                }}
+                                                                selectedTextStyle={{ fontWeight: '500', fontSize: 12, lineHeight: 35, }}
+                                                                renderRightIcon={() => (
+                                                                    <Ionicons name="chevron-down" size={15} />
+                                                                )}
+                                                                dropdownPosition="bottom"
+                                                                renderItem={(item) => (
+                                                                    <View style={{ width: '80%', padding: 8 }}>
+                                                                    <Text>{item.label}</Text>
+                                                                    </View>
+                                                                )}
+                                                            />
+                                                            <TouchableOpacity onPress={() => setModal(true)} style={{ borderLeftColor: '#B3B3B3', borderLeftWidth: 1, height: '100%', padding: 8 }} >
+                                                                <Ionicons name='add' size={20}/>
+                                                            </TouchableOpacity>
+                                                        </View>
+                                                    </View>
+                                                </View>
+                                                <View style={{ marginTop: 5 }}>
+                                                    {/* <Text style={{ fontSize: 10, fontWeight: 'bold', color: '#545454' }}>Image</Text>
+                                                    <TouchableOpacity disabled={e.image_uri != null} onPress={() => handleOnCapture(e.id)} style={{ borderColor: '#b3b3b3', borderWidth: 1, borderRadius: 5, height: 90, justifyContent: 'center', position: 'relative' }}>
+                                                        {e.image_uri == null ? (
+                                                            <View style={{ backgroundColor: '#f8f8f8', borderRadius: 5, height: '100%', justifyContent: 'center' }}>
+                                                                <Text style={{ textAlign: 'center', color: '#a3a3a3' }}>Tap to capture image.</Text>
+                                                            </View>
+                                                        ) : (
+                                                            <>
+                                                                <Image source={{ uri: e.image_uri }} resizeMode={'cover'} style={{ width: '95%', height: '90%', alignSelf: 'center' }} />
+                                                                <View style={{ position: 'absolute', bottom: 0, width: '100%', height: 10 }} />
+                                                                <View style={{ position: 'absolute', alignSelf: 'center', backgroundColor: '#2e2e2e48', height: '100%', width: '100%', justifyContent: 'center', alignItems: 'center', borderRadius: 3 }}>
+                                                                    <TouchableOpacity onPress={() => updateExpense(e.id, 'image_uri', null)} style={{ flexDirection: 'row', alignItems: 'center', borderColor: '#fff', borderWidth: 1, padding: 5 }}>
+                                                                        <Ionicons name={'close'} color={'#fff'} size={18} />
+                                                                        <Text style={{ color: '#fff' }}>Remove</Text>
+                                                                    </TouchableOpacity>
+                                                                </View>
+                                                                <LinearGradient
+                                                                    colors={[
+                                                                    'rgba(0, 200, 83, 0)',
+                                                                    'rgba(2, 224, 95, 0.15)',
+                                                                    'rgba(1, 226, 95, 0.4)',
+                                                                    'rgba(3, 226, 96, 0.8)',
+                                                                    ]}
+                                                                    style={{ flex: 1, height: 40, position: 'absolute', width: '100%', bottom: 0, zIndex: 2 }}
+                                                                />
+                                                            </>
+                                                        )}
+                                                    </TouchableOpacity> */}
+                                                </View>
+                                            </View>
+                                        ))}
+                                    </View>
+                                </ScrollView>
+                                <View style={{ paddingVertical: 20, backgroundColor: '#fff', paddingHorizontal: 20, }}>
+                                    <TouchableOpacity disabled={saveExpenseSpinner || trips?.length == 0} onPress={handleSaveExpense} style={{ width: '100%', paddingVertical: 13, borderRadius: 8   , alignSelf: 'center', backgroundColor: trips?.length == 0 ? '#d8727c' : '#cf2a3a' }}>
+                                        {saveExpenseSpinner == true ? (
+                                            <ActivityIndicator size="small" color="#fff" style={{ marginRight: 10 }} />
+                                        ) : (
+                                            <Text style={{ fontWeight: 'bold', color: '#fff', textAlign: 'center', fontSize: 18 }}>Save</Text>
+                                        )}
+                                    </TouchableOpacity>
+                                </View>
+                            </KeyboardAvoidingView>
+                        </View>
+                    )}
+                </View>
+            )}
         </View>
     )
 }

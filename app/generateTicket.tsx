@@ -1,4 +1,5 @@
 import PreLoader from '@/components/preloader';
+import { useBleManager } from '@/context/BLEManager';
 import { useCargo } from '@/context/cargoProps';
 import { usePassengers } from '@/context/passenger';
 import { useTrip } from '@/context/trip';
@@ -6,9 +7,10 @@ import { Ionicons, MaterialCommunityIcons } from '@expo/vector-icons';
 import { router } from 'expo-router';
 import { useEffect, useRef, useState } from 'react';
 import { Alert, Dimensions, Image, Modal, PermissionsAndroid, Platform, ScrollView, Text, TouchableOpacity, View } from 'react-native';
-import { BleManager, Device } from 'react-native-ble-plx';
+import { Device } from 'react-native-ble-plx';
 import QRCode from 'react-native-qrcode-svg';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
+
 
 const logo_text = require('@/assets/images/logo.png');
 const logo_icon = require('@/assets/images/logo_icon.png');
@@ -18,59 +20,46 @@ export default function TicketGenerator() {
     const { vessel, mobileCode, origin, destination, cashTendered, fareChange, totalFare, note, departure_time, refNumber, clearTrip } = useTrip();
     const { paxCargoProperty, setPaxCargoProperties } = useCargo();
     const { passengers, clearPassengers } = usePassengers();
+    const {connectedDevice, connectedDeviceId, bleManager, setConnectedDevice, setConnectedDeviceId} = useBleManager();
     const [tripDate, setTripDate] = useState('');
     const [time, setTime] = useState('');
     const [loading, setLoading] = useState(false);
     const insets = useSafeAreaInsets();
-    const bleManagerRef = useRef<BleManager | null>(null)
     const scanTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
-
-    // BLE states
+    
     const [bleDevices, setBleDevices] = useState<Device[]>([]);
-    const [connectedDevice, setConnectedDevice] = useState<Device | null>(null);
     const [bleModalVisible, setBleModalVisible] = useState(false);
     const [scanning, setScanning] = useState(false);
     const [bleLoading, setBleLoading] = useState(false);
 
-    const payingPaxCount = passengers.filter(p => p.passType != 'Infant' || 'Passes');
-    const passesCount = passengers.filter(p => p.passType == 'Passes');
-
     useEffect(() => {
-        bleManagerRef.current = new BleManager()
         const date = new Date();
         setTripDate(date.toLocaleDateString('en-US', { month: '2-digit', day: '2-digit', year: 'numeric' }));
 
-        const timeFormat = () => {
-            if (!departure_time) return;
+        if (!departure_time) return;
 
-            let [hour, minute, second] = departure_time.split(':').map(Number);
-            const suffix = hour >= 12 ? 'PM' : 'AM';
-            hour = hour % 12 || 12;
-            setTime(`${hour}:${minute.toString().padStart(2, '0')} ${suffix}`);
-        }
-
-        timeFormat();
-
-        return () => {
-            bleManagerRef.current?.destroy();
-            bleManagerRef.current = null;
-        };
+        let [hour, minute] = departure_time.split(':').map(Number);
+        const suffix = hour >= 12 ? 'PM' : 'AM';
+        hour = hour % 12 || 12;
+        setTime(`${hour}:${minute.toString().padStart(2, '0')} ${suffix}`);
     }, []);
 
-    const qrCommand = (text: string) => {
-        const storeLen = text.length + 3;
-        const pL = storeLen % 256;
-        const pH = Math.floor(storeLen / 256);
+    useEffect(() => {
+        const reConnect = async () => {
+            if(!connectedDeviceId || connectedDevice) return;
 
-        return (
-            '\x1D(k' + String.fromCharCode(pL, pH, 49, 80, 48) + text + // store data
-            '\x1D(k\x03\x00\x31\x45\x30' + // error correction
-            '\x1D(k\x03\x00\x31\x43\x08'+ // size
-            '\x1D(k\x03\x00\x31\x51\x30'   // print
-        );
-    };
+            try {
+                connectToADevice(connectedDeviceId)
+            }catch {
+                setConnectedDevice(null);
+            }finally {
+                setBleLoading(false);
+            }
+        }
 
-    // ✅ Request BLE permissions
+        reConnect();
+    }, [connectedDeviceId]);
+
     const requestBlePermissions = async (): Promise<boolean> => {
         if (Platform.OS === 'android') {
             const granted = await PermissionsAndroid.requestMultiple([
@@ -86,7 +75,6 @@ export default function TicketGenerator() {
         return true;
     };
 
-    // ✅ Scan for BLE devices
     const startScan = async () => {
         const hasPermission = await requestBlePermissions();
         if (!hasPermission) {
@@ -98,7 +86,7 @@ export default function TicketGenerator() {
         setScanning(true);
         setBleModalVisible(true);
 
-        bleManagerRef.current?.startDeviceScan(null, null, (error, device) => {
+        bleManager.startDeviceScan(null, null, (error, device) => {
             if (error) {
                 setScanning(false);
                 return;
@@ -112,31 +100,24 @@ export default function TicketGenerator() {
             }
         });
 
-        // Stop scan after 10 seconds
         scanTimeoutRef.current = setTimeout(() => {
-          bleManagerRef.current?.stopDeviceScan();
+          bleManager.stopDeviceScan();
           setScanning(false);  
         }, 10000);
-
-        return () => {
-            clearTimeout(scanTimeoutRef.current!);
-            bleManagerRef.current?.destroy();
-            bleManagerRef.current = null;
-        }
     };
 
-    // ✅ Connect to selected printer
-    const connectToDevice = async (device: Device) => {
+    const connectToADevice = async (deviceId: string) => {
         try {
             setBleLoading(true);
-            bleManagerRef.current?.stopDeviceScan();
+            bleManager.stopDeviceScan();
 
-            const connected = await bleManagerRef.current?.connectToDevice(device.id);
+            const connected = await bleManager.connectToDevice(deviceId);
             await connected.discoverAllServicesAndCharacteristics();
 
             setConnectedDevice(connected);
+            setConnectedDeviceId(deviceId)
             setBleModalVisible(false);
-            Alert.alert('Connected', `Connected to ${device.name}`);
+            Alert.alert('Connected', `Connected to a device`);
         } catch (error: any) {
             Alert.alert('Connection failed', error.message);
         } finally {
@@ -144,100 +125,186 @@ export default function TicketGenerator() {
         }
     };
 
-    // ✅ Build ESC/POS print data from ticket
-    const buildPrintData = (): string => {
-        const ESC = '\x1B';
-        const GS = '\x1D';
-        const lines: string[] = [];
+    const buildPrintBytes = (): Uint8Array => {
+        const ESC = 0x1B;
+        const GS  = 0x1D;
+        const LF  = 0x0A;
 
-        const center = (text: string) => `${ESC}a\x01${text}\n`;
-        const left = (text: string) => `${ESC}a\x00${text}\n`;
-        const bold = (text: string) => `${ESC}E\x01${text}${ESC}E\x00`;
-        const divider = () => '--------------------------------\n';
-        const cut = () => `${GS}V\x41\x00`;
+        const bytes: number[] = [];
+        const push = (...b: number[]) => bytes.push(...b);
 
-        // ✅ Font size controls
-        const fontNormal = () => `${GS}!\x00`;      // normal size
-        const fontSmall = () => `${ESC}M\x01`;       // smaller font (Font B)
-        const fontLarge = () => `${GS}!\x11`;        // double width + height
+        const pushStr = (str: string) => {
+            for (let i = 0; i < str.length; i++) {
+                bytes.push(str.charCodeAt(i) & 0xFF);
+            }
+        };
 
-        // ✅ Start with small font for body text
-        lines.push(fontSmall());
+        const padRight = (text, width) => {
+            return text.length >= width
+                ? text.substring(0, width)
+                : text + ' '.repeat(width - text.length);
+        };
 
-        lines.push(center(bold('LEOPARDS TICKETING')));
-        lines.push(center('TICKET - NOT AN OFFICIAL RECEIPT'));
-        lines.push(divider());
-        
-        // ✅ Use normal for route codes since they're important
-        lines.push(fontNormal());
-        lines.push(center(bold(`${mobileCode.split('-')[0]} > ${mobileCode.split('-')[1]}`)));
-        
-        // ✅ Back to small for details
-        lines.push(fontSmall());
-        lines.push(center(`${origin} > ${destination}`));
-        lines.push(divider());
-        lines.push(left(`Vessel: ${vessel}`));
-        lines.push(left(`Trip Date: ${tripDate}`));
-        lines.push(left(`Depart Time: ${time}`));
-        lines.push(divider());
+        const padLeft = (text, width) => {
+            return text.length >= width
+                ? text.substring(0, width)
+                : ' '.repeat(width - text.length) + text;
+        };
 
-        lines.push(fontNormal());
-        lines.push(center(bold(refNumber ?? '')));
-        lines.push(fontSmall());
+        const COL_NAME = 12;
+        const COL_TYPE = 5;
+        const COL_SEAT = 6;
+        const COL_FARE = 8;
+
+
+        const println = (str: string) => { pushStr(str); push(LF); };
+
+        const alignCenter = () => push(ESC, 0x61, 0x01);
+        const alignLeft   = () => push(ESC, 0x61, 0x00);
+
+        const boldOn  = () => push(ESC, 0x45, 0x01);
+        const boldOff = () => push(ESC, 0x45, 0x00);
+
+        const fontNormal = () => push(GS, 0x21, 0x00);
+        const fontTall = () => push(GS, 0x21, 0x01);
+
+        push(ESC, 0x40); // ESC @ — reset printer
+
+        alignCenter();
+        boldOn();
+        println('LEOPARDS');
+        println('MOTORBOAT SERVICE');
+        push(LF)
+        boldOff();
+        println('TICKET - NOT AN OFFICIAL RECEIPT');
+        println('--------------------------------');
+
+        boldOn();
+        fontTall();
+        const routeFrom = mobileCode.split('-')[0] ?? '';
+        const routeTo   = mobileCode.split('-')[1] ?? '';
+        println(`${routeFrom}  >  ${routeTo}`);
+
+        boldOff();
+        fontNormal();
+        println(`${origin}      ${destination}`);
+        push(LF)
+
+        alignLeft();
+
+        println(
+            padRight('Vessel:', 16) +
+            padLeft(`${vessel}`, 10)
+        )
+        println(
+            padRight('Trip Date:', 16) +
+            padLeft(`${tripDate}`, 16)
+        )
+        println(
+            padRight('Depart Time:', 16) +
+            padLeft(`${time}`, 16)
+        )
+        println('--------------------------------');
 
         if (refNumber) {
-            lines.push('\x1B\x61\x01');
-            lines.push(qrCommand(refNumber));
-            lines.push('\n');
+            alignCenter();
+            boldOn();
+            println(`${refNumber}`)
+            boldOff();
+
+            const qrData = refNumber;
+            const qrLen = qrData.length + 3;
+            const pL = qrLen % 256;
+            const pH = Math.floor(qrLen / 256);
+
+            push(GS, 0x28, 0x6B, pL, pH, 0x31, 0x50, 0x30);
+            pushStr(qrData);
+            push(GS, 0x28, 0x6B, 0x03, 0x00, 0x31, 0x45, 0x31);
+            push(GS, 0x28, 0x6B, 0x03, 0x00, 0x31, 0x43, 0x07);
+            push(GS, 0x28, 0x6B, 0x03, 0x00, 0x31, 0x51, 0x30);
+
+            push(LF);
         }
 
-        lines.push(divider());
-
+        println('--------------------------------');
+        
+        alignLeft();
         if (passengers.length > 0) {
+            println(
+                padRight('Name', 8) +
+                padRight('Type', COL_TYPE) +
+                padRight('Seat', COL_SEAT) +
+                padLeft('Fare', COL_FARE)
+            );
+            println('--------------------------------');
+
             passengers.forEach(p => {
-                const name = p.name ? `${p.name.split(',')[1]?.trim().charAt(0)}. ${p.name.split(',')[0]}` : '';
-                lines.push(left(`${name} | ${p.passTypeCode} | Seat: ${p.seatNumber || 'N/A'} | P${Number(p.fare).toFixed(2)}`));
+                const nameParts = p.name?.split(',') ?? [];
+                const lastName  = nameParts[0]?.trim() ?? '';
+                const firstInit = nameParts[1]?.trim().charAt(0) ?? '';
+                const name      = p.name ? `${firstInit}. ${lastName}` : 'N/A';
+                const fare      = Number(p.fare).toFixed(2);
+
+                println(
+                    padRight(name, COL_NAME) +
+                    padRight(`${p.passTypeCode}`, COL_TYPE) +
+                    padRight(`Seat:${p.seatNumber || 'N/A'}`, COL_SEAT) +
+                    padLeft(`₱${fare}`, COL_FARE)
+                );
             });
-            lines.push(divider());
+            println('--------------------------------');
         }
 
         const cargos = passengers.flatMap(p => p.hasCargo ? p.cargo : []);
         if (cargos.length > 0) {
-            lines.push(left(bold('CARGO:')));
+            boldOn(); println('CARGO:'); boldOff();
             cargos.forEach(c => {
-                const desc = c.cargoType == 'Rolling Cargo' ? `${c.cargoBrand} ${c.cargoSpecification}` : c.parcelCategory;
-                lines.push(left(`${c.quantity}x ${desc} (${c.cargoType}) - P${Number(c.cargoAmount).toFixed(2)}`));
+                const desc = c.cargoType === 'Rolling Cargo'
+                    ? `${c.cargoBrand} ${c.cargoSpecification}`
+                    : c.parcelCategory;
+                println(`${c.quantity}x ${desc} - P${Number(c.cargoAmount).toFixed(2)}`);
             });
-            lines.push(divider());
+            println('--------------------------------');
         }
 
-        lines.push(left(`Total Amount: P${Number(totalFare).toFixed(2)}`));
-        lines.push(left(`Cash Tendered: P${Number(cashTendered).toFixed(2)} ?? '--`));
-        lines.push(left(`Change: P${Number(fareChange).toFixed(2)} ?? '--`));
-        lines.push(divider());
+        println(
+            padRight('Total:', 16) +
+            padLeft(`P${Number(totalFare).toFixed(2)}`, 16)
+        )
+        println(
+            padRight('Tendered:', 16) +
+            padLeft(`P${Number(cashTendered).toFixed(2)}`, 16)
+        )
+        println(
+            padRight('Change:', 16) +
+            padLeft(`P${Number(fareChange).toFixed(2)}`, 16)
+        )
+
+        println('--------------------------------');
 
         if (note) {
-            lines.push(center(note));
-            lines.push(divider());
+            alignCenter();
+            println(note);
+            println('--------------------------------');
         }
 
-        lines.push(center('TERMS AND CONDITIONS'));
-        lines.push(left('- Boarding closes 30 mins before departure.'));
-        lines.push(left('- Present valid ID with matching name.'));
-        lines.push(left('- Service fee is non-refundable.'));
-        lines.push(left('- Pre-Departure Refund: 10% charge'));
-        lines.push(left('- Post-Departure/No Show: 20% charge'));
-        lines.push(left('- REFUND TAKES 7 DAYS'));
+        alignLeft();
+        println('TERMS AND CONDITIONS');
+        println('- Boarding closes 30 mins before');
+        println('  departure.');
+        println('- Present valid ID w/ matching name.');
+        println('- Service fee is non-refundable.');
+        println('- Pre-Departure Refund: 10% charge');
+        println('- Post-Departure/No Show: 20% charge');
+        println('- REFUND TAKES 7 DAYS');
 
-        // ✅ Reset to normal before cut
-        lines.push(fontNormal());
-        lines.push('\n\n\n');
-        lines.push(cut());
+        fontNormal();
+        push(LF, LF, LF, LF, LF, LF);
+        push(GS, 0x56, 0x41, 0x00);
 
-        return lines.join('');
+        return new Uint8Array(bytes);
     };
 
-    // ✅ Send print data to connected BLE printer
     const printViaBluetooth = async () => {
         if (!connectedDevice) {
             Alert.alert('No printer connected', 'Please connect to a Bluetooth printer first.');
@@ -266,21 +333,28 @@ export default function TicketGenerator() {
             if (!printCharacteristic) {
                 Alert.alert('Error', 'No writable characteristic found on this printer.');
                 return;
-            }
+            }   
 
-            const printData = buildPrintData();
+            const printData = buildPrintBytes();
 
-            // Convert string to base64 chunks (BLE has MTU limit ~20 bytes)
-            const chunkSize = 100;
+            const toBase64 = (chunk: Uint8Array): string => {
+                let binary = '';
+                chunk.forEach(b => binary += String.fromCharCode(b));
+                return btoa(binary);
+            };
+
+            const chunkSize = 200;
             for (let i = 0; i < printData.length; i += chunkSize) {
-                const chunk = printData.slice(i, i + chunkSize);
-                const base64Chunk = btoa(unescape(encodeURIComponent(chunk)));
+            const chunk = printData.slice(i, i + chunkSize);
+            const base64Chunk = toBase64(chunk);
 
                 if (printCharacteristic.isWritableWithResponse) {
                     await printCharacteristic.writeWithResponse(base64Chunk);
                 } else {
                     await printCharacteristic.writeWithoutResponse(base64Chunk);
                 }
+
+                await new Promise(resolve => setTimeout(resolve, 50));
             }
 
             Alert.alert('Success', 'Ticket printed successfully!');
@@ -312,8 +386,8 @@ export default function TicketGenerator() {
                 <View style={{ flex: 1, justifyContent: 'flex-end', backgroundColor: 'rgba(0,0,0,0.5)' }}>
                     <View style={{ backgroundColor: '#fff', borderTopLeftRadius: 20, borderTopRightRadius: 20, padding: 20, maxHeight: height * 0.6 }}>
                         <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: 15 }}>
-                            <Text style={{ fontSize: 18, fontWeight: 'bold' }}>Select Printer</Text>
-                            <TouchableOpacity onPress={() => { bleManagerRef.current?.stopDeviceScan(); setBleModalVisible(false); }}>
+                            <Text style={{ fontSize: 18, fontWeight: 'bold', color: '#000' }}>Select Printer</Text>
+                            <TouchableOpacity onPress={() => { bleManager?.stopDeviceScan(); setBleModalVisible(false); }}>
                                 <Ionicons name="close" size={24} color="#cf2a3a" />
                             </TouchableOpacity>
                         </View>
@@ -327,7 +401,7 @@ export default function TicketGenerator() {
                                 bleDevices.map((device) => (
                                     <TouchableOpacity
                                         key={device?.id}
-                                        onPress={() => connectToDevice(device)}
+                                        onPress={() => connectToADevice(device.id)}
                                         style={{ padding: 15, borderBottomColor: '#dadada', borderBottomWidth: 1, flexDirection: 'row', alignItems: 'center', gap: 10 }}>
                                         <Ionicons name="print" size={20} color="#cf2a3a" />
                                         <View>
@@ -368,7 +442,7 @@ export default function TicketGenerator() {
                                 </View>
                                 <View style={{ flexDirection: 'column', alignItems: 'flex-end' }}>
                                     <Text style={{ color: '#cf2a3a', fontSize: 17, fontWeight: '900' }}>TICKET</Text>
-                                    <Text style={{ fontSize: 8, marginTop: -3, fontWeight: 'bold' }}>This is NOT an official receipt.</Text>
+                                    <Text style={{ fontSize: 8, marginTop: -3, fontWeight: 'bold',color: '#000' }}>This is NOT an official receipt.</Text>
                                 </View>
                             </View>
                             <View style={{ borderBottomWidth: 1, borderBlockColor: '#9B9B9B', paddingVertical: 5, gap: 5 }}>
@@ -387,16 +461,16 @@ export default function TicketGenerator() {
                                     </View>
                                 </View>
                                 <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' }}>
-                                    <Text style={{ fontSize: 13 }}>Vessel:</Text>
-                                    <Text style={{ fontSize: 13 }}>{vessel}</Text>
+                                    <Text style={{ fontSize: 13, color: '#000' }}>Vessel:</Text>
+                                    <Text style={{ fontSize: 13, color: '#000' }}>{vessel}</Text>
                                 </View>
                                 <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' }}>
-                                    <Text style={{ fontSize: 13 }}>Trip Date:</Text>
-                                    <Text style={{ fontSize: 13 }}>{tripDate}</Text>
+                                    <Text style={{ fontSize: 13, color: '#000' }}>Trip Date:</Text>
+                                    <Text style={{ fontSize: 13, color: '#000' }}>{tripDate}</Text>
                                 </View>
                                 <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' }}>
-                                    <Text style={{ fontSize: 13 }}>Depart Time:</Text>
-                                    <Text style={{ fontSize: 13 }}>{time}</Text>
+                                    <Text style={{ fontSize: 13, color: '#000' }}>Depart Time:</Text>
+                                    <Text style={{ fontSize: 13, color: '#000' }}>{time}</Text>
                                 </View>
                             </View>
                             {passengers.length> 0 ? (
@@ -411,14 +485,14 @@ export default function TicketGenerator() {
                                     
                                         <View style={{ paddingVertical: 5 }}>
                                             <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', marginBottom: 3, borderBottomColor: '#9B9B9B', borderBottomWidth: 1, paddingBottom: 5 }}>
-                                                <Text style={{ fontSize: 13, width: '40%', fontWeight: '700' }}>Name:</Text>
-                                                <Text style={{ fontSize: 13, width: 50, fontWeight: '700' }}>Type:</Text>
-                                                <Text style={{ fontSize: 13, fontWeight: '700', width: 50, }}>Seat#:</Text>
-                                                <Text style={{ fontSize: 13, fontWeight: '700', width: 60, textAlign: 'right' }}>Fare</Text>
+                                                <Text style={{ fontSize: 13, width: '40%', fontWeight: '700', color: '#000' }}>Name:</Text>
+                                                <Text style={{ fontSize: 13, width: 50, fontWeight: '700', color: '#000' }}>Type:</Text>
+                                                <Text style={{ fontSize: 13, fontWeight: '700', width: 50, color: '#000' }}>Seat#:</Text>
+                                                <Text style={{ fontSize: 13, fontWeight: '700', width: 60, color: '#000', textAlign: 'right' }}>Fare</Text>
                                             </View>
                                             {passengers.some((p) => p?.accommodation == 'Business Class' || p?.accommodation == 'B-Class' || p?.accommodation == 'B Class') && (
                                                 <View style={{ marginTop: 5}}>
-                                                    <Text style={{ fontSize: 14, fontWeight: '900' }}>B-Class</Text>
+                                                    <Text style={{ fontSize: 14, fontWeight: '900',color: '#000' }}>B-Class</Text>
                                                     {passengers.filter((p) => p?.accommodation == 'Business Class' || p?.accommodation == 'B-Class' || p?.accommodation == 'B Class')
                                                     .map((p) => (
                                                         <View key={p.seatNumber} style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' }}>
@@ -432,28 +506,28 @@ export default function TicketGenerator() {
                                             )}
                                             {passengers.some((p) => p?.accommodation == 'Tourist') && (
                                                 <>
-                                                    <Text style={{ fontSize: 14, fontWeight: '900', marginTop: 5, marginBottom: 5 }}>Tourist</Text>
+                                                    <Text style={{ fontSize: 14, fontWeight: '900', marginTop: 5, marginBottom: 5, color: '#000' }}>Tourist</Text>
                                                     {passengers.filter((p) => p?.accommodation == 'Tourist')
                                                     .map((p) => (
                                                         <View key={p.seatNumber} style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' }}>
                                                             <Text style={{ fontSize: 13, width: '40%' }}>{`${p.name?.split(',')[1]?.trim().charAt(0)}. ${p.name?.split(',')[0]}`}</Text>
-                                                            <Text style={{ fontSize: 13, width: 50, textAlign: 'center' }}>{p.passTypeCode}</Text>
-                                                            <Text style={{ fontSize: 13, width: 50, textAlign: 'center' }}>{`${p.seatNumber}`}</Text>
-                                                            <Text style={{ fontSize: 13, width: 70, textAlign: 'right' }}>₱ {p?.fare?.toLocaleString('en-PH', { minimumFractionDigits: 2,  maximumFractionDigits: 2})}</Text>
+                                                            <Text style={{ fontSize: 13, width: 50, textAlign: 'center', color: '#000' }}>{p.passTypeCode}</Text>
+                                                            <Text style={{ fontSize: 13, width: 50, textAlign: 'center', color: '#000' }}>{`${p.seatNumber}`}</Text>
+                                                            <Text style={{ fontSize: 13, width: 70, textAlign: 'right', color: '#000' }}>₱ {p?.fare?.toLocaleString('en-PH', { minimumFractionDigits: 2,  maximumFractionDigits: 2})}</Text>
                                                         </View>
                                                     ))}
                                                 </>
                                             )}
                                             {passengers.some((p) => p?.accommodation == null) && (
                                                 <>
-                                                    <Text style={{ fontSize: 14, fontWeight: '900', marginTop: 5, marginBottom: 5 }}>Passes</Text>
+                                                    <Text style={{ fontSize: 14, fontWeight: '900', marginTop: 5, marginBottom: 5, color: '#000' }}>Passes</Text>
                                                     {passengers.filter((p) => p.passType == 'Passes')
                                                     .map((p, index) => (
                                                         <View key={index} style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' }}>
                                                             <Text style={{ fontSize: 13, width: '40%' }}>{`${p.name?.split(',')[1]?.trim().charAt(0)}. ${p.name?.split(',')[0]}`}</Text>
-                                                            <Text style={{ fontSize: 13, width: 50, textAlign: 'center' }}>{p.passTypeCode}</Text>
-                                                            <Text style={{ fontSize: 13, width: 50, textAlign: 'center' }}>{`${p.seatNumber ?? 'N/A'}`}</Text>
-                                                            <Text style={{ fontSize: 13, width: 70, textAlign: 'right' }}>₱ {p?.fare?.toLocaleString('en-PH', { minimumFractionDigits: 2,  maximumFractionDigits: 2})}</Text>
+                                                            <Text style={{ fontSize: 13, width: 50, textAlign: 'center', color: '#000' }}>{p.passTypeCode}</Text>
+                                                            <Text style={{ fontSize: 13, width: 50, textAlign: 'center', color: '#000' }}>{`${p.seatNumber ?? 'N/A'}`}</Text>
+                                                            <Text style={{ fontSize: 13, width: 70, textAlign: 'right', color: '#000' }}>₱ {p?.fare?.toLocaleString('en-PH', { minimumFractionDigits: 2,  maximumFractionDigits: 2})}</Text>
                                                         </View>
                                                     ))}
                                                 </>
@@ -463,9 +537,9 @@ export default function TicketGenerator() {
                                                     <View key={`${passIndex}-${index}`} style={{ marginBottom: 3 }}>
                                                         <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' }}>
                                                             <Text style={{ fontSize: 13, width: '40%' }}>{`${i.name?.split(',')[1]?.trim().charAt(0)}. ${i.name?.split(',')[0]}`}</Text>
-                                                            <Text style={{ fontSize: 13, width: 50, textAlign: 'center' }}>I</Text>
-                                                            <Text style={{ fontSize: 13, width: 50, textAlign: 'center' }}>N/A</Text>
-                                                            <Text style={{ fontSize: 13, width: 70, textAlign: 'right' }}>₱ 00.00</Text>
+                                                            <Text style={{ fontSize: 13, width: 50, textAlign: 'center', color: '#000' }}>I</Text>
+                                                            <Text style={{ fontSize: 13, width: 50, textAlign: 'center', color: '#000' }}>N/A</Text>
+                                                            <Text style={{ fontSize: 13, width: 70, textAlign: 'right', color: '#000' }}>₱ 00.00</Text>
                                                         </View>
                                                     </View>
                                                 ))
@@ -487,8 +561,8 @@ export default function TicketGenerator() {
                                                                 <Text style={{ fontSize: 13, color: '#4b4b4bff' }}>{`(${c.cargoType})`}</Text>
                                                             </View>
                                                             <View style={{ flexDirection: 'row', alignItems: 'center', gap: 2 }}>
-                                                                <Text style={{ fontSize: 13 }}>₱ </Text>
-                                                                <Text style={{ fontSize: 13 }}>{c?.cargoAmount?.toLocaleString('en-PH', { minimumFractionDigits: 2,  maximumFractionDigits: 2})}</Text>
+                                                                <Text style={{ fontSize: 13, color: '#000' }}>₱ </Text>
+                                                                <Text style={{ fontSize: 13, color: '#000' }}>{c?.cargoAmount?.toLocaleString('en-PH', { minimumFractionDigits: 2,  maximumFractionDigits: 2})}</Text>
                                                             </View>
                                                         </View>
                                                     )) : []
@@ -500,7 +574,7 @@ export default function TicketGenerator() {
                             ) : (
                                 <View style={{ borderBottomColor: '#9B9B9B', borderBottomWidth: 1, paddingVertical: 10 }}>
                                     <View style={{ width: '100%', flexDirection: 'column' }}>
-                                        <Text style={{ fontSize: 14, fontWeight: '900', flexDirection: 'column' }}>Cargo</Text>
+                                        <Text style={{ fontSize: 14, fontWeight: '900', flexDirection: 'column', color: '#000' }}>Cargo</Text>
                                         {paxCargoProperty.map((cargo: any) => (
                                             <View key={`${cargo?.id}-${cargo.cargoBrand}`} style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', marginLeft: 15, }}>
                                                 <View style={{ flexDirection: 'row', gap: 3 }}>
@@ -521,21 +595,21 @@ export default function TicketGenerator() {
                             )}
                             <View style={{ borderBottomColor: note ? '#9B9B9B' : 'transparent', borderBottomWidth: note ? 1 : 0, paddingVertical: 10 }}>
                                 <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' }}>
-                                    <Text style={{ fontSize: 14, fontWeight: '900' }}>Total Amount:</Text>
+                                    <Text style={{ fontSize: 14, color: '#000', fontWeight: '900' }}>Total Amount:</Text>
                                     <Text style={{ fontSize: 14, fontWeight: '900', color: '#cf2a3a' }}>₱ {totalFare?.toLocaleString('en-PH', { minimumFractionDigits: 2,  maximumFractionDigits: 2 })}</Text>
                                 </View>
                                 <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' }}>
-                                    <Text style={{ fontSize: 13 }}>Cash Tendered:</Text>
-                                    <Text style={{ fontSize: 13 }}>₱ {cashTendered?.toLocaleString('en-PH', { minimumFractionDigits: 2,  maximumFractionDigits: 2 })}</Text>
+                                    <Text style={{ fontSize: 13, color: '#000' }}>Cash Tendered:</Text>
+                                    <Text style={{ fontSize: 13, color: '#000' }}>₱ {cashTendered?.toLocaleString('en-PH', { minimumFractionDigits: 2,  maximumFractionDigits: 2 })}</Text>
                                 </View>
                                 <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' }}>
-                                    <Text style={{ fontSize: 13 }}>Change:</Text>
-                                    <Text style={{ fontSize: 13 }}>₱ {fareChange?.toLocaleString('en-PH', { minimumFractionDigits: 2,  maximumFractionDigits: 2 })?? '0.00'}</Text>
+                                    <Text style={{ fontSize: 13, color: '#000' }}>Change:</Text>
+                                    <Text style={{ fontSize: 13, color: '#000' }}>₱ {fareChange?.toLocaleString('en-PH', { minimumFractionDigits: 2,  maximumFractionDigits: 2 })?? '0.00'}</Text>
                                 </View>
                             </View>
                             {note &&(
                                 <View style={{ paddingVertical: 10, borderColor: '#9B9B9B', borderWidth: 1, marginTop: 5 }}>
-                                    <Text style={{ textAlign: 'center' }}>{note}</Text>
+                                    <Text style={{ textAlign: 'center', color: '#000' }}>{note}</Text>
                                 </View>
                             )}
                         </View>
@@ -551,7 +625,7 @@ export default function TicketGenerator() {
                     <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 8 }}>
                         <Ionicons name="print" size={20} color="#fff" />
                         <Text style={{ fontSize: 18, fontWeight: 'bold', color: '#fff' }}>
-                            {connectedDevice ? `Print` : 'Connect & Print'}
+                            {connectedDevice != null ? `Print` : 'Connect & Print'}
                         </Text>
                     </View>
                 </TouchableOpacity>

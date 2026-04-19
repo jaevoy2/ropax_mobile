@@ -234,7 +234,7 @@ export default function SeatPlan() {
                 </View>
 
                 <BottomSheet ref={seatSheetRef} snapPoints={seatSnapPoints} index={sheetIndex } bottomInset={1} backdropComponent={renderBottomSheetBackdrop} enableHandlePanningGesture={false} enableContentPanningGesture={false}  handleIndicatorStyle={{ display: 'none' }} >
-                    <Text style={{ fontSize: 14, fontWeight: "bold", marginLeft: 20 }}>Seat# selected</Text>
+                    <Text style={{ fontSize: 14, fontWeight: "bold", marginLeft: 20, color: '#474747' }}>Seat# selected</Text>
                     <View style={{ paddingHorizontal: 10 }}>
                         <View style={{ height: 90, borderColor: '#B3B3B3', borderWidth: 1, backgroundColor: '#fff', borderRadius: 8, paddingHorizontal: 8, width: '100%', marginTop: 5 }}>
                             <ScrollView style={{ flex: 1, paddingTop: 10, paddingBottom: 20 }}>
@@ -247,7 +247,7 @@ export default function SeatPlan() {
                                                 </TouchableOpacity>
                                             )}
                                             <TouchableOpacity style={{ borderColor: errorForm.includes(p.seatNumber!) ? '#cf2a3a' : '#000', backgroundColor: errorForm.includes(p.seatNumber!) ? '#cf2a3b3d' : 'transparent', borderWidth: 1, borderRadius: 5, width: 50, height: 50, justifyContent: 'center' }}>
-                                                <Text style={{ textAlign: 'center', fontWeight: 'bold', fontSize: 16 }}>{p.seatNumber}</Text>
+                                                <Text style={{ textAlign: 'center', fontWeight: 'bold', fontSize: 16, color: '#000' }}>{p.seatNumber}</Text>
                                             </TouchableOpacity>
                                         </View>
                                     ))}

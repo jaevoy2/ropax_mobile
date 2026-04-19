@@ -18,6 +18,7 @@ type PaxBookingProps = {
     bookingStatus?: number;
     bookingId?: number;
     paxType: string;
+    station?: string;
 }
 
 export const bookingStatuses = [
@@ -74,7 +75,6 @@ export default function ManageBooking() {
     
         }, [date, searchValue])
     )
-
     
     const fetchBooking = async (dateString: string, search: string | null) => {
         try {
@@ -100,7 +100,8 @@ export default function ManageBooking() {
                     referenceNumber: passenger.bookings.find((r: any) => r.reference_no).reference_no,
                     bookingStatus: passenger.bookings.find((s: any) => s.status_id)?.status_id ?? 0,
                     bookingId: passenger.bookings.find((booking: any) => booking.id)?.id,
-                    paxType: passenger.passenger_type?.name
+                    paxType: passenger.passenger_type?.name,
+                    station: passenger.bookings.find((s: any) => s.station)?.station.name,
                 }))
                 setPassengers(paxData)
             }
@@ -156,14 +157,14 @@ export default function ManageBooking() {
             <TouchableOpacity onPress={() => router.push( `/bookingInfo?bookingId=${paxDatas.bookingId}&paxId=${paxDatas.id}&refNum=${paxDatas.referenceNumber}` )} 
                 style={{ minHeight: 90, maxHeight: 100, borderColor: '#dadadaff', elevation: 5, borderWidth: 1, backgroundColor: '#fff', borderRadius: 8, padding: 8, marginBottom: 10 }}>
                 <View style={{ borderBottomColor: '#dadadaff', borderBottomWidth: 1, flexDirection: 'row', alignItems: 'flex-end', justifyContent: 'space-between', marginBottom: 5, paddingBottom: 8 }}>
-                    <Text style={{ fontWeight: 'bold', fontSize: 17, width: '50%' }}>{paxDatas?.name}</Text>
+                    <Text style={{ fontWeight: 'bold', fontSize: 17, width: '50%', color: '#000' }}>{paxDatas?.name}</Text>
                     <View style={{ flexDirection: 'column', alignItems: 'flex-end' }}>
-                        <Text style={{ alignSelf: 'flex-end', fontSize: 10 }}>{paxDatas.departureDate}</Text>
+                        <Text style={{ alignSelf: 'flex-end', fontSize: 10, color: '#646464' }}>{paxDatas.departureDate}</Text>
                         <Text style={{ fontSize: 12, color: '#cf2a3a', fontWeight: 'bold' }}>{paxDatas.referenceNumber}</Text>
                     </View>
                 </View>
                 <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' }}>
-                    <Text style={{ fontSize: 10 }}>{`${paxDatas.vessel}  |  ${paxDatas.route}  |  ${paxDatas.departureTime}`}</Text>
+                    <Text style={{ fontSize: 10, color: '#646464' }}>{`${paxDatas.vessel}  |  ${paxDatas.route}  |  ${paxDatas.departureTime} | ${paxDatas.station}`}</Text>
                     <View style={{ flexDirection: 'row', alignItems: 'center', gap: 3, borderColor: bookingStatuses.find(p => p.id == paxDatas.bookingStatus).color ?? 'transparent', backgroundColor: bookingStatuses.find(s => s.id == paxDatas.bookingStatus).bgColor ?? 'transparent', borderWidth: 1, padding: 3, borderRadius: 5 }}>
                         <MaterialCommunityIcons name={bookingStatuses.find(p => p.id == paxDatas.bookingStatus).icon as any} size={14} color={bookingStatuses.find(p => p.id == paxDatas.bookingStatus).color} />
                         <Text style={{ color: bookingStatuses.find(p => p.id == paxDatas.bookingStatus).color ?? 'transparent', fontSize: 10, fontWeight: '800' }}>{bookingStatuses.find(p => p.id == paxDatas.bookingStatus).label ?? '--'}</Text>
@@ -225,8 +226,8 @@ export default function ManageBooking() {
                         {passengers.length > 0 ? (
                             <>
                                 <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', marginBottom: 10 }}>
-                                    <Text style={{ fontWeight: 'bold', fontSize: 18 }}>Bookings</Text>
-                                    <Text style={{ fontSize: 15, fontWeight: 'bold' }}>{formattedDate}</Text>
+                                    <Text style={{ fontWeight: 'bold', fontSize: 18, color: '#000' }}>Bookings</Text>
+                                    <Text style={{ fontSize: 15, fontWeight: 'bold', color: '#000' }}>{formattedDate}</Text>
                                 </View>
                                 <FlatList data={[...PassengerLists].reverse()} keyExtractor={(passengers) => String(passengers.id)} showsVerticalScrollIndicator={false}
                                     refreshControl={<RefreshControl refreshing={loading} onRefresh={() => handleRefresh()} colors={['#cf2a3a']} />}

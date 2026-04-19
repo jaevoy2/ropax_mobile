@@ -139,8 +139,6 @@ export type BookedSeat = {
     }
 }
 
-const bClassNames = ['Business Class', 'B Class', 'B-Class']
-
 const SRVessel = ({ onSeatSelect, accommodations, seatAvailability, setParentLoading }: SRVesselProps) => {
     const { id, hasScanned, tripAccom } = useTrip();
     const [bookedSeats, setBookedSeats] = useState<BookedSeat[]>([]);
@@ -161,8 +159,7 @@ const SRVessel = ({ onSeatSelect, accommodations, seatAvailability, setParentLoa
         if (isLoading) return;
 
         if (hasScanned) {
-            const accom = tripAccom == 'Tourist' ? touristHasSeats : bclassHasSeats;
-            console.log('accom: ', accom)
+            const accom = tripAccom.toLowerCase() == 'tourist' ? touristHasSeats : bclassHasSeats;
             seatAvailability?.(accom);
         } else {
             seatAvailability?.(bclassHasSeats || touristHasSeats);
@@ -290,6 +287,7 @@ const SRVessel = ({ onSeatSelect, accommodations, seatAvailability, setParentLoa
             channelInstance?.unsubscribe();
         };
     }, [id])
+    
 
     const bookedSeatMap = useMemo(() => {
         const map: Record<number | string, BookedSeat> = {};
@@ -300,8 +298,8 @@ const SRVessel = ({ onSeatSelect, accommodations, seatAvailability, setParentLoa
         return map;
     }, [bookedSeats]);
 
-    const TouristAccoms = useMemo(() => accommodations?.find((accom) => accom?.name == 'Tourist'), [accommodations]);
-    const BClassAccomms = useMemo(() => accommodations?.find((accom) => bClassNames.includes(accom?.name)), [accommodations]);
+    const BClassAccomms = useMemo(() => accommodations?.find((accom) => accom.id == 2), [accommodations]);
+    const TouristAccoms = useMemo(() => accommodations?.find((accom) => accom?.id == 1), [accommodations]);
     const passengerSeats = useMemo(() => new Set(passengers.map(p => p.seatNumber)), [passengers]);
     const seatChannel = useMemo(() => new Set(seatSelectionChannel.map(String)), [seatSelectionChannel]);
 

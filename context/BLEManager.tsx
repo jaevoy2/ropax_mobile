@@ -6,6 +6,8 @@ const bleManager = new BleManager();
 type BleContextType = {
     connectedDevice: Device | null;
     setConnectedDevice: (device: Device | null) => void;
+    connectedDeviceId: string | null;
+    setConnectedDeviceId: (id: string | null) => void;
     bleManager: BleManager
 }
 
@@ -13,9 +15,10 @@ const BleContext = createContext<BleContextType | undefined>(undefined);
 
 export const BleProvider = ({ children }: { children: React.ReactNode }) => {
     const [connectedDevice, setConnectedDevice] = useState<Device | null>(null);
+    const [connectedDeviceId, setConnectedDeviceId] = useState<string | null>(null);
 
     return (
-        <BleContext.Provider value={{ connectedDevice, setConnectedDevice, bleManager }}>
+        <BleContext.Provider value={{ connectedDevice, setConnectedDevice, connectedDeviceId, setConnectedDeviceId, bleManager }}>
             { children }
         </BleContext.Provider>
     )

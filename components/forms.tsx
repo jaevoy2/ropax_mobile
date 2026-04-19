@@ -443,7 +443,7 @@ export default function Forms({ errorForm }: FormProps) {
                                     <View style={{ flexDirection: 'column', alignItems: 'flex-start' }}>
                                         <Text style={{ fontSize: 16, fontWeight: 'bold', color: '#545454' }}>Fare:</Text>
                                         <View style={{ borderColor: '#FFC107', backgroundColor: '#ffc10727', borderWidth: 2, borderRadius: 5, flexDirection: 'row', alignItems: 'center', paddingHorizontal: 15 }}>
-                                            <Text style={{ fontSize: 16, fontWeight: '900' }}>₱</Text>
+                                            <Text style={{ fontSize: 16, fontWeight: '900', color: '#000' }}>₱</Text>
                                             <TextInput
                                                 onChangeText={(text) => updatePassenger(p.id, 'fare', Number(text.replace(/[^0-9.]/g, '')))}
                                                 value={String(p?.fare?.toLocaleString('en-PH', { minimumFractionDigits: 2, maximumFractionDigits: 2 }) ?? '')}
@@ -530,13 +530,13 @@ export default function Forms({ errorForm }: FormProps) {
                                     <View style={{ width: '40%' }}>
                                         <Text style={{ fontSize: 17, fontWeight: 'bold', color: '#545454' }}>Age:</Text>
                                         <View style={{ borderColor: '#B3B3B3', borderWidth: 1, borderRadius: 5, height: 50, justifyContent: 'center' }}>
-                                            <TextInput value={String(p?.age ?? '')} onChangeText={(text) => updatePassenger(p.id, 'age', Number(text))} keyboardType='numeric' placeholder='Age' style={{ fontSize: 19, fontWeight: '600' }} />
+                                            <TextInput value={String(p?.age ?? '')} onChangeText={(text) => updatePassenger(p.id, 'age', Number(text))} keyboardType='numeric' placeholder='Age' style={{ fontSize: 19, fontWeight: '600', color: '#000' }} />
                                         </View>
                                     </View>
                                     <View style={{ width: '57.5%' }}>
                                         <Text style={{ fontSize: 17, fontWeight: 'bold', color: '#545454' }}>Contact#:</Text>
                                         <View style={{ borderColor: '#B3B3B3', borderWidth: 1, borderRadius: 5, height: 50, justifyContent: 'center' }}>
-                                            <TextInput value={p.contact ?? ''} placeholder='+63' keyboardType={'numeric'} onChangeText={(text) => updatePassenger(p.id, 'contact', text)} style={{ fontSize: 19, fontWeight: '600' }} />
+                                            <TextInput value={p.contact ?? ''} placeholder='+63' keyboardType={'numeric'} onChangeText={(text) => updatePassenger(p.id, 'contact', text)} style={{ fontSize: 19, fontWeight: '600', color: '#000' }} />
                                         </View>
                                     </View>
                                 </View>
@@ -545,13 +545,13 @@ export default function Forms({ errorForm }: FormProps) {
                                     <View style={{ width: '40%' }}>
                                         <Text style={{ fontSize: 17, fontWeight: 'bold', color: '#545454' }}>Nationality:</Text>
                                         <View style={{ borderColor: '#B3B3B3', borderWidth: 1, borderRadius: 5, height: 50, justifyContent: 'center' }}>
-                                            <TextInput value={p.nationality ?? 'Filipino'} onChangeText={(text) => updatePassenger(p.id, 'nationality', text)} defaultValue='Filipino' style={{ fontSize: 19, fontWeight: '600' }} />
+                                            <TextInput value={p.nationality ?? 'Filipino'} onChangeText={(text) => updatePassenger(p.id, 'nationality', text)} defaultValue='Filipino' style={{ fontSize: 19, fontWeight: '600', color: '#000' }} />
                                         </View>
                                     </View>
                                     <View style={{ width: '57.5%' }}>
                                         <Text style={{ fontSize: 17, fontWeight: 'bold', color: '#545454' }}>Address:</Text>
                                         <View style={{ borderColor: '#B3B3B3', borderWidth: 1, borderRadius: 5, height: 50, justifyContent: 'center' }}>
-                                            <TextInput value={p.address ?? ''} onChangeText={(text) => updatePassenger(p.id, 'address', text)} placeholder='Address' style={{ fontSize: 19, fontWeight: '600' }} />
+                                            <TextInput value={p.address ?? ''} onChangeText={(text) => updatePassenger(p.id, 'address', text)} placeholder='Address' style={{ fontSize: 19, fontWeight: '600', color: '#000' }} />
                                         </View>
                                     </View>
                                 </View>
@@ -563,12 +563,12 @@ export default function Forms({ errorForm }: FormProps) {
                                             onPress={() => hasInfantChecker(p.id, passengerType?.find(i => i?.name == 'Infant')?.id ?? 0)}
                                             style={{ flexDirection: 'row', alignItems: 'center', marginTop: 15 }}>
                                             <Checkbox status={p.hasInfant ? 'checked' : 'unchecked'} color='#cf2a3a' uncheckedColor="#999" />
-                                            <Text style={{ fontSize: 20 }}>Infant</Text>
+                                            <Text style={{ fontSize: 20, color: '#000' }}>Infant</Text>
                                         </TouchableOpacity>
                                         {isCargoable != 0 && (
                                             <TouchableOpacity onPress={() => hasCargoChecker(p.id)} style={{ flexDirection: 'row', alignItems: 'center', marginTop: 15 }}>
                                                 <Checkbox status={p.hasCargo ? 'checked' : 'unchecked'} color='#cf2a3a' uncheckedColor="#999" />
-                                                <Text style={{ fontSize: 20 }}>Cargo</Text>
+                                                <Text style={{ fontSize: 20, color: '#000' }}>Cargo</Text>
                                             </TouchableOpacity>
                                         )}
                                     </View>
@@ -650,7 +650,7 @@ export default function Forms({ errorForm }: FormProps) {
                                                     <View style={{ width: '40%' }}>
                                                         <Text style={{ fontSize: 17, fontWeight: 'bold', color: '#545454' }}>Age:</Text>
                                                         <View style={{ borderColor: '#B3B3B3', borderWidth: 1, borderRadius: 5, height: 50, justifyContent: 'center' }}>
-                                                            <TextInput value={String(i.age ?? '')} onChangeText={(text) => updateInfant(p.id, infantIdx, 'age', Number(text))} keyboardType='numeric' placeholder='Age' style={{ fontSize: 19, fontWeight: '600' }} />
+                                                            <TextInput value={String(i.age ?? '')} onChangeText={(text) => updateInfant(p.id, infantIdx, 'age', Number(text))} keyboardType='numeric' placeholder='Age' style={{ fontSize: 19, fontWeight: '600', color: '#000' }} />
                                                         </View>
                                                     </View>
                                                     <View style={{ width: '56%' }}>
@@ -689,9 +689,9 @@ export default function Forms({ errorForm }: FormProps) {
                                                 )}
                                                 <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', paddingBottom: 5 }}>
                                                     <View style={{ flexDirection: 'column', alignSelf: 'flex-start' }}>
-                                                        <Text style={{ fontSize: 17, fontWeight: 'bold', color: '#545454' }}>Amount:</Text>
+                                                        <Text style={{ fontSize: 17, fontWeight: 'bold', color: '#494949' }}>Amount:</Text>
                                                         <View style={{ borderColor: '#FFC107', backgroundColor: '#ffc10727', borderWidth: 2, borderRadius: 5, flexDirection: 'row', alignItems: 'center', paddingHorizontal: 15, paddingVertical: 8 }}>
-                                                            <Text style={{ fontSize: 20 }}>₱ </Text>
+                                                            <Text style={{ fontSize: 20, color: '#000' }}>₱ </Text>
                                                             <Text style={{ fontWeight: 'bold', textAlign: 'right', fontSize: 20 }}>
                                                                 {ComputedCargoAmount(c).amount.toLocaleString('en-PH', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
                                                             </Text>
@@ -724,10 +724,10 @@ export default function Forms({ errorForm }: FormProps) {
                                                             labelField="label" valueField="value" placeholder="Select Cargo Type"
                                                             style={{ height: 50, width: '100%', paddingHorizontal: 10 }}
                                                             containerStyle={{ alignSelf: 'flex-start', width: '90%' }}
-                                                            selectedTextStyle={{ fontSize: 18, lineHeight: 35, fontWeight: '600' }}
+                                                            selectedTextStyle={{ fontSize: 18, lineHeight: 35, fontWeight: '600', color: '#000' }}
                                                             renderRightIcon={() => <Ionicons name="chevron-down" size={18} />}
                                                             dropdownPosition="bottom"
-                                                            renderItem={(item) => <View style={{ width: '80%', padding: 8 }}><Text style={{ fontSize: 18 }}>{item.label}</Text></View>}
+                                                            renderItem={(item) => <View style={{ width: '80%', padding: 8 }}><Text style={{ fontSize: 18, color: '#000' }}>{item.label}</Text></View>}
                                                         />
                                                     </View>
                                                 </View>
@@ -743,10 +743,10 @@ export default function Forms({ errorForm }: FormProps) {
                                                                     labelField="label" valueField="value" placeholder="Select Brand"
                                                                     style={{ height: 50, width: '100%', paddingHorizontal: 10 }}
                                                                     containerStyle={{ alignSelf: 'flex-start', width: '90%' }}
-                                                                    selectedTextStyle={{ fontSize: 18, lineHeight: 35, fontWeight: '600' }}
+                                                                    selectedTextStyle={{ fontSize: 18, lineHeight: 35, fontWeight: '600', color: '#000' }}
                                                                     renderRightIcon={() => <Ionicons name="chevron-down" size={15} />}
                                                                     dropdownPosition="bottom"
-                                                                    renderItem={(item) => <View style={{ width: '80%', padding: 8 }}><Text style={{ fontSize: 18 }}>{item.label}</Text></View>}
+                                                                    renderItem={(item) => <View style={{ width: '80%', padding: 8 }}><Text style={{ fontSize: 18, color: '#000' }}>{item.label}</Text></View>}
                                                                 />
                                                             </View>
                                                         </View>
@@ -761,17 +761,17 @@ export default function Forms({ errorForm }: FormProps) {
                                                                         labelField="label" valueField="value" placeholder="Select CC"
                                                                         style={{ height: 50, width: '100%', paddingHorizontal: 10 }}
                                                                         containerStyle={{ alignSelf: 'flex-start', width: '42%' }}
-                                                                        selectedTextStyle={{ fontSize: 18, lineHeight: 35, fontWeight: '600' }}
+                                                                        selectedTextStyle={{ fontSize: 18, lineHeight: 35, fontWeight: '600', color: '#000' }}
                                                                         renderRightIcon={() => <Ionicons name="chevron-down" size={15} />}
                                                                         dropdownPosition="bottom"
-                                                                        renderItem={(item) => <View style={{ width: '80%', padding: 8 }}><Text style={{ fontSize: 18 }}>{item.label}</Text></View>}
+                                                                        renderItem={(item) => <View style={{ width: '80%', padding: 8 }}><Text style={{ fontSize: 18, color: '#000' }}>{item.label}</Text></View>}
                                                                     />
                                                                 </View>
                                                             </View>
                                                             <View style={{ width: '48%' }}>
                                                                 <Text style={{ fontSize: 17, fontWeight: 'bold', color: '#545454' }}>Plate#:</Text>
                                                                 <View style={{ borderColor: '#B3B3B3', borderWidth: 1, borderRadius: 5, height: 45, justifyContent: 'center' }}>
-                                                                    <TextInput value={c.cargoPlateNo} onChangeText={(text) => updateCargo(p.id, cargoIndex, 'cargoPlateNo', text)} placeholder='Plate#' style={{ fontSize: 19, fontWeight: '600' }} />
+                                                                    <TextInput value={c.cargoPlateNo} onChangeText={(text) => updateCargo(p.id, cargoIndex, 'cargoPlateNo', text)} placeholder='Plate#' style={{ fontSize: 19, fontWeight: '600', color: '#000' }} />
                                                                 </View>
                                                             </View>
                                                         </View>
@@ -787,10 +787,10 @@ export default function Forms({ errorForm }: FormProps) {
                                                                 labelField="label" valueField="value" placeholder="Select Category"
                                                                 style={{ height: 50, width: '100%', paddingHorizontal: 10 }}
                                                                 containerStyle={{ alignSelf: 'flex-start', width: '85%' }}
-                                                                selectedTextStyle={{ fontSize: 19, lineHeight: 35, fontWeight: '600' }}
+                                                                selectedTextStyle={{ fontSize: 19, lineHeight: 35, fontWeight: '600', color: '#000' }}
                                                                 renderRightIcon={() => <Ionicons name="chevron-down" size={15} />}
                                                                 dropdownPosition="bottom"
-                                                                renderItem={(item) => <View style={{ width: '80%', padding: 8 }}><Text style={{ fontSize: 18 }}>{item.label}</Text></View>}
+                                                                renderItem={(item) => <View style={{ width: '80%', padding: 8 }}><Text style={{ fontSize: 18, color: '#000' }}>{item.label}</Text></View>}
                                                             />
                                                         </View>
                                                     </View>

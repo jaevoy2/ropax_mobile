@@ -402,6 +402,7 @@ export default function ManualBooking() {
                         <View style={{ width: '80%', backgroundColor: '#fff', padding: 20, borderRadius: 10 }}>
                             <Text style={{ fontSize: 18, fontWeight: 'bold' }}>Select Date</Text>
                             <Calendar
+                                minDate={new Date().toISOString().split('T')[0]}
                                 onDayPress={(day) => {
                                     setTripDate(day.dateString);
                                     setCalendar(false);
@@ -443,8 +444,8 @@ export default function ManualBooking() {
                 {bookingType != 'Cargo' && (
                     <View style={{ flexDirection: 'row', gap: 10, paddingHorizontal: 15, paddingTop: 20 }}>
                         <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', width: '100%' }}>
-                            <Text style={{ fontSize: 18, fontWeight: 'bold' }}>Available Trip</Text>
-                            <Text style={{ fontSize: 15, fontWeight: 'bold' }}>{formattedDate ? formattedDate.split('(')[0] : ''}</Text>
+                            <Text style={{ fontSize: 18, fontWeight: 'bold',color: '#000' }}>Available Trip</Text>
+                            <Text style={{ fontSize: 15, fontWeight: 'bold', color: '#000' }}>{formattedDate ? formattedDate.split('(')[0] : ''}</Text>
                         </View>
                         <PreLoader loading={loading} />
                     </View>
@@ -477,7 +478,7 @@ export default function ManualBooking() {
                                             <View style={{ height: '100%', borderTopLeftRadius: 10, borderBottomLeftRadius: 10, width: 5, backgroundColor: '#cf2a3a' }} />
                                             <View style={{ width: '78%', paddingHorizontal: 15, paddingVertical: 20 }}>
                                                 <Text style={{ fontWeight: 'bold', fontSize: 13, color: '#cf2a3a' }}>{trip.departure}</Text>
-                                                <Text style={{ fontWeight: 'bold', fontSize: 13 }}>{`${trip.route_origin}  >  ${trip.route_destination} [ ${trip.vessel} ]`}</Text>
+                                                <Text style={{ fontWeight: 'bold', fontSize: 13, color: '#000' }}>{`${trip.route_origin}  >  ${trip.route_destination} [ ${trip.vessel} ]`}</Text>
                                             </View>
                                             <Ionicons name="chevron-forward" size={18} style={{ marginLeft: 30 }} />
                                         </TouchableOpacity>
@@ -489,7 +490,7 @@ export default function ManualBooking() {
                                                 <View key={trip.trip_id} style={{ paddingHorizontal: 15, paddingVertical: 20, backgroundColor: '#fff', opacity: 0.5, borderRadius: 10, marginTop: 12, flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' }}>
                                                     <View>
                                                         <Text style={{ fontWeight: 'bold', fontSize: 15, color: '#cf2a3a' }}>{trip.departure}</Text>
-                                                        <Text style={{ fontWeight: 'bold', fontSize: 15 }}>{`${trip.route_origin}  >  ${trip.route_destination} [ ${trip.vessel} ]`}</Text>
+                                                        <Text style={{ fontWeight: 'bold', fontSize: 15, color: '#000' }}>{`${trip.route_origin}  >  ${trip.route_destination} [ ${trip.vessel} ]`}</Text>
                                                     </View>
                                                     <Ionicons name="chevron-forward" size={18} />
                                                 </View>
@@ -527,7 +528,7 @@ export default function ManualBooking() {
                             <View style={{ flexDirection: 'row', alignItems: 'flex-end', justifyContent: 'space-between' }}>
                                 <View>
                                     {trips && trips.length > 0 && (
-                                        <Text style={{ fontSize: 18, fontWeight: 'bold' }}>Available Trips</Text>
+                                        <Text style={{ fontSize: 18, fontWeight: 'bold', color: '#000' }}>Available Trips</Text>
                                     )}
                                 </View>
                                 <TouchableOpacity onPress={() => closeToggle()} style={{ alignSelf: 'flex-end' }}>
@@ -556,13 +557,13 @@ export default function ManualBooking() {
                                                 <View key={index} style={{ paddingBottom: 10, borderBottomColor: '#b4b4b4ff', borderBottomWidth: 1 }}>
                                                     <View style={{ flexDirection: 'row', alignItems: 'center', gap: 5 }}>
                                                         <View style={{ backgroundColor: tb.color, height: 15, width: 15 }} />
-                                                        <Text style={{ fontWeight: 'bold', fontSize: 17 }}>{tb.station}</Text>
-                                                        <Text style={{ color: '#5c5c5cff', fontSize: 12 }}>{`[${tb.count} paying passenger/s]`}</Text>
+                                                        <Text style={{ fontWeight: 'bold', fontSize: 17, color: '#000' }}>{tb.station}</Text>
+                                                        <Text style={{ color: '#5c5c5cff', fontSize: 12, }}>{`[${tb.count} paying passenger/s]`}</Text>
                                                     </View>
                                                     <View style={{ flexDirection: 'row', alignItems: 'flex-start', marginTop: 5 }}>
                                                         {accomTypes?.map((accomType) => (
                                                             <View key={accomType.accomtTypeID} style={{ flexDirection: 'column', width: '50%' }}>
-                                                                <Text style={{ fontWeight: 'bold' }}>{accomType.accomType}</Text>
+                                                                <Text style={{ fontWeight: 'bold', color: '#000' }}>{accomType.accomType}</Text>
                                                                 {tb.accommodationGroup
                                                                     .filter(g => g.accommodation == accomType.accomType)
                                                                     .map((accom, accomIndex) => (

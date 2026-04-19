@@ -6,14 +6,14 @@ import { ActivityIndicator, Alert, Modal, ScrollView, Switch, Text, TextInput, T
 import { Checkbox } from 'react-native-paper';
 
 
-export default function CancelBooking({ cancelModal, setCancelModal, paxInfo, setPaxInfo, percents, bookingId }: 
+const CancelBooking = ({ cancelModal, setCancelModal, paxInfo, setPaxInfo, percents, bookingId }: 
         { cancelModal: boolean;
         setCancelModal: React.Dispatch<React.SetStateAction<boolean>>; 
         paxInfo: PaxInfo[];
         setPaxInfo: React.Dispatch<React.SetStateAction<PaxInfo[]>> 
         percents,
         bookingId,
-        }) {
+    }) => {
 
     const [selectAll, setSelectAll] = useState(false);
     const [totalFare, setTotalFare] = useState(0);
@@ -106,7 +106,7 @@ export default function CancelBooking({ cancelModal, setCancelModal, paxInfo, se
                 toCancelIDs.push(pax.id)
             });
 
-            const response = await CancelPaxBooking(bookingId, cancelReason, charge, refundAmnt, paxInfo[0].departureDate, paxInfo[0].tripId, selectAll, toCancelIDs);
+            const response = await CancelPaxBooking(bookingId, cancelReason, charge, refundAmnt, paxInfo[0].departureDate, paxInfo[0].tripId, selectAll, toCancelIDs, isByMamangement);
 
             if(!response.error) {
                 Alert.alert('Success', 'Cancellation Success', [{
@@ -186,7 +186,7 @@ export default function CancelBooking({ cancelModal, setCancelModal, paxInfo, se
                                             value={isByMamangement}
                                             thumbColor={isByMamangement ? '#cf2a3a' : '#bebebe'}
                                             trackColor={{ false: '#e4e4e4', true: '#cf2a3a80' }}
-                                            onValueChange={() => setIsByManagement(!isByMamangement)}
+                                            onValueChange={() => {handleSelectAll(), setIsByManagement(!isByMamangement)}}
                                         />
                                         <Text style={{ fontSize: 16, color: isByMamangement ? '#cf2a3a' : '#999' }}>By Management</Text>
                                     </View>
@@ -223,3 +223,6 @@ export default function CancelBooking({ cancelModal, setCancelModal, paxInfo, se
         </View>
     );
 }   
+
+
+export default React.memo(CancelBooking)
