@@ -85,6 +85,7 @@ export default function Expenses() {
     useFocusEffect(
         useCallback(() => {
             fetchExpenses();
+            setExpenses([]);
         }, [])
     )
 
@@ -215,24 +216,24 @@ export default function Expenses() {
             <Modal transparent animationType={'slide'} onRequestClose={() => setModalVisible(false)} visible={modalVisible}>
                 <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center', backgroundColor: 'rgba(0, 0, 0, 0.5)' }}>
                     <View style={{ width: '92%', backgroundColor: '#fff', padding: 20, borderRadius: 10, shadowColor: '#000', shadowOffset: { width: 0, height: 2 }, shadowOpacity: 0.25, shadowRadius: 4 }}>
-                        <Text style={{ fontWeight: 'bold', fontSize: 16, marginBottom: 10 }}>Update Expense</Text>
+                        <Text style={{ fontWeight: 'bold', fontSize: 16, marginBottom: 10, color: '#000' }}>Update Expense</Text>
                         <View>
                             <View>
-                                <Text style={{ fontSize: 10, fontWeight: 'bold', color: '#545454' }}>Description</Text>
+                                <Text style={{ fontSize: 14, fontWeight: 'bold', color: '#545454' }}>Description</Text>
                                 <View style={{ borderColor: '#B3B3B3', borderWidth: 1, borderRadius: 5 }}>
                                     <TextInput onChangeText={(text) => handleExpensePropUpdate({ key: 'description', value: text })} value={expenseToUpdate?.description} placeholder='e.g. Vessel Oil' style={{ fontSize: 13 }} />
                                 </View>
                             </View>
                             <View style={{ marginTop: 5, flexDirection: 'row', gap: 8, alignItems: 'flex-end' }}>
                                 <View style={{ width: '25%' }}>
-                                    <Text style={{ fontSize: 10, fontWeight: 'bold', color: '#545454' }}>Amount:</Text>
+                                    <Text style={{ fontSize: 14, fontWeight: 'bold', color: '#545454' }}>Amount:</Text>
                                     <View style={{ borderColor: '#B3B3B3', borderWidth: 1, borderRadius: 5, flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', paddingHorizontal: 5 }}>
                                         <Text style={{ fontWeight: 'bold', fontSize: 16, marginTop: -5 }}>₱</Text>
                                         <TextInput onChangeText={(text) => handleExpensePropUpdate({ key: 'amount', value: Number(text) })} value={String(expenseToUpdate?.amount)} keyboardType='numeric' placeholder='00.00' style={{ fontSize: 13, textAlign: 'right', }} />
                                     </View>
                                 </View>
                                 <View style={{ width: '72.5%' }}>
-                                    <Text style={{ fontSize: 10, fontWeight: 'bold', color: '#545454' }}>Category</Text>
+                                    <Text style={{ fontSize: 14, fontWeight: 'bold', color: '#545454' }}>Category</Text>
                                     <View style={{ borderColor: '#B3B3B3', borderWidth: 1, borderRadius: 5, flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' }}>
                                         <Dropdown onChange={item =>  handleExpensePropUpdate({ key: 'category', subKey: 'id', value: item.categoryID })} value={expenseToUpdate?.category.id || undefined} data={categories} labelField="name" valueField="categoryID" placeholder="Select Category" 
                                             style={{ height: 40, width: '100%', paddingHorizontal: 10 }}

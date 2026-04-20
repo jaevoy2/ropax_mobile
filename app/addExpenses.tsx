@@ -11,7 +11,7 @@ import { router } from 'expo-router';
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { ActivityIndicator, Alert, Dimensions, Image, KeyboardAvoidingView, Modal, Platform, ScrollView, StyleSheet, Text, TextInput, TouchableOpacity, View } from 'react-native';
 import { Dropdown } from 'react-native-element-dropdown';
-import { SafeAreaView } from 'react-native-safe-area-context';
+import { SafeAreaView, useSafeAreaInsets } from 'react-native-safe-area-context';
 
 
 const { height, width } = Dimensions.get('window');
@@ -51,6 +51,7 @@ export default function AddExpenses() {
     const cameraRef = useRef<CameraView>(null)
     const [onCapture, setOnCapture] = useState(false)
     const [expenseID, setExpenseID] = useState(0);
+    const insets = useSafeAreaInsets();
 
 
 
@@ -326,7 +327,7 @@ export default function AddExpenses() {
     }
 
     return (
-        <View style={{ backgroundColor: '##fdfdfd', position: 'relative', flex: 1 }}>
+        <View style={{ backgroundColor: '##fdfdfd', position: 'relative', flex: 1, paddingBottom: insets.bottom }}>
             {/* add category modal */}
             <Modal visible={modal} transparent animationType="fade">
                 <View style={{ backgroundColor: '#00000048', flex: 1, justifyContent: 'center', alignItems: 'center' }}>
@@ -429,7 +430,7 @@ export default function AddExpenses() {
                                                         <Text style={{ fontSize: 14, fontWeight: 'bold', color: '#545454' }}>Amount:</Text>
                                                         <View style={{ borderColor: '#B3B3B3', borderWidth: 1, borderRadius: 5, flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', paddingHorizontal: 5 }}>
                                                             <Text style={{ fontWeight: 'bold', fontSize: 16, marginTop: -5 }}>₱</Text>
-                                                            <TextInput onChangeText={(text) => updateExpense(e.id, 'amount', Number(text))} keyboardType='numeric' placeholder='0.00' style={{ fontSize: 14, textAlign: 'right', fontWeight: '600' }} />
+                                                            <TextInput onChangeText={(text) => updateExpense(e.id, 'amount', Number(text))} keyboardType='numeric' placeholder='0.00' style={{ fontSize: 14, textAlign: 'right', fontWeight: '600', width: '80%' }} />
                                                         </View>
                                                     </View>
                                                     <View style={{ width: '72.5%' }}>
@@ -441,14 +442,14 @@ export default function AddExpenses() {
                                                                     alignSelf: 'flex-start',
                                                                     width: '50%',
                                                                 }}
-                                                                selectedTextStyle={{ fontWeight: '500', fontSize: 12, lineHeight: 35, }}
+                                                                selectedTextStyle={{ fontWeight: '500', fontSize: 16, lineHeight: 35 }}
                                                                 renderRightIcon={() => (
                                                                     <Ionicons name="chevron-down" size={15} />
                                                                 )}
                                                                 dropdownPosition="bottom"
                                                                 renderItem={(item) => (
-                                                                    <View style={{ width: '80%', padding: 8 }}>
-                                                                    <Text>{item.label}</Text>
+                                                                    <View style={{ width: '80%', padding: 10 }}>
+                                                                    <Text style={{ fontSize: 16 }}>{item.label}</Text>
                                                                     </View>
                                                                 )}
                                                             />
@@ -458,8 +459,8 @@ export default function AddExpenses() {
                                                         </View>
                                                     </View>
                                                 </View>
-                                                <View style={{ marginTop: 5 }}>
-                                                    {/* <Text style={{ fontSize: 10, fontWeight: 'bold', color: '#545454' }}>Image</Text>
+                                                {/* <View style={{ marginTop: 5 }}>
+                                                    <Text style={{ fontSize: 10, fontWeight: 'bold', color: '#545454' }}>Image</Text>
                                                     <TouchableOpacity disabled={e.image_uri != null} onPress={() => handleOnCapture(e.id)} style={{ borderColor: '#b3b3b3', borderWidth: 1, borderRadius: 5, height: 90, justifyContent: 'center', position: 'relative' }}>
                                                         {e.image_uri == null ? (
                                                             <View style={{ backgroundColor: '#f8f8f8', borderRadius: 5, height: '100%', justifyContent: 'center' }}>
@@ -486,8 +487,8 @@ export default function AddExpenses() {
                                                                 />
                                                             </>
                                                         )}
-                                                    </TouchableOpacity> */}
-                                                </View>
+                                                    </TouchableOpacity>
+                                                </View> */}
                                             </View>
                                         ))}
                                     </View>

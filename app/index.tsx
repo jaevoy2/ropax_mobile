@@ -86,9 +86,9 @@ export default function Login() {
                                     <Image source={logo_text} style={{ height: 25, width: 105 }} />
                                 </View>
                                 <View>
-                                    <Text style={{ fontSize: 13, fontWeight: 'bold' }}>Email</Text>
+                                    <Text style={{ fontSize: 13, fontWeight: 'bold' }}>Email or Username</Text>
                                     <TextInput
-                                        placeholder="Email"
+                                        placeholder="Email or Username"
                                         value={email}
                                         onChangeText={(text) => setEmail(text)}
                                         keyboardType="email-address"

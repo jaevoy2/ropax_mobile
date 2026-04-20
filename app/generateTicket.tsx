@@ -5,7 +5,7 @@ import { usePassengers } from '@/context/passenger';
 import { useTrip } from '@/context/trip';
 import { Ionicons, MaterialCommunityIcons } from '@expo/vector-icons';
 import { router } from 'expo-router';
-import { useEffect, useRef, useState } from 'react';
+import { useCallback, useEffect, useRef, useState } from 'react';
 import { Alert, Dimensions, Image, Modal, PermissionsAndroid, Platform, ScrollView, Text, TouchableOpacity, View } from 'react-native';
 import { Device } from 'react-native-ble-plx';
 import QRCode from 'react-native-qrcode-svg';
@@ -31,6 +31,14 @@ export default function TicketGenerator() {
     const [bleModalVisible, setBleModalVisible] = useState(false);
     const [scanning, setScanning] = useState(false);
     const [bleLoading, setBleLoading] = useState(false);
+    const [showDisconnect, setShowDisconnect] = useState(false);
+
+
+    const handleDisconnect = useCallback(() => {
+        setConnectedDevice(null);
+        setConnectedDeviceId(null);
+        setShowDisconnect(false);
+    }, [connectedDevice, showDisconnect])
 
     useEffect(() => {
         const date = new Date();
@@ -153,8 +161,8 @@ export default function TicketGenerator() {
 
         const COL_NAME = 12;
         const COL_TYPE = 5;
-        const COL_SEAT = 6;
-        const COL_FARE = 8;
+        const COL_SEAT = 8;
+        const COL_FARE = 9;
 
 
         const println = (str: string) => { pushStr(str); push(LF); };
@@ -194,7 +202,7 @@ export default function TicketGenerator() {
 
         println(
             padRight('Vessel:', 16) +
-            padLeft(`${vessel}`, 10)
+            padLeft(`${vessel}`, 16)
         )
         println(
             padRight('Trip Date:', 16) +
@@ -231,9 +239,9 @@ export default function TicketGenerator() {
         alignLeft();
         if (passengers.length > 0) {
             println(
-                padRight('Name', 8) +
-                padRight('Type', COL_TYPE) +
-                padRight('Seat', COL_SEAT) +
+                padRight('Name', 10) +
+                padRight('Type', 7) +
+                padRight('Seat', 5) +
                 padLeft('Fare', COL_FARE)
             );
             println('--------------------------------');
@@ -247,9 +255,9 @@ export default function TicketGenerator() {
 
                 println(
                     padRight(name, COL_NAME) +
-                    padRight(`${p.passTypeCode}`, COL_TYPE) +
-                    padRight(`Seat:${p.seatNumber || 'N/A'}`, COL_SEAT) +
-                    padLeft(`₱${fare}`, COL_FARE)
+                    padRight(`${p.passTypeCode}`, 3) +
+                    padRight(`Seat#${p.seatNumber || 'N/A'}`, COL_SEAT) +
+                    padLeft(`P${fare}`, COL_FARE)
                 );
             });
             println('--------------------------------');
@@ -292,10 +300,13 @@ export default function TicketGenerator() {
         println('TERMS AND CONDITIONS');
         println('- Boarding closes 30 mins before');
         println('  departure.');
-        println('- Present valid ID w/ matching name.');
+        println('- Present valid ID w/ matching');
+        println('  name.');
         println('- Service fee is non-refundable.');
-        println('- Pre-Departure Refund: 10% charge');
-        println('- Post-Departure/No Show: 20% charge');
+        println('- Pre-Departure Refund: 10%');
+        println('  charge.');
+        println('- Post-Departure/No Show: 20%');
+        println('  charge.');
         println('- REFUND TAKES 7 DAYS');
 
         fontNormal();
@@ -376,12 +387,11 @@ export default function TicketGenerator() {
             router.replace('/(tabs)/manual-booking');
         }, 400)
     }
+    
 
     return (
         <View style={{ flexDirection: 'column', justifyContent: 'space-between', backgroundColor: '#f1f1f1', position: 'relative', flex: 1, paddingBottom: insets.bottom }}>
             <PreLoader loading={loading || bleLoading} />
-
-            {/* ✅ BLE Device Selection Modal */}
             <Modal transparent animationType="slide" visible={bleModalVisible}>
                 <View style={{ flex: 1, justifyContent: 'flex-end', backgroundColor: 'rgba(0,0,0,0.5)' }}>
                     <View style={{ backgroundColor: '#fff', borderTopLeftRadius: 20, borderTopRightRadius: 20, padding: 20, maxHeight: height * 0.6 }}>
@@ -422,15 +432,27 @@ export default function TicketGenerator() {
                     </View>
                 </View>
             </Modal>
+            
+            {showDisconnect == true && (
+                <View style={{ backgroundColor: '#fff', width: 180, height: 50, padding: 10, justifyContent: 'center', borderRadius: 8, elevation: 5, position: 'absolute', zIndex: 50, right: 20, top: 70 }}>
+                    <TouchableOpacity onPress={() => handleDisconnect()} style={{ flexDirection: 'row', alignItems: 'center', gap: 5 }}>
+                        <MaterialCommunityIcons name={'printer-off-outline'} color={'#000'} size={18} />
+                        <Text style={{ color: '#000' }}>Disconnect Printer</Text>
+                    </TouchableOpacity>
+                </View>
+            )}
 
             <View>
-                <View style={{ height: 160, backgroundColor: '#cf2a3a', paddingTop: 50 }}>
-                    <Text style={{ fontSize: 18, color: '#fff', fontWeight: 'bold', textAlign: 'center' }}>Ticket</Text>
+                <View style={{ height: 160, backgroundColor: '#cf2a3a', flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', paddingBottom: 45, paddingHorizontal: 20}}>
+                    <Text style={{ fontSize: 20, color: '#fff', fontWeight: 'bold' }}>Generate Ticket</Text>
+                    
+                    {connectedDevice && (
+                        <TouchableOpacity onPress={() => setShowDisconnect(!showDisconnect)} style={{ flexDirection: 'row', alignItems: 'center', gap: 5 }}>
+                            <Text style={{ color: '#fff' }}>{connectedDevice?.name}</Text>
+                            <Ionicons name={'chevron-down'} color={'#fff'} size={22} />
+                        </TouchableOpacity>
+                    )}
                 </View>
-                <TouchableOpacity onPress={() => clearAll()} style={{ position: 'absolute', top: 50, right: 20, flexDirection: 'row', alignItems: 'center', gap: 5 }}>
-                    <Ionicons name='checkmark-done' color={'#fff'} size={20} />
-                    <Text style={{ color: '#fff', fontWeight: 'bold', fontSize: 18 }}>Done</Text>
-                </TouchableOpacity>
 
                 <View style={{ position: 'relative', height: '75%', top: -70 }}>
                     <ScrollView style={{ flex: 1 }}>
@@ -617,7 +639,7 @@ export default function TicketGenerator() {
                 </View>
             </View>
 
-            <View style={{ width: '90%', alignSelf: 'center', gap: 10, zIndex: 5, top: -18 }}>
+            <View style={{ width: '90%', alignSelf: 'center', gap: 10, zIndex: 5, top: -90 }}>
                 <TouchableOpacity
                     onPress={printViaBluetooth}
                     disabled={bleLoading}
@@ -628,6 +650,10 @@ export default function TicketGenerator() {
                             {connectedDevice != null ? `Print` : 'Connect & Print'}
                         </Text>
                     </View>
+                </TouchableOpacity>
+                <TouchableOpacity onPress={() => clearAll()} style={{ borderRadius: 8, paddingVertical: 10, borderColor: '#cf2a3a', backgroundColor: '#fff', borderWidth: 1, flexDirection: 'row', alignItems: 'center', gap: 5, justifyContent: 'center' }}>
+                    <Ionicons name={'checkmark'} color={'#cf2a3a'} size={24} />
+                    <Text style={{ color: '#cf2a3a', fontWeight: 'bold', fontSize: 18 }}>Done</Text>
                 </TouchableOpacity>
             </View>
         </View>

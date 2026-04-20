@@ -5,8 +5,8 @@ import { usePassengers } from '@/context/passenger';
 import { useTrip } from '@/context/trip';
 import { Ionicons } from '@expo/vector-icons';
 import { router } from 'expo-router';
-import React, { useCallback, useEffect, useState } from 'react';
-import { ActivityIndicator, Alert, Modal, ScrollView, Switch, Text, TouchableOpacity, View } from 'react-native';
+import React, { useCallback, useEffect, useMemo, useState } from 'react';
+import { ActivityIndicator, Alert, Modal, ScrollView, Text, TouchableOpacity, View } from 'react-native';
 import { Calendar } from 'react-native-calendars';
 import { Checkbox } from 'react-native-paper';
 
@@ -27,26 +27,36 @@ export type ReshcedTripInfo = {
 };
 
 
-const ReschedBooking = ({ reschedModal, setReschedModal, paxInfo, setPaxInfo, percents, bookingId }: 
+const ReschedBooking = ({ reschedModal, setReschedModal, paxInfo, setPaxInfo, bookingId }: 
         { reschedModal: boolean;
         setReschedModal: React.Dispatch<React.SetStateAction<boolean>>; 
         paxInfo: PaxInfo[];
         setPaxInfo: React.Dispatch<React.SetStateAction<PaxInfo[]>> 
-        percents,
         bookingId,
     }) => {
 
     const [calendar, setCalendar] = useState(false);
-    const { setRouteID, setVessel, setID, setOrigin, setDestination, setVesselID, setCode, setWebCode, setDepartureTime, setMobileCode, setIsCargoable, setHasScanned, setTripAccom } = useTrip();
-    const { setPassengers, clearPassengers } = usePassengers();
+    const { setRouteID, setVessel, setID, setOrigin, setDestination, setVesselID, setCode, setWebCode, setDepartureTime, setMobileCode, setBookingId,
+            setIsCargoable, setForReschedule, setReschedAll } = useTrip();
+    const { setPassengers } = usePassengers();
     const [loading, setLoading] = useState(true)
     const [trips, setTrips] = useState<TripProps[] | null>(null);
     const [reschedTripInfo, setReschedTripInfo] = useState<ReshcedTripInfo | null>(null)
     const [formattedDate, setFormattedDate] = useState('');
     const [tripDate, setTripDate] = useState('');
     const [selectAll, setSelectAll] = useState(false);
-    const [isByMamangement, setIsByManagement] = useState(false);
+    const [proceedLoading, setProceedLoading] = useState(false);
+    const [isNotProceedable, setIsNotProceedable] = useState(true)
+    // const [isByMamangement, setIsByManagement] = useState(false);
 
+
+    const availableTrips = useMemo(() => {
+        if(trips && trips.length > 0) {
+            const filteredTrips = trips.filter(t => t.trip_id != paxInfo[0].tripId);
+            return filteredTrips;
+        }
+
+    }, [trips]);
 
     const handleOnDateSelect = useCallback((selectedDate: string) => {
         setLoading(true);
@@ -115,8 +125,7 @@ const ReschedBooking = ({ reschedModal, setReschedModal, paxInfo, setPaxInfo, pe
                     hasDeparted: (verifyTime(t.trip.departure_time, t.specific_days), tripStatus == 'departed' ? true : false),
                 }))
 
-                setTrips(tripsData);
-                console.log(tripsData)
+                setTrips(tripsData.filter(trip => trip.hasDeparted != true));
             }
         }catch(error: any) {
             Alert.alert('Error', error.message);
@@ -143,6 +152,9 @@ const ReschedBooking = ({ reschedModal, setReschedModal, paxInfo, setPaxInfo, pe
     }, [reschedTripInfo])
 
     const handleReschedProceed = () => {
+        setProceedLoading(true);
+
+        setBookingId(bookingId)
         setVessel(reschedTripInfo.vessel);
         setID(reschedTripInfo.id);
         setVesselID(reschedTripInfo.vesselID);
@@ -154,24 +166,62 @@ const ReschedBooking = ({ reschedModal, setReschedModal, paxInfo, setPaxInfo, pe
         setWebCode(reschedTripInfo.webCode);
         setDepartureTime(reschedTripInfo.departureTime);
         setIsCargoable(reschedTripInfo.isCargoable);
+        setForReschedule(true);
         
         setTimeout(() => {
-            for(const pax of paxInfo) {
-                setPassengers(prev => [...prev, {
-                    id: String(pax.id), name: `${pax.last_name}, ${pax.first_name}`, age: pax.age, gender: pax.gender, nationality: pax.nationality, address: pax.address,
-                    contact: pax.contactNo, seatNumber: '', hasScanned: true
-                }])
-            }
+            const selectedPax = paxInfo.filter(p => p.forResched == true);
+            const newPax = selectedPax.map(pax => ({
+                id: String(pax.id),
+                name: `${pax.last_name}, ${pax.first_name}`,
+                age: pax.age,
+                gender: pax.gender,
+                passType: pax.passenger_type,
+                passType_id: pax.passengerTypeId,
+                passTypeCode: pax.paxTypeCode,
+                nationality: pax.nationality,
+                address: pax.address,
+                contact: pax.contactNo,
+                seatNumber: '',
+                forResched: true,
+                fare: pax.fare
+            }))
 
-            // setProceedLoading(false);
+            setPassengers(prev => [
+                ...prev.filter(p => p.forResched === true),
+                ...newPax
+            ]);
+
+            setProceedLoading(false);
             router.push('/seatPlan')
         }, 600);
     }
 
     useEffect(() => {
-        const today = new Date().toLocaleDateString("en-CA", { timeZone: "Asia/Manila" });
+        const forReschedPax = paxInfo.some(p => p.forResched == true);
+
+        if(forReschedPax == false || reschedTripInfo == null || trips.length < 1) {
+            setIsNotProceedable(true);
+        }else {
+            setIsNotProceedable(false);
+        }
+    }, [paxInfo, reschedTripInfo, trips]);
+
+    useEffect(() => {
+        const paxDepartureDate = paxInfo[0].dateIso;
+        const today = new Date(paxDepartureDate).toLocaleDateString("en-CA", { timeZone: "Asia/Manila" });
+
+        setPassengers(prev => 
+            prev.map(p => ({ ...p, forResched: false }))
+        )
+
         handleOnDateSelect(today)
     }, [])
+
+    useEffect(() => {
+        const notForResched = paxInfo.some(p => p.forResched != true);
+        setSelectAll(!notForResched)
+        setReschedAll(!notForResched);
+    }, [paxInfo]);
 
     const handleReschedPax = (paxId: number) => {
         setPaxInfo(prev => (
@@ -181,6 +231,7 @@ const ReschedBooking = ({ reschedModal, setReschedModal, paxInfo, setPaxInfo, pe
 
     const handleSelectAll = () => {
         setSelectAll(!selectAll);
+        setReschedAll(!selectAll)
 
         setPaxInfo(prev => (
             prev.map(p => ({ ...p, forResched: !selectAll }))
@@ -195,9 +246,9 @@ const ReschedBooking = ({ reschedModal, setReschedModal, paxInfo, setPaxInfo, pe
                 <Modal transparent animationType="slide" onRequestClose={() => setCalendar(false)} >
                     <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center', backgroundColor: 'rgba(0, 0, 0, 0.5)' }}>
                         <View style={{ width: '80%', backgroundColor: '#fff', padding: 20, borderRadius: 10, shadowColor: '#000', shadowOffset: { width: 0, height: 2 }, shadowOpacity: 0.25, shadowRadius: 4 }}>
-                            <Text style={{ fontSize: 18, fontWeight: 'bold' }}>Select Date</Text>
+                            <Text style={{ fontSize: 18, fontWeight: 'bold', color: '#000' }}>Select Date</Text>
                             <Calendar
-                            // minDate={new Date().toISOString().split('T')[0]}
+                            minDate={new Date().toISOString().split('T')[0]}
                             onDayPress={(day) => {
                                 setTripDate(day.dateString); setCalendar(false),
                                 handleOnDateSelect(day.dateString)
@@ -223,24 +274,24 @@ const ReschedBooking = ({ reschedModal, setReschedModal, paxInfo, setPaxInfo, pe
                         ) : (
                             <>
                                 <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', marginBottom: 10, paddingHorizontal: 20, paddingVertical: 15, borderBottomColor: '#dadada', borderBottomWidth: 1 }}>
-                                    <Text style={{ fontWeight: 'bold', fontSize: 16 }}>Reschedule Trip</Text>
+                                    <Text style={{ fontWeight: 'bold', fontSize: 16, color: '#000' }}>Reschedule Trip</Text>
                                     <TouchableOpacity onPress={() => setCalendar(true)}>
                                         <Ionicons name={'calendar'} size={25} color={'#cf2a3a'} />
                                     </TouchableOpacity>
                                 </View>
                                 <View style={{ paddingHorizontal: 20, }}>
                                     <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' }}>
-                                        <Text style={{ fontWeight: '600', marginBottom: 5 }}>Select Trip</Text>
-                                        <Text style={{ fontWeight: '600', fontSize: 12, marginBottom: 5 }}>{formattedDate}</Text>
+                                        <Text style={{ fontWeight: '600', marginBottom: 5, color: '#000' }}>Select Trip</Text>
+                                        <Text style={{ fontWeight: '600', fontSize: 12, marginBottom: 5, color: '#000' }}>{formattedDate}</Text>
                                     </View>
-                                    {trips && trips.length < 1 && (
+                                    {availableTrips && availableTrips.length < 1 && (
                                         <View style={{ padding: 10 }}>
                                             <Text style={{ alignSelf: 'center', color: '#adadad' }}>No trip available</Text>
                                         </View>
                                     )}
-                                    {trips.length > 0 && (
+                                    {availableTrips && availableTrips.length > 0 && (
                                         <>
-                                            {trips && trips.filter(t => t.hasDeparted == false).map((trip) => (
+                                            {availableTrips && availableTrips.filter(t => t.hasDeparted == false).map((trip) => (
                                                 <TouchableOpacity 
                                                     onPress={() => handleReschedTripSelect(trip.vessel, trip?.trip_id, trip.route_id, trip.route_origin, trip.route_destination, trip.mobile_code, trip.code, trip.web_code, trip.departure_time, trip.vessel_id, trip.isCargoable)}
                                                     key={trip?.trip_id} style={{ paddingHorizontal: 10, paddingVertical: 12, backgroundColor: reschedTripInfo?.id == trip?.trip_id ? '#cf2a3a' : '#fff', borderColor: '#adadad', borderWidth: 1, borderRadius: 10, marginTop: 12, flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' }}>
@@ -254,7 +305,7 @@ const ReschedBooking = ({ reschedModal, setReschedModal, paxInfo, setPaxInfo, pe
 
                                             <View style={{ marginTop: 20 }}>
                                                 <View style={{ flexDirection: 'row', alignItems: 'flex-end', justifyContent: 'space-between' }}>
-                                                    <Text style={{ fontWeight: '600', marginBottom: 5, fontSize: 14 }}>Passenger/s</Text>
+                                                    <Text style={{ fontWeight: '600', marginBottom: 5, fontSize: 14, color: '#000' }}>Passenger/s</Text>
                                                     <TouchableOpacity onPress={() => handleSelectAll()} style={{ flexDirection: 'row', alignItems: 'center', alignSelf: 'flex-end' }}>
                                                         <Checkbox status={selectAll ? 'checked' : 'unchecked'} color='#cf2a3a' uncheckedColor="#999" />
                                                         <Text style={{ color: selectAll ? '#cf2a3a' : '#999', fontSize: 14 }}>Select All</Text>
@@ -274,23 +325,17 @@ const ReschedBooking = ({ reschedModal, setReschedModal, paxInfo, setPaxInfo, pe
                                                         ))}
                                                     </ScrollView>
                                                 </View>
-
-                                                <View style={{ flexDirection: 'row', alignItems: 'center', gap: 5, marginTop: 10 }}>
-                                                    <Switch 
-                                                        value={isByMamangement}
-                                                        thumbColor={isByMamangement ? '#cf2a3a' : '#bebebe'}
-                                                        trackColor={{ false: '#e4e4e4', true: '#cf2a3a80' }}
-                                                        onValueChange={() => {handleSelectAll(), setIsByManagement(!isByMamangement)}}
-                                                    />
-                                                    <Text style={{ fontSize: 16, color: isByMamangement ? '#cf2a3a' : '#999' }}>By Management</Text>
-                                                </View>
                                             </View>
                                         </>
                                     )}
                                 </View>
                                 <View style={{ padding: 20 }}>
-                                    <TouchableOpacity onPress={() => handleReschedProceed()} style={{ marginTop: 30, padding: 10, backgroundColor: '#CF2A3A', borderRadius: 5 }}>
-                                        <Text style={{ color: '#fff', textAlign: 'center' }}>Proceed</Text>
+                                    <TouchableOpacity onPress={() => handleReschedProceed()} disabled={isNotProceedable} style={{ marginTop: 30, padding: 10, backgroundColor: '#CF2A3A', borderRadius: 5, opacity: isNotProceedable ? 0.6 : 1 }}>
+                                        {proceedLoading == true ? (
+                                            <ActivityIndicator size={'small'} color={'#fff'} style={{ alignSelf: 'center' }} />
+                                        ) : (
+                                            <Text style={{ color: '#fff', textAlign: 'center', fontWeight: '600' }}>Proceed</Text>
+                                        )}
                                     </TouchableOpacity>
                                     <TouchableOpacity onPress={() => {setReschedModal(false), setReschedTripInfo(null)}} style={{ marginTop: 10, alignSelf: 'center' }}>
                                         <Text style={{ color: '#cf2a3a', textAlign: 'center' }}>Cancel</Text>

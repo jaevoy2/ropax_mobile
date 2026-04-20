@@ -71,9 +71,9 @@ export default function SeatPlan() {
         seatRemoval(seat, id);
 
         setPassengers(prev => {
-            const paxHasScan = prev.some(p => p.hasScanned && p.id == paxId);
+            const specialPaxBooking = prev.some(p => (p.hasScanned || p.forResched) && p.id == paxId);
 
-            const updatedPassengers = paxHasScan
+            const updatedPassengers = specialPaxBooking
                 ? prev.map(p =>
                     p.id == paxId ? { ...p, seatNumber: '' } : p
                 )
@@ -81,10 +81,10 @@ export default function SeatPlan() {
 
             const noSeatsLeft = updatedPassengers.filter(p => p.seatNumber).length === 0;
 
-            const singleUnscannedPassenger =
-                noSeatsLeft && !paxHasScan;
+            const regularPaxBooking =
+                noSeatsLeft && !specialPaxBooking;
 
-            if (singleUnscannedPassenger) {
+            if (regularPaxBooking) {
                 seatSheetRef.current?.close();
             }
 
@@ -214,12 +214,12 @@ export default function SeatPlan() {
                                                 borderBottomRightRadius: 5, paddingVertical: 30, paddingHorizontal: 10, flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' }}>
                                             <View style={{ flexDirection: 'row', gap: 3, alignItems: 'center' }}>
                                                 <Ionicons name={'boat'} size={16} color={'#fff'} style={{ padding: 3, backgroundColor: '#cf2a3a', borderRadius: 5 }} />
-                                                <Text style={{ fontSize: 12, fontWeight: 'bold' }}>{origin}</Text>
+                                                <Text style={{ fontSize: 12, fontWeight: 'bold', color: '#000' }}>{origin}</Text>
                                             </View>
                                             <Ionicons name={'arrow-forward'} color={'#cf2a3a'} size={25} />
                                             <View style={{ flexDirection: 'row', gap: 3, alignItems: 'center' }}>
                                                 <Ionicons name={'location'} size={15} color={'#fff'} style={{ padding: 3, backgroundColor: '#cf2a3a', borderRadius: 5 }} />
-                                                <Text style={{ fontSize: 12, fontWeight: 'bold' }}>{destination}</Text>
+                                                <Text style={{ fontSize: 12, fontWeight: 'bold', color: '#000' }}>{destination}</Text>
                                             </View>
                                         </View>
                                     </>

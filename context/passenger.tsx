@@ -32,6 +32,7 @@ export type PassengerProps = {
     infant?: InfantProps[];
     cargo?: PaxCargoProperties[];
     bookingType?: string;
+    forResched?: boolean;
 }
 
 

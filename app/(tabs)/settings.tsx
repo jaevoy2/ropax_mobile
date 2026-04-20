@@ -2,13 +2,9 @@ import { SaveStation } from "@/api/saveStation";
 import { FetchStation } from "@/api/station";
 import { Ionicons, MaterialCommunityIcons } from "@expo/vector-icons";
 import AsyncStorage from "@react-native-async-storage/async-storage";
-import * as FileSystem from 'expo-file-system';
-import * as MediaLibrary from 'expo-media-library';
 import { router } from "expo-router";
-import * as Sharing from 'expo-sharing';
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { ActivityIndicator, Alert, Dimensions, Image, Modal, Text, TouchableOpacity, View } from "react-native";
-import { captureRef } from 'react-native-view-shot';
 
 const { height, width } = Dimensions.get('window');
 const defaultImg = require('@/assets/images/default.jpg');
@@ -40,7 +36,15 @@ export default function GenSettings() {
     const [saveSpinner, setSaveSpinner] = useState(false);
     const [loading, setLoading] = useState(false);
     const [user, setUser] = useState<UserProp | null>(null);
-    const viewRef = useRef<View | null>(null);
+
+
+
+    const stations = useMemo(() => {
+        if(stationOptions && stationOptions.length > 0) {
+            const userStations = stationOptions.filter(s => s.name.toLowerCase() != 'online booking');
+            return userStations;
+        }
+    }, [stationOptions])
 
     useEffect(() => {
         const loadUserData = async () => {
@@ -138,47 +142,16 @@ export default function GenSettings() {
 
     }
 
-    const handleTestPrint = async () => {
-        if(!viewRef.current) {
-            Alert.alert('Error', 'View not available for snapshot');
-            return;
-        }
-
-        try {
-            const { status } = await MediaLibrary.requestPermissionsAsync();
-            if(!status) {
-                Alert.alert('Permission Denied', 'Permission to access media library is required to save the image.');
-                return;
-            }
-
-            const snapshotUri: string = await captureRef(viewRef, {
-                format: 'png',
-                quality: 1,
-                width: 384
-            });
-
-            const cacheUri: string = `${FileSystem.cacheDirectory}.ticket.png`;
-            await FileSystem.copyAsync({ from: snapshotUri, to: cacheUri });
-
-            await Sharing.shareAsync(cacheUri, {
-                dialogTitle: "Print with RawBT",
-                mimeType: "image/png",
-            });
-        }catch(error) {
-            Alert.alert('Error', String(error));
-        }
-    }
-
 
     return (
         <View>
             <Modal visible={modal} transparent animationType="fade">
                 <View style={{ backgroundColor: '#00000048', flex: 1, justifyContent: 'center', alignItems: 'center' }}>
                     <View style={{ height: height / 6, width: width - 40, backgroundColor: '#fff', borderRadius: 10, justifyContent: 'space-between', padding: 15 }}>
-                        <Text style={{ fontSize: 16, marginTop: 25 }}>Are you sure you want to logout?</Text>
+                        <Text style={{ fontSize: 16, marginTop: 25, color: '#000' }}>Are you sure you want to logout?</Text>
                         <View style={{ alignSelf: 'flex-end', flexDirection: 'row', marginTop: 20, gap: 10 }}>
                             <TouchableOpacity onPress={() => setModal(false)}>
-                                <Text>Cancel</Text>
+                                <Text style={{ color: '#505050' }}>Cancel</Text>
                             </TouchableOpacity>
                             {loading ? (
                                 <ActivityIndicator size="small" color="#cf2a3a" style={{ marginRight: 10 }} />
@@ -202,9 +175,9 @@ export default function GenSettings() {
                             </View>
                         ) : (
                             <>
-                                <Text style={{ fontSize: 16, fontWeight:'bold', paddingBottom: 5 }}>Select Station</Text>
+                                <Text style={{ fontSize: 16, fontWeight:'bold', paddingBottom: 5, color: '#000' }}>Select Station</Text>
                                 <View style={{ flexDirection: 'column', gap: 8, marginTop: 10 }}>
-                                    {stationOptions?.map((option) => (
+                                    {stations?.map((option) => (
                                         <TouchableOpacity onPress={() => setSelectedStation(option.id)} key={option.id} style={{ paddingHorizontal: 8, paddingVertical: 10, borderWidth: 1, 
                                         borderColor: '#cf2a3a', borderRadius: 5, backgroundColor: user.stationID == option.id || selectedStation == option.id ? '#cf2a3a' : 'transparent' }}>
                                             <Text style={{ fontWeight: 'bold', color: user.stationID == option.id || selectedStation == option.id ? '#fff' : '#cf2a3a' }}>{option.name}</Text>

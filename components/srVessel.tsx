@@ -187,26 +187,37 @@ const SRVessel = ({ onSeatSelect, accommodations, seatAvailability, setParentLoa
             }
 
             const tempId = Crypto.randomUUID();
+            let broadcastSeat = false;
             
             setPassengers(prev => {
-                const scannedPax = prev.filter(p => p.hasScanned == true);
-                const paxScan = prev.find(p => p.hasScanned && p.seatNumber == '');
+                const specialPax = prev.filter(p => p.hasScanned || p.forResched);
+                const specialPaxWithNoSeat = specialPax.find(p => !p.seatNumber || p.seatNumber === '');
 
-                if(scannedPax.length > 0 && !paxScan) {
-                    Alert.alert('Notice', 'All passengers already have seats assigned.');
+                if (specialPax.length > 0 && !specialPaxWithNoSeat) {
+                    broadcastSeat = false;
+                    Alert.alert('Opps!', 'All passengers already have seats assigned.');
                     return prev;  
                 }
 
-                if(!paxScan) {
+                if(!specialPaxWithNoSeat) {
+                    broadcastSeat = true;
                     return [
                         ...prev,
                         { id: tempId, seatNumber: seat, accommodation: type, accommodationID: accomm_id }
                     ]
                 }
-                return prev.map(p => p.hasScanned && p?.id == paxScan?.id ? { ...p, seatNumber: seat }: p)
+
+                broadcastSeat = true;
+                return prev.map(p =>
+                    (p.hasScanned === true || p.forResched === true) && p.id === specialPaxWithNoSeat.id
+                        ? { ...p, seatNumber: seat, accommodation: type, accommodationID: accomm_id }
+                        : p
+                );
             });
         
-            onSeatSelect?.(seat);
+            if(broadcastSeat) {
+                onSeatSelect?.(seat);
+            }
         }catch(error: any) {
             Alert.alert('Error', error.message);
         }

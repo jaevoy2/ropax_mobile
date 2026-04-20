@@ -21,6 +21,8 @@ export type TripContextProps = {
     hasScanned?: boolean;
     tripAccom?: string;
     bookingId?: number | null;
+    forReschedule?: boolean;
+    reSchedAll?: boolean;
     setVessel: React.Dispatch<React.SetStateAction<string>>;
     setRouteID: React.Dispatch<React.SetStateAction<number>>;
     setOrigin: React.Dispatch<React.SetStateAction<string>>;
@@ -41,6 +43,8 @@ export type TripContextProps = {
     setHasScanned: React.Dispatch<React.SetStateAction<boolean>>;
     setTripAccom: React.Dispatch<React.SetStateAction<string>>;
     setBookingId: React.Dispatch<React.SetStateAction<number | null>>;
+    setForReschedule: React.Dispatch<React.SetStateAction<boolean>>;
+    setReschedAll: React.Dispatch<React.SetStateAction<boolean>>;
     clearTrip: () => void;
 }
 
@@ -72,6 +76,8 @@ export const TripProvider = ({ children }: TripProviderProps) => {
     const [hasScanned, setHasScanned] = useState<boolean>(false);
     const [tripAccom, setTripAccom] = useState('');
     const [bookingId, setBookingId] = useState<number | null>(null)
+    const [forReschedule, setForReschedule] = useState<boolean>(false);
+    const [reSchedAll, setReschedAll] = useState<boolean>(true);
 
     const clearTrip = () => {
         setID(0);
@@ -94,14 +100,16 @@ export const TripProvider = ({ children }: TripProviderProps) => {
         setBookingId(null);
         setHasScanned(false);
         setApprovedBy('');
-        setNote('')
+        setNote('');
+        setForReschedule(false);
+        setReschedAll(true);
     };
 
     return (
         <TripContext.Provider value={{ id, vessel, routeID, origin, destination, vessel_id, totalFare, note, departure_time, tripAccom, bookingId,
-                                        fareChange, code, webCode, mobileCode, cashTendered, refNumber, isCargoable, approvedBy, hasScanned,
+                                        fareChange, code, webCode, mobileCode, cashTendered, refNumber, isCargoable, approvedBy, hasScanned, forReschedule, reSchedAll,
                                     setVessel, setID, setRouteID, setOrigin, setDestination, setVesselID, setTotalFare, setNote,setDepartureTime, setHasScanned, setBookingId,
-                                    setFareChange, setCode, setWebCode, setMobileCode, setCashTendered, setRefNumber, setIsCargoable, clearTrip, setApprovedBy, setTripAccom }}>
+                                    setFareChange, setCode, setWebCode, setMobileCode, setCashTendered, setRefNumber, setIsCargoable, clearTrip, setApprovedBy, setTripAccom, setForReschedule, setReschedAll }}>
             {children}
         </TripContext.Provider>
     );

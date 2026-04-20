@@ -1,6 +1,7 @@
 import { SaveBooking } from '@/api/saveBooking';
 import { SaveBookingScan } from '@/api/saveBookingScan';
 import { SaveCargo } from '@/api/saveCargo';
+import { SaveReschedBooking } from '@/api/saveResched';
 import { useCargo } from '@/context/cargoProps';
 import { usePassengers } from '@/context/passenger';
 import { TripContextProps, useTrip } from '@/context/trip';
@@ -17,7 +18,7 @@ const { height } = Dimensions.get('window');
 
 export default function PaymentSummary() {
     const { passengers } = usePassengers();
-    const { id, bookingId, totalFare, fareChange, webCode, destination, origin, departure_time, vessel, setRefNumber, setFareChange, setCashTendered } = useTrip();
+    const { id, bookingId, totalFare, fareChange, webCode, destination, origin, departure_time, vessel, reSchedAll, setRefNumber, setFareChange, setCashTendered } = useTrip();
     const { paxCargoProperty } = useCargo();
     const [loading, setLoading] = useState(false);
     const [cashTendered, setPassCashTendered] = useState(0);
@@ -74,7 +75,7 @@ export default function PaymentSummary() {
 
         try {
             const trip = { id, totalFare, webCode } as TripContextProps;
-            if(passengers.length > 0 && passengers.some(p => p.hasScanned != true)) {
+            if(passengers.length > 0 && passengers.some(p => p.hasScanned != true && p.forResched != true)) {
                 const response = await SaveBooking(trip, passengers, Number(stationID));
                 
                 if(!response.error) {
@@ -84,8 +85,6 @@ export default function PaymentSummary() {
                             seatRemoval(p.seatNumber, id)
                         }
                     });
-
-                    router.push('/generateTicket');
                 }
             }else if(passengers.length > 0 && passengers.some(p => p.hasScanned == true)){
                 const response = await SaveBookingScan(trip, passengers, Number(stationID), bookingId);
@@ -98,9 +97,23 @@ export default function PaymentSummary() {
                         }
                     })
                 }
+            }else if(passengers.length > 0 && passengers.some(p => p.forResched == true)) {
+                
+                const response = await SaveReschedBooking(trip, passengers, Number(stationID), bookingId, reSchedAll);
+                
+                if(!response.error) {
+                    setRefNumber(response.reference_no);
+                    passengers.forEach(p => {
+                        if(p.seatNumber) {
+                            seatRemoval(p.seatNumber, id)
+                        }
+                    })
+                }
             }else {
                 const res = await SaveCargo(trip, paxCargoProperty)
             }
+
+            router.push('/generateTicket');
         }catch(error: any) {
             Alert.alert('Error', error.message);
         }finally {

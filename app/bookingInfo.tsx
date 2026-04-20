@@ -2,7 +2,7 @@ import { FetchPaxBookingInfo } from '@/api/paxBookingInfo';
 import CancelBooking from '@/components/cancelModal';
 import PreLoader from '@/components/preloader';
 import ReschedBooking from '@/components/reschedModal';
-import { useCargo } from '@/context/cargoProps';
+import { PaxCargoProperties, useCargo } from '@/context/cargoProps';
 import { PassengerProps, usePassengers } from '@/context/passenger';
 import { useTrip } from '@/context/trip';
 import { Ionicons, MaterialCommunityIcons } from '@expo/vector-icons';
@@ -50,14 +50,17 @@ export type PaxInfo = {
     accommodation: string;
     paxTypeCode: string;
     accommodationTypeId: number;
-    station?: string;
+    station?: string | null;
     fare?: number;
     bookingType: string;
     isCargoable: number;
     forCancel?: boolean;
     hasCancelled?: boolean;
     forResched?: boolean;
+    paxCargos?: PaxCargoProperties[];
 }
+
+
 
 export type PercentagesProps = {
     id: number;
@@ -75,7 +78,8 @@ const tabs = [
 export default function BookingInfo() {
     const { cargoProperties, paxCargoProperty, setPaxCargoProperties } = useCargo();
     const { setPassengers, clearPassengers } = usePassengers();
-    const { setRefNumber, setBookingId, clearTrip, setRouteID, setTotalFare, setVessel, setID, setOrigin, setDestination, setVesselID, setCode, setWebCode, setDepartureTime, setMobileCode, setIsCargoable, setHasScanned, setTripAccom } = useTrip();
+    const { setRefNumber, setBookingId, clearTrip, setRouteID, setTotalFare, setVessel, setID, setOrigin, setDestination, setVesselID, setCode, 
+        setWebCode, setDepartureTime, setMobileCode, setIsCargoable, setHasScanned, setTripAccom } = useTrip();
     const { bookingId, paxId, refNum } = useLocalSearchParams();
     const [ loading, setLoading ] = useState(true);
     const [ paxInfo, setPaxInfo ] = useState<PaxInfo[]>([]);
@@ -90,7 +94,7 @@ export default function BookingInfo() {
     const [reprintLoading, setReprintLoading] = useState(false);
     const [isRequestable, setIsRequestable] = useState(true);
 
-    const isOnlinePax = paxInfo.some(p => p?.station.toLowerCase() == 'online booking');
+    const isOnlinePax = paxInfo.some(p => p?.station?.toLowerCase() == 'online booking');
     const paxBookingStatus = bookingStatuses?.find(s => s.id == paxInfo[0]?.bookingStatus)?.label.toLowerCase();
 
     useFocusEffect(
@@ -98,8 +102,9 @@ export default function BookingInfo() {
             clearPassengers();
             clearTrip();
             handleFetchInfo();
+            setPaxCargoProperties([]);
         }, [])
-    )
+    );
 
     const handleFetchInfo = async () => {
         try {
@@ -107,14 +112,6 @@ export default function BookingInfo() {
             
             if(!response.error) {
                 const paxDatas = response.data;
-                function verifyIfCancelled() {
-                    // const cancellationIDs = new Set(response.cancellations
-                    //     .filter((c: any) => c.booking_id == bookingId || [])
-                    //     .flat()
-                    // );
-
-                    console.log(response);
-                }
 
                 function isRequestableChecker (pax_trip: string) {
                     const paxTripDate = new Date(pax_trip);
@@ -123,7 +120,7 @@ export default function BookingInfo() {
 
                     requestableDays.setDate(requestableDays.getDate() + 7);
                     
-                    if(current > requestableDays) { //////////////////////////////// ayaw kalimot pag bali ani gwapo!! ilisi og >
+                    if(current > requestableDays) {
                         setIsRequestable(false);
                     }else {
                         setIsRequestable(true);   
@@ -157,7 +154,7 @@ export default function BookingInfo() {
                     origin: pax.bookings[0].trip_schedule.trip.route.origin,
                     destination: pax.bookings[0].trip_schedule.trip.route.destination,
                     route: `${pax.bookings[0].trip_schedule.trip.route.origin} - ${pax.bookings[0].trip_schedule.trip.route.destination}`,
-                    station: pax.bookings[0].station.name,
+                    station: pax.bookings[0].station?.name,
                     mobileCode: pax.bookings[0].trip_schedule.trip.route.mobile_code,
                     webCode: pax.bookings[0].trip_schedule.trip.route.web_code,
                     vessel: pax.bookings[0].trip_schedule.trip.vessel.name,
@@ -174,7 +171,8 @@ export default function BookingInfo() {
                     accommodationTypeId: pax.accommodation_type[0]?.id,
                     fare: pax.fares[0]?.fare ? pax.fares[0]?.fare : pax.bookings.find((r: any) => r.pivot)?.pivot?.fare,
                     bookingType: pax.bookings[0].type_id,
-                    isCargoable: pax.bookings[0].trip_schedule.trip.vessel.is_cargoable
+                    isCargoable: pax.bookings[0].trip_schedule.trip.vessel.is_cargoable,
+                    // paxCargos: 
                 }))
 
                 const cancelPercents: PercentagesProps[] = response.cancellationPercentage.map((percent: any) => ({
@@ -262,7 +260,7 @@ export default function BookingInfo() {
         setOrigin(paxInfo[0].origin);
         setDestination(paxInfo[0].destination)
 
-        setPaxCargoProperties([{ withPassenger: true, passenger_id: paxInfo[0].id }])
+        setPaxCargoProperties([{ withPassenger: true, passenger_id: paxInfo[0].id , quantity: 1}])
 
         router.push(`/addPaxCargo?departureTime=${paxInfo[0].departureTime}`)
     }
@@ -362,7 +360,7 @@ export default function BookingInfo() {
                                 </View>
                                 <View style={styles.bookingContainer}>
                                     <Text style={{ color: '#646464', fontSize: 13, }}>Station</Text>
-                                    <Text style={{ fontSize: 13, fontWeight: '700', color: '#000' }}>{paxInfo.find((p: any) => p.id == Number(paxId) )?.station}</Text>
+                                    <Text style={{ fontSize: 13, fontWeight: '700', color: '#000' }}>{paxInfo.find((p: any) => p.id == Number(paxId) )?.station ?? '--'}</Text>
                                 </View>
                                 <View style={styles.bookingContainer}>
                                     <Text style={{ color: '#646464', fontSize: 13, }}>Departure Date</Text>
@@ -452,8 +450,8 @@ export default function BookingInfo() {
                                     <Text style={{ color: '#fff', fontWeight: '800', fontSize: 14, }}>Cancel</Text>
                                 </Pressable>
                                 <Pressable onPress={() => handleOnReschedModal()} style={[styles.requestsBtn, { backgroundColor: '#FCCA03' }]}>
-                                    <Ionicons name={'reload'} size={18} />
-                                    <Text style={{ fontWeight: '800', fontSize: 14, }}>Reschedule</Text>
+                                    <Ionicons name={'reload'} size={18} style={{ color: '#000' }} />
+                                    <Text style={{ fontWeight: '800', fontSize: 14, color: '#000' }}>Reschedule</Text>
                                 </Pressable>
                                 <Pressable onPress={() => handleReprint()} style={[styles.requestsBtn, { backgroundColor: '#25AD76' }]}>
                                     {reprintLoading == true ? (
@@ -485,7 +483,7 @@ export default function BookingInfo() {
 
             {reschedModal == true && (
                 <ReschedBooking reschedModal={reschedModal} setReschedModal={(setReschedModal)} paxInfo={paxInfo} 
-                    setPaxInfo={setPaxInfo} percents={percentages} bookingId={bookingId} />
+                    setPaxInfo={setPaxInfo} bookingId={bookingId} />
             )}
 
             
