@@ -47,7 +47,11 @@ export async function SaveBooking(trip: TripContextProps, passengers: PassengerP
                     })) : [],
 
                     cargos: Array.isArray(p.cargo) ? p.cargo?.map((c) => ({
-                        cargo_option_id: c.cargoOptionID,
+                        cargo_option_id: c?.cargoOptionID,
+                        category: c?.parcelCategory,
+                        brand: c?.cargoBrand,
+                        specification: c?.cargoSpecification,
+                        cargo_type: c?.cargoType,
                         quantity: c.quantity,
                         amount: c.cargoAmount,
                         trip_id: trip.id

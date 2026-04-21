@@ -110,7 +110,8 @@ export default function PaymentSummary() {
                     })
                 }
             }else {
-                const res = await SaveCargo(trip, paxCargoProperty)
+                console.log()
+                const res = await SaveCargo(trip, paxCargoProperty, paxCargoProperty[0].isCargoAdded, paxCargoProperty[0].passenger_id)
             }
 
             router.push('/generateTicket');
@@ -271,8 +272,8 @@ export default function PaymentSummary() {
                                             <Text style={{ padding: 10, borderBottomColor: '#dadada', borderBottomWidth: 1, fontWeight: 'bold', marginTop: 5 }}>
                                                 Cargo/s
                                             </Text>
-                                            {paxCargoProperty.map(cargo =>(
-                                                <View key={cargo.id} style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', paddingHorizontal: 10, paddingTop: 10 }}>
+                                            {paxCargoProperty.map((cargo, index) =>(
+                                                <View key={index} style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', paddingHorizontal: 10, paddingTop: 10 }}>
                                                     <View style={{ flexDirection: 'column', width: '65%' }}>
                                                         <View style={{ flexDirection: 'row', alignItems: 'center', gap: 5 }}>
                                                             <Text style={{ fontSize: 17, fontWeight: '700', color: '#cf2a3a' }}>{`${cargo.quantity}x`}</Text>

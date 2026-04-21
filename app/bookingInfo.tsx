@@ -2,12 +2,12 @@ import { FetchPaxBookingInfo } from '@/api/paxBookingInfo';
 import CancelBooking from '@/components/cancelModal';
 import PreLoader from '@/components/preloader';
 import ReschedBooking from '@/components/reschedModal';
-import { PaxCargoProperties, useCargo } from '@/context/cargoProps';
+import { useCargo } from '@/context/cargoProps';
 import { PassengerProps, usePassengers } from '@/context/passenger';
 import { useTrip } from '@/context/trip';
 import { Ionicons, MaterialCommunityIcons } from '@expo/vector-icons';
 import { router, useFocusEffect, useLocalSearchParams } from 'expo-router';
-import { useCallback, useState } from 'react';
+import { useCallback, useMemo, useState } from 'react';
 import { ActivityIndicator, Alert, Dimensions, KeyboardAvoidingView, Platform, Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
@@ -16,6 +16,17 @@ import { bookingStatuses } from './(tabs)/manage-booking';
 
 
 const { height, width } = Dimensions.get('screen');
+
+type PaxCargos = {
+    id: number;
+    category?: string;
+    brand?: string;
+    specification?: string;
+    cargo_type?: string;
+    cargo_option_id?: number;
+    quantity: number;
+    amount: number;
+}
 
 
 export type PaxInfo = {
@@ -57,7 +68,7 @@ export type PaxInfo = {
     forCancel?: boolean;
     hasCancelled?: boolean;
     forResched?: boolean;
-    paxCargos?: PaxCargoProperties[];
+    paxCargos?: PaxCargos[];
 }
 
 
@@ -105,6 +116,12 @@ export default function BookingInfo() {
             setPaxCargoProperties([]);
         }, [])
     );
+
+    const paxCargos = useMemo(() => {
+        return paxInfo
+            .filter(p => p.paxCargos && p.paxCargos.length > 0)
+            .flatMap(p => p.paxCargos);
+    }, [paxInfo]);
 
     const handleFetchInfo = async () => {
         try {
@@ -172,7 +189,7 @@ export default function BookingInfo() {
                     fare: pax.fares[0]?.fare ? pax.fares[0]?.fare : pax.bookings.find((r: any) => r.pivot)?.pivot?.fare,
                     bookingType: pax.bookings[0].type_id,
                     isCargoable: pax.bookings[0].trip_schedule.trip.vessel.is_cargoable,
-                    // paxCargos: 
+                    paxCargos: pax.cargos
                 }))
 
                 const cancelPercents: PercentagesProps[] = response.cancellationPercentage.map((percent: any) => ({
@@ -255,12 +272,18 @@ export default function BookingInfo() {
     }
 
     const handleAddCargo = () => {
-        setRouteID(paxInfo[0].routeId)
+        setID(paxInfo[0].tripId);
         setVessel(paxInfo[0].vessel);
+        setVesselID(paxInfo[0].vesselId);
+        setRouteID(paxInfo[0].routeId);
         setOrigin(paxInfo[0].origin);
         setDestination(paxInfo[0].destination)
+        setMobileCode(paxInfo[0].mobileCode);
+        setWebCode(paxInfo[0].webCode);
+        setCode(paxInfo[0].vesselCode);
+        setDepartureTime(paxInfo[0].departureTimeISO);
 
-        setPaxCargoProperties([{ withPassenger: true, passenger_id: paxInfo[0].id , quantity: 1}])
+        setPaxCargoProperties([{ isCargoAdded: true, passenger_id: paxInfo[0].id , quantity: 1}])
 
         router.push(`/addPaxCargo?departureTime=${paxInfo[0].departureTime}`)
     }
@@ -419,11 +442,34 @@ export default function BookingInfo() {
                                     <View style={{ position: 'relative', paddingHorizontal: 10, paddingVertical: 8, borderBottomColor: '#dadada', borderBottomWidth: 1 }}>
                                         <Text style={{ fontWeight: 'bold' }}>Cargo</Text>
                                     </View>
-                                    {paxCargoProperty.length > 0 ? (
+                                    {paxCargos ? (
                                         <>
-                                            <View style={{ paddingVertical: 10 }}>
-
-                                            </View>
+                                            {paxCargos.map(c => (
+                                                <View key={c.id} style={{ paddingVertical: 10 }}>
+                                                    <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', width: '100%', padding: 10 }}>
+                                                        <View style={{ flexDirection: 'row', alignItems: 'center' }}>
+                                                            <MaterialCommunityIcons name={'truck'} color={'#fff'} size={19} style={{ padding: 10, backgroundColor: '#cf2a3a', borderRadius: 50, marginRight: 10 }} />
+                                                            <View style={{ flexDirection: 'column', width: '65%' }}>
+                                                                <Text style={{ fontSize: 14, fontWeight: '700', color: '#000' }}>{c?.cargo_type}</Text>
+                                                                <View style={{ flexDirection: 'row', alignItems: 'center', gap: 5 }}>
+                                                                    <Text style={{ fontSize: 10, color: '#646464', fontWeight: '600' }}>Quantity: {c?.quantity}</Text>
+                                                                    <Text style={{ fontSize: 10, color: '#646464' }}>|</Text>
+                                                                    {c?.brand && (
+                                                                        <Text style={{ fontSize: 10, color: '#646464', fontWeight: '600' }}>{`${c?.brand} ${c?.specification}CC`}</Text>
+                                                                    )}
+                                                                    {c?.category && (
+                                                                         <Text style={{ fontSize: 10, color: '#646464', fontWeight: '600' }}>{`${c?.brand} ${c?.specification}CC`}</Text>
+                                                                    )}
+                                                                </View>
+                                                            </View>
+                                                        </View>
+                                                        <View style={{ flexDirection: 'column', alignItems: 'flex-end' }}>
+                                                            <Text style={{ color: '#646464', fontSize: 12, }}>Amount</Text>
+                                                            <Text style={{ fontSize: 14, fontWeight: '800', color: '#cf2a3a' }}>{c.amount}</Text>
+                                                        </View>
+                                                    </View>
+                                                </View>
+                                            ))}
                                         </>
                                     ) : (
                                         <View style={{ flexDirection: 'column', paddingVertical: 10, justifyContent: 'center', alignItems: 'center' }}>

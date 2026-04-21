@@ -4,7 +4,7 @@ import Constants from 'expo-constants';
 
 
 
-export async function SaveCargo(trip: TripContextProps, cargoProps: PaxCargoProperties[]) {
+export async function SaveCargo(trip: TripContextProps, cargoProps: PaxCargoProperties[], isCargoAdded: boolean, passenger_id: number) {
     const extras = Constants.expoConfig?.extra ?? {};
     const API_KEY = extras.API_KEY as string;
     const API_URL = extras.API_URL as string;
@@ -20,8 +20,14 @@ export async function SaveCargo(trip: TripContextProps, cargoProps: PaxCargoProp
                 'Origin': `${ORIGIN}`
             },
             body: JSON.stringify({
+                isCargoAdded: isCargoAdded,
+                passenger_id: passenger_id,
                 cargos: cargoProps.map(c => ({
-                    cargo_option_id: c.cargoOptionID,
+                    cargo_option_id: c?.cargoOptionID,
+                    category: c?.parcelCategory,
+                    brand: c?.cargoBrand,
+                    specification: c?.cargoSpecification,
+                    cargo_type: c?.cargoType,
                     quantity: c.quantity,
                     amount: c.cargoAmount,
                     trip_id: trip.id

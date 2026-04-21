@@ -48,6 +48,7 @@ export type PaxCargoProperties = {
     parcelCategoryID?: number;
     cargoAmount?: number;
     quantity?: number;
+    isCargoAdded?: boolean;
 }
 
 export type CargoProperties = {

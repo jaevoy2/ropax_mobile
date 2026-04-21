@@ -518,10 +518,10 @@ export default function TicketGenerator() {
                                                     {passengers.filter((p) => p?.accommodation == 'Business Class' || p?.accommodation == 'B-Class' || p?.accommodation == 'B Class')
                                                     .map((p) => (
                                                         <View key={p.seatNumber} style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' }}>
-                                                            <Text style={{ fontSize: 13, width: '40%' }}>{`${p.name?.split(',')[1]?.trim().charAt(0)}. ${p.name?.split(',')[0]}`}</Text>
-                                                            <Text style={{ fontSize: 13, width: 50, textAlign: 'center' }}>{p.passTypeCode}</Text>
-                                                            <Text style={{ fontSize: 13, width: 50, textAlign: 'center' }}>{`${p.seatNumber}`}</Text>
-                                                            <Text style={{ fontSize: 13, width: 70, textAlign: 'right' }}>₱ {p?.fare?.toLocaleString('en-PH', { minimumFractionDigits: 2,  maximumFractionDigits: 2})}</Text>
+                                                            <Text style={{ fontSize: 13, width: '40%', color: '#000' }}>{`${p.name?.split(',')[1]?.trim().charAt(0)}. ${p.name?.split(',')[0]}`}</Text>
+                                                            <Text style={{ fontSize: 13, width: 50, textAlign: 'center', color: '#000' }}>{p.passTypeCode}</Text>
+                                                            <Text style={{ fontSize: 13, width: 50, textAlign: 'center', color: '#000' }}>{`${p.seatNumber}`}</Text>
+                                                            <Text style={{ fontSize: 13, width: 70, textAlign: 'right', color: '#000' }}>₱ {p?.fare?.toLocaleString('en-PH', { minimumFractionDigits: 2,  maximumFractionDigits: 2})}</Text>
                                                         </View>
                                                     ))}
                                                 </View>
@@ -532,7 +532,7 @@ export default function TicketGenerator() {
                                                     {passengers.filter((p) => p?.accommodation == 'Tourist')
                                                     .map((p) => (
                                                         <View key={p.seatNumber} style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' }}>
-                                                            <Text style={{ fontSize: 13, width: '40%' }}>{`${p.name?.split(',')[1]?.trim().charAt(0)}. ${p.name?.split(',')[0]}`}</Text>
+                                                            <Text style={{ fontSize: 13, width: '40%', color: '#000' }}>{`${p.name?.split(',')[1]?.trim().charAt(0)}. ${p.name?.split(',')[0]}`}</Text>
                                                             <Text style={{ fontSize: 13, width: 50, textAlign: 'center', color: '#000' }}>{p.passTypeCode}</Text>
                                                             <Text style={{ fontSize: 13, width: 50, textAlign: 'center', color: '#000' }}>{`${p.seatNumber}`}</Text>
                                                             <Text style={{ fontSize: 13, width: 70, textAlign: 'right', color: '#000' }}>₱ {p?.fare?.toLocaleString('en-PH', { minimumFractionDigits: 2,  maximumFractionDigits: 2})}</Text>
