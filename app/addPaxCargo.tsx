@@ -126,12 +126,19 @@ export default function AddPaxCargo() {
                 return;
             }
 
+            if(totalAmount == 0) {
+                Alert.alert('Invalid', 'Cargo does not have an amount.');
+                setLoading(false);
+                return;
+            }
+
             setPaxCargoProperties(prev =>
                 prev.map(c => {
                     const { amount, optionID } = computeAmount(c);
                     return { ...c, cargoAmount: amount, cargoOptionID: optionID };
                 })
             );
+
 
             setLoading(false);
             router.push('/summary');

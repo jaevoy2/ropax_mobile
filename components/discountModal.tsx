@@ -81,8 +81,9 @@ const DiscountModal = ({ discountModal, setDiscountModal, discounts }: {
                 } else {
                     computedDiscount = (totalFare * discount.percent) / 100;
                 }
-        
-                setTotalFare(Number((totalFare - computedDiscount).toFixed(2)));
+
+                computedDiscount = Math.min(computedDiscount, totalFare);
+                setTotalFare(Number(Math.max(0, totalFare - computedDiscount).toFixed(2)))
 
             } else if (discount.scope === 'passenger_fare') {
                 const qualifyingTotal = qualifyingPassengers.reduce(
@@ -90,19 +91,25 @@ const DiscountModal = ({ discountModal, setDiscountModal, discounts }: {
                 );
 
                 if (discount.discount_type === 'fixed') {
-                    computedDiscount = Number(discount.fixed_amount) * qualifyingPassengers.length;
                     qualifyingPassengers.forEach(p => {
-                        updatePassenger(p.id, 'fare', Number((p.fare - discount.fixed_amount)))
+                        const newFare = Number(p.fare ?? 0) - Number(discount.fixed_amount);
+                        updatePassenger(p.id, 'fare', Number(Math.max(0, newFare).toFixed(2)));
                     });
+                    computedDiscount = qualifyingPassengers.reduce((sum, p) => {
+                        const deducted = Math.min(Number(p.fare ?? 0), Number(discount.fixed_amount));
+                        return sum + deducted;
+                    }, 0);
                 } else {
                     computedDiscount = (qualifyingTotal * discount.percent) / 100;
                     qualifyingPassengers.forEach(pax => {
                         const paxDiscount = (Number(pax.fare ?? 0) * discount.percent) / 100;
-                        updatePassenger(pax.id, 'fare', Number((Number(pax.fare ?? 0) - paxDiscount)))
+                        const newFare = Number(pax.fare ?? 0) - paxDiscount;
+                        updatePassenger(pax.id, 'fare', Number(Math.max(0, newFare).toFixed(2)));
                     });
                 }
 
-                setTotalFare(Number((totalFare - computedDiscount).toFixed(2)));
+                computedDiscount = Math.min(computedDiscount, totalFare);
+                setTotalFare(Number(Math.max(0, totalFare - computedDiscount).toFixed(2)));
             }
 
             setDiscountId(discount.id)

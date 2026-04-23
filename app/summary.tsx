@@ -38,7 +38,7 @@ type DiscountRedemption = {
     used_at: string;
 }
 
-type Discount = {
+export type Discount = {
     id: number;
     discount_code: string;
     percent: number;
@@ -49,8 +49,8 @@ type Discount = {
     discount_audience: string;
     is_one_time_per_passenger: boolean;
     expiry_date: string;
-    passenger_types: PassengerType[];
-    redemptions: DiscountRedemption[];
+    passenger_types?: PassengerType[];
+    redemptions?: DiscountRedemption[];
 }
 
 
@@ -155,7 +155,7 @@ export default function PaymentSummary() {
         try {
             const trip = { id, totalFare, webCode } as TripContextProps;
             if(passengers.length > 0 && passengers.some(p => p.hasScanned != true && p.forResched != true)) {
-                const response = await SaveBooking(trip, passengers, Number(stationID), discountId);
+                const response = await SaveBooking(trip, passengers, Number(stationID), discountId, discountValue);
                 
                 if(!response.error) {
                     setRefNumber(response.reference_no);
@@ -166,7 +166,7 @@ export default function PaymentSummary() {
                     });
                 }
             }else if(passengers.length > 0 && passengers.some(p => p.hasScanned == true)){
-                const response = await SaveBookingScan(trip, passengers, Number(stationID), bookingId, discountId );
+                const response = await SaveBookingScan(trip, passengers, Number(stationID), bookingId, discountId, discountValue);
                 
                 if(!response.error) {
                     setRefNumber(response.reference_no);
@@ -178,7 +178,7 @@ export default function PaymentSummary() {
                 }
             }else if(passengers.length > 0 && passengers.some(p => p.forResched == true)) {
                 
-                const response = await SaveReschedBooking(trip, passengers, Number(stationID), bookingId, reSchedAll);
+                const response = await SaveReschedBooking(trip, passengers, Number(stationID), bookingId, reSchedAll, discountValue);
                 
                 if(!response.error) {
                     setRefNumber(response.reference_no);

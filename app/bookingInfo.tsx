@@ -10,6 +10,7 @@ import { router, useFocusEffect, useLocalSearchParams } from 'expo-router';
 import { useCallback, useMemo, useState } from 'react';
 import { ActivityIndicator, Alert, Dimensions, KeyboardAvoidingView, Platform, Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
+import { Discount } from './summary';
 
 import { bookingStatuses } from './(tabs)/manage-booking';
 
@@ -69,6 +70,7 @@ export type PaxInfo = {
     hasCancelled?: boolean;
     forResched?: boolean;
     paxCargos?: PaxCargos[];
+    discount?: Discount | null;
 }
 
 
@@ -94,19 +96,19 @@ export default function BookingInfo() {
     const { bookingId, paxId, refNum } = useLocalSearchParams();
     const [ loading, setLoading ] = useState(true);
     const [ paxInfo, setPaxInfo ] = useState<PaxInfo[]>([]);
-    const [percentages, setPercentages] = useState<PercentagesProps[]>([])
+    const [percentages, setPercentages] = useState<PercentagesProps[]>([]);
     const [formTab, setFormTab] = useState('Passengers');
     const [totalTripFare, setTotalTripFare] = useState(0);
     const [proceedLoading,  setProceedLoading] = useState(false)
     const [reschedModal, setReschedModal] = useState(false);
     const [cancelModal, setCancelModal] = useState(false);
-    const [calendar, setCalendar] = useState(false);
     const insets = useSafeAreaInsets();
     const [reprintLoading, setReprintLoading] = useState(false);
     const [isRequestable, setIsRequestable] = useState(true);
 
     const isOnlinePax = paxInfo.some(p => p?.station?.toLowerCase() == 'online booking');
     const paxBookingStatus = bookingStatuses?.find(s => s.id == paxInfo[0]?.bookingStatus)?.label.toLowerCase();
+    const paxInfoToDisplay = paxInfo.find((p: any) => p.id == Number(paxId));
 
     useFocusEffect(
         useCallback(() => {
@@ -189,7 +191,8 @@ export default function BookingInfo() {
                     fare: pax.fares[0]?.fare ? pax.fares[0]?.fare : pax.bookings.find((r: any) => r.pivot)?.pivot?.fare,
                     bookingType: pax.bookings[0].type_id,
                     isCargoable: pax.bookings[0].trip_schedule.trip.vessel.is_cargoable,
-                    paxCargos: pax.cargos
+                    paxCargos: pax.cargos,
+                    discount:  pax.bookings[0]?.discount_redemptions[0]?.discount
                 }))
 
                 const cancelPercents: PercentagesProps[] = response.cancellationPercentage.map((percent: any) => ({
@@ -202,9 +205,43 @@ export default function BookingInfo() {
                 isRequestableChecker(paxData[0].dateIso);
                 setPaxInfo(paxData);
                 setPercentages(cancelPercents)
-                setTotalTripFare(
-                    paxData.reduce((sum, passenger) => sum + Number(passenger?.fare), 0)
-                )
+                const totalBeforeDiscount = paxData.reduce((sum, pax) => sum + Number(pax?.fare ?? 0), 0);
+
+                const discountedTotal = paxData.reduce((sum, pax) => {
+                    const fare = Number(pax?.fare ?? 0);
+                    const discount = pax.discount;
+
+                    if (!discount) return sum + fare;
+
+                    if (discount.scope === 'booking_total') {
+                        return sum + fare;
+                    }
+
+                    if (discount.scope === 'passenger_fare') {
+                        if (discount.discount_type === 'fixed') {
+                            return sum + Math.max(0, fare - Number(discount.fixed_amount));
+                        } else {
+                            const deduction = (fare * discount.percent) / 100;
+                            return sum + Math.max(0, fare - deduction);
+                        }
+                    }
+
+                    return sum + fare;
+                }, 0);
+
+                const bookingDiscount = paxData.find(p => p.discount?.scope === 'booking_total')?.discount;
+                let finalTotal = discountedTotal;
+
+                if (bookingDiscount) {
+                    if (bookingDiscount.discount_type === 'fixed') {
+                        finalTotal = Math.max(0, discountedTotal - Number(bookingDiscount.fixed_amount));
+                    } else {
+                        const deduction = (discountedTotal * bookingDiscount.percent) / 100;
+                        finalTotal = Math.max(0, discountedTotal - deduction);
+                    }
+                }
+
+                setTotalTripFare(paxData[0].discount != null ? finalTotal : totalBeforeDiscount);
             }
         }catch(error: any) {
             Alert.alert('Error', error.message);
@@ -283,7 +320,7 @@ export default function BookingInfo() {
         setCode(paxInfo[0].vesselCode);
         setDepartureTime(paxInfo[0].departureTimeISO);
 
-        setPaxCargoProperties([{ isCargoAdded: true, passenger_id: paxInfo[0].id , quantity: 1}])
+        setPaxCargoProperties([{ isCargoAdded: true, passenger_id: paxInfo[0].id , quantity: 1 }])
 
         router.push(`/addPaxCargo?departureTime=${paxInfo[0].departureTime}`)
     }
@@ -347,7 +384,7 @@ export default function BookingInfo() {
             {loading == true ? (
                 <PreLoader loading={loading} />
             ) : (
-                <KeyboardAvoidingView behavior={Platform.OS === 'ios' ? 'padding' : 'height'} style={{ flex: 1, paddingVertical: 20, gap: 15 }}>
+                <KeyboardAvoidingView behavior={Platform.OS === 'ios' ? 'padding' : 'height'} style={{ flex: 1, paddingVertical: 20, gap: 5 }}>
                     <ScrollView style={{ flex: 1, paddingHorizontal: 20 }} showsVerticalScrollIndicator={false}>
                         <View style={[styles.card, { padding: 10, gap: 12 }]}>
                             <View style={{ flexDirection: 'row', alignItems: 'center', gap: 15 }}>
@@ -364,42 +401,71 @@ export default function BookingInfo() {
                                     </View>
                                 </View>
                             </View>
-
                         </View>
+
+                        {paxInfoToDisplay.discount != null && (
+                            <View style={styles.discountContainer}>
+                                <View style={styles.discountLeft}>
+                                    <MaterialCommunityIcons name={'tag-multiple'} color={'#16a34a'}  size={25}/>
+                                    <View>
+                                        <Text style={styles.discountCode}>{paxInfoToDisplay.discount.discount_code}</Text>
+                                        <View style={{ flexDirection: 'row', alignItems: 'center' }}>
+                                            <Text style={styles.discountDesc}>
+                                                ₱ {paxInfoToDisplay?.discount?.discount_type == 'fixed' ?
+                                                    paxInfoToDisplay?.discount?.fixed_amount :
+                                                    `${paxInfoToDisplay?.discount?.percent}%`
+                                                } Discount on
+                                            </Text>
+                                            <Text style={styles.discountDesc}>
+                                                {paxInfoToDisplay?.discount?.scope == 'booking_total' ?
+                                                    ' Total booking amount.' :
+                                                    ` Each passenger.`
+                                                }
+                                            </Text>
+                                        </View>
+                                    </View>
+                                </View>
+                            </View>
+                        )}
+
                         <View style={styles.card}>
                             <Text style={{ fontWeight: 'bold', padding: 10, borderBottomColor: '#dadada', borderBottomWidth: 1, }}>Booking Information</Text>
                             <View style={{ paddingHorizontal: 10, paddingBottom: 10 }}>
                                 <View style={styles.bookingContainer}>
                                     <Text style={{ color: '#646464', fontSize: 13, }}>Booking Type</Text>
-                                    <Text style={{ fontSize: 13, fontWeight: '700', color: '#000' }}>{paxInfo.find((p: any) => p.id == Number(paxId))?.bookingType}</Text>
+                                    <Text style={{ fontSize: 13, fontWeight: '700', color: '#000' }}>{paxInfoToDisplay?.bookingType}</Text>
                                 </View>
                                 <View style={styles.bookingContainer}>
                                     <Text style={{ color: '#646464', fontSize: 13, }}>Vessel</Text>
-                                    <Text style={{ fontSize: 13, fontWeight: '700', color: '#000' }}>{paxInfo.find((p: any) => p.id == Number(paxId) )?.vessel}</Text>
+                                    <Text style={{ fontSize: 13, fontWeight: '700', color: '#000' }}>{paxInfoToDisplay?.vessel}</Text>
                                 </View>
                                 <View style={styles.bookingContainer}>
                                     <Text style={{ color: '#646464', fontSize: 13, }}>Route</Text>
-                                    <Text style={{ fontSize: 13, fontWeight: '700', color: '#000' }}>{paxInfo.find((p: any) => p.id == Number(paxId) )?.route}</Text>
+                                    <Text style={{ fontSize: 13, fontWeight: '700', color: '#000' }}>{paxInfoToDisplay?.route}</Text>
                                 </View>
                                 <View style={styles.bookingContainer}>
                                     <Text style={{ color: '#646464', fontSize: 13, }}>Station</Text>
-                                    <Text style={{ fontSize: 13, fontWeight: '700', color: '#000' }}>{paxInfo.find((p: any) => p.id == Number(paxId) )?.station ?? '--'}</Text>
+                                    <Text style={{ fontSize: 13, fontWeight: '700', color: '#000' }}>{paxInfoToDisplay?.station ?? '--'}</Text>
                                 </View>
                                 <View style={styles.bookingContainer}>
                                     <Text style={{ color: '#646464', fontSize: 13, }}>Departure Date</Text>
-                                    <Text style={{ fontSize: 13, fontWeight: '700', color: '#000' }}>{paxInfo.find((p: any) => p.id == Number(paxId) )?.departureDate}</Text>
+                                    <Text style={{ fontSize: 13, fontWeight: '700', color: '#000' }}>{paxInfoToDisplay?.departureDate}</Text>
                                 </View>
                                 <View style={styles.bookingContainer}>
                                     <Text style={{ color: '#646464', fontSize: 13, }}>Departure Time</Text>
-                                    <Text style={{ fontSize: 13, fontWeight: '700', color: '#000' }}>{paxInfo.find((p: any) => p.id == Number(paxId) )?.departureTime}</Text>
+                                    <Text style={{ fontSize: 13, fontWeight: '700', color: '#000' }}>{paxInfoToDisplay?.departureTime}</Text>
                                 </View>
                             </View>
                             <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', paddingHorizontal: 10, paddingVertical: 12, backgroundColor: '#cf2a3b27', borderBottomRightRadius: 6, borderBottomLeftRadius: 6 }}>
                                 <Text style={{ color: '#cf2a3a', fontSize: 13, fontWeight: '800' }}>Total Amount</Text>
-                                <Text style={{ fontSize: 16, fontWeight: '800', color: '#cf2a3a' }}>₱ {totalTripFare.toFixed(2)}</Text>
+                                <View style={{ flexDirection: 'row', alignItems: 'center', gap: 5 }}>
+                                    {paxInfoToDisplay.discount != null && (
+                                        <Text style={{ color: '#cf2a3a' }}>{`(Discounted)`}</Text>
+                                    )}
+                                    <Text style={{ fontSize: 16, fontWeight: '800', color: '#cf2a3a' }}>₱ {totalTripFare.toFixed(2)}</Text>
+                                </View>
                             </View>
                         </View>
-
 
                         <View>
                             <View style={styles.tabs}>
@@ -453,13 +519,23 @@ export default function BookingInfo() {
                                                                 <Text style={{ fontSize: 14, fontWeight: '700', color: '#000' }}>{c?.cargo_type}</Text>
                                                                 <View style={{ flexDirection: 'row', alignItems: 'center', gap: 5 }}>
                                                                     <Text style={{ fontSize: 10, color: '#646464', fontWeight: '600' }}>Quantity: {c?.quantity}</Text>
-                                                                    <Text style={{ fontSize: 10, color: '#646464' }}>|</Text>
                                                                     {c?.brand && (
-                                                                        <Text style={{ fontSize: 10, color: '#646464', fontWeight: '600' }}>{`${c?.brand} ${c?.specification}CC`}</Text>
+                                                                        <View style={{ flexDirection: 'row', alignItems: 'center', gap: 5 }}>
+                                                                            <Text style={{ fontSize: 10, color: '#646464' }}>|</Text>
+                                                                            <Text style={{ fontSize: 10, color: '#646464', fontWeight: '600' }}>{`${c?.brand} ${c?.specification}CC`}</Text>
+                                                                        </View>
                                                                     )}
-                                                                    {c?.category && (
+                                                                    {c?.specification && (
                                                                          <Text style={{ fontSize: 10, color: '#646464', fontWeight: '600' }}>{`${c?.brand} ${c?.specification}CC`}</Text>
                                                                     )}
+                                                                    {
+                                                                        c?.category && (
+                                                                            <View style={{ flexDirection: 'row', alignItems: 'center', gap: 5 }}>
+                                                                                <Text style={{ fontSize: 10, color: '#646464' }}>|</Text>
+                                                                                <Text style={{ fontSize: 10, color: '#646464', fontWeight: '600' }}>{`${c.category}`}</Text>
+                                                                            </View>
+                                                                        )
+                                                                    }
                                                                 </View>
                                                             </View>
                                                         </View>
@@ -619,5 +695,51 @@ const styles = StyleSheet.create({
         textAlign: 'right',
         paddingHorizontal: 3,
         borderColor: '#fafafa'
+    },
+    discountContainer: {
+        backgroundColor: '#f0fdf4',
+        borderRadius: 8,
+        paddingHorizontal: 14,
+        paddingVertical: 10,
+        borderColor: '#16a34a80',
+        borderWidth: 1,
+        flexDirection: 'row',
+        alignItems: 'center',
+        justifyContent: 'space-between',
+        marginBottom: 10
+    },
+    discountLeft: {
+        flexDirection: 'row',
+        alignItems: 'center',
+        gap: 10,
+        flex: 1,
+    },
+    discountTag: {
+        fontSize: 22,
+    },
+    discountCode: {
+        fontSize: 14,
+        fontWeight: '700',
+        color: '#16a34a',
+        letterSpacing: 0.5,
+    },
+    discountDesc: {
+        fontSize: 12,
+        color: '#16a34a',
+        marginTop: 2,
+        fontWeight: '700'
+    },
+    discountRemove: {
+        width: 28,
+        height: 28,
+        borderRadius: 6,
+        backgroundColor: '#16a34a18',
+        justifyContent: 'center',
+        alignItems: 'center',
+    },
+    discountRemoveText: {
+        fontSize: 12,
+        fontWeight: '700',
+        color: '#16a34a',
     },
 })
