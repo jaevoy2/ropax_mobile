@@ -1,8 +1,6 @@
-import React from "react";
+import React, { useEffect, useState } from "react";
 import { Text, View } from "react-native";
 import { SeatPlan } from "./L2Vessel";
-
-
 
 type L2BClassSeatPlanProps = {
     passengerSeats: Set<number | string>;
@@ -10,25 +8,57 @@ type L2BClassSeatPlanProps = {
     bookedSeats: any[];
     assignseat: (seat: number | string, type: string, accomm_id: number) => void;
     BClassAccomms?: { 
-        id: number; name?: 
-        string 
+        id: number; name?: string 
     };
     isDisabled?: boolean;
     seatAvailability?: (hasAvailable: boolean) => void;
 }
 
-const L2BClassSeatPlan = ({ passengerSeats, seatChannel, bookedSeats, assignseat, BClassAccomms, isDisabled }: L2BClassSeatPlanProps) => {
+const L2BClassSeatPlan = ({ passengerSeats, seatChannel, bookedSeats, assignseat, BClassAccomms, isDisabled, seatAvailability }: L2BClassSeatPlanProps) => {
+    const [leftHasSeats, setLeftHasSeats] = useState(true);
+    const [rightHasSeats, setRightHasSeats] = useState(true);
+
+    useEffect(() => {
+        seatAvailability?.(leftHasSeats || rightHasSeats);
+    }, [leftHasSeats, rightHasSeats]);
+
     return (
         <View pointerEvents={isDisabled ? 'none' : 'auto'} style={{ opacity: isDisabled ? 0.3 : 1 }}>
             <Text style={{ textAlign: 'center', fontWeight: '900', letterSpacing: 1, fontSize: 16, color: '#cf2a3a' }}>BUSINESS CLASS</Text>
             <View style={{ marginTop: 15, flexDirection: 'row', justifyContent: 'space-between', alignSelf: 'center' }}>
                 <View style={{ width: '40%' }}>
-                    <SeatPlan passengerSeats={passengerSeats} seatChannel={seatChannel} start={1} limit={23} skipPattern={true} bookedSeats={bookedSeats} 
-                        skip={2} count={3} letter='BC' onSeatSelect={assignseat} type={BClassAccomms?.name} accomm_id={BClassAccomms?.id} />
+                    <SeatPlan 
+                        passengerSeats={passengerSeats} 
+                        seatChannel={seatChannel} 
+                        start={1} 
+                        limit={23} 
+                        skipPattern={true} 
+                        bookedSeats={bookedSeats} 
+                        skip={2} 
+                        count={3} 
+                        letter='BC' 
+                        onSeatSelect={assignseat} 
+                        type={BClassAccomms?.name} 
+                        accomm_id={BClassAccomms?.id}
+                        seatAvailability={setLeftHasSeats}
+                    />
                 </View>
                 <View style={{ width: '25%' }}>
-                    <SeatPlan passengerSeats={passengerSeats} seatChannel={seatChannel} skip={3} count={2} start={4} limit={25} bookedSeats={bookedSeats}
-                        skipPattern={true} letter='BC' onSeatSelect={assignseat} type={BClassAccomms?.name} accomm_id={BClassAccomms?.id} />
+                    <SeatPlan 
+                        passengerSeats={passengerSeats} 
+                        seatChannel={seatChannel} 
+                        skip={3} 
+                        count={2} 
+                        start={4} 
+                        limit={25} 
+                        bookedSeats={bookedSeats}
+                        skipPattern={true} 
+                        letter='BC' 
+                        onSeatSelect={assignseat} 
+                        type={BClassAccomms?.name} 
+                        accomm_id={BClassAccomms?.id}
+                        seatAvailability={setRightHasSeats}
+                    />
                 </View>
             </View>
         </View>

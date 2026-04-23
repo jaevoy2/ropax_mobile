@@ -2,7 +2,7 @@ import { PassengerProps } from "@/context/passenger";
 import { TripContextProps } from "@/context/trip";
 import Constants from "expo-constants";
 
-export async function SaveBooking(trip: TripContextProps, passengers: PassengerProps[], stationID: number) {;
+export async function SaveBooking(trip: TripContextProps, passengers: PassengerProps[], stationID: number, discountId?: number, discountAmount?: number) {;
     const extras = Constants.expoConfig?.extra ?? {};
     const API_KEY = extras.API_KEY as string;
     const API_URL = extras.API_URL as string;
@@ -21,7 +21,10 @@ export async function SaveBooking(trip: TripContextProps, passengers: PassengerP
                 station_id: Number(stationID),
                 trip_schedule_id: trip.id,
                 web_code: trip.webCode,
+                discountId: discountId,
+                discountAmount: discountAmount,
                 passengers: passengers.map((p) => ({
+                    pax_id: Number(p.pax_id),
                     first_name: p.name?.split(',')[1],
                     last_name: p.name?.split(',')[0],
                     gender: p.gender,

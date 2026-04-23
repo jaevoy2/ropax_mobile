@@ -442,7 +442,7 @@ export default function BookingInfo() {
                                     <View style={{ position: 'relative', paddingHorizontal: 10, paddingVertical: 8, borderBottomColor: '#dadada', borderBottomWidth: 1 }}>
                                         <Text style={{ fontWeight: 'bold' }}>Cargo</Text>
                                     </View>
-                                    {paxCargos ? (
+                                    {paxCargos.length > 0 ? (
                                         <>
                                             {paxCargos.map(c => (
                                                 <View key={c.id} style={{ paddingVertical: 10 }}>

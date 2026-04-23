@@ -3,7 +3,7 @@ import { TripContextProps } from "@/context/trip";
 import Constants from "expo-constants";
 
 
-export async function SaveReschedBooking(trip: TripContextProps, passengers: PassengerProps[], stationID: number, bookingId: number, reshedAll: boolean) {
+export async function SaveReschedBooking(trip: TripContextProps, passengers: PassengerProps[], stationID: number, bookingId: number, reshedAll: boolean, discountId?: number, discountAmount?: number) {
     const extras = Constants.expoConfig?.extra ?? {};
     const API_KEY = extras.API_KEY as string;
     const API_URL = extras.API_URL as string;
@@ -24,6 +24,8 @@ export async function SaveReschedBooking(trip: TripContextProps, passengers: Pas
                 resched_all: reshedAll,
                 trip_schedule_id: trip.id,
                 web_code: trip.webCode,
+                discountId: discountId,
+                discountAmount: discountAmount,
                 passengers: passengers.map((p) => ({
                     passenger_id: Number(p.id),
                     passType: p.passType,

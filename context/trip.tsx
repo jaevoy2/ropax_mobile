@@ -23,6 +23,11 @@ export type TripContextProps = {
     bookingId?: number | null;
     forReschedule?: boolean;
     reSchedAll?: boolean;
+    discountId?:number;
+    isDiscounted?: boolean;
+    couponCode?: string;
+    discountType?: string;
+    discountValue?: number;
     setVessel: React.Dispatch<React.SetStateAction<string>>;
     setRouteID: React.Dispatch<React.SetStateAction<number>>;
     setOrigin: React.Dispatch<React.SetStateAction<string>>;
@@ -45,6 +50,11 @@ export type TripContextProps = {
     setBookingId: React.Dispatch<React.SetStateAction<number | null>>;
     setForReschedule: React.Dispatch<React.SetStateAction<boolean>>;
     setReschedAll: React.Dispatch<React.SetStateAction<boolean>>;
+    setDiscountId: React.Dispatch<React.SetStateAction<number>>;
+    setIsDiscounted: React.Dispatch<React.SetStateAction<boolean>>;
+    setCouponCode: React.Dispatch<React.SetStateAction<string>>;
+    setDiscountType: React.Dispatch<React.SetStateAction<string>>;
+    setDiscountValue: React.Dispatch<React.SetStateAction<number | null>>;
     clearTrip: () => void;
 }
 
@@ -78,6 +88,11 @@ export const TripProvider = ({ children }: TripProviderProps) => {
     const [bookingId, setBookingId] = useState<number | null>(null)
     const [forReschedule, setForReschedule] = useState<boolean>(false);
     const [reSchedAll, setReschedAll] = useState<boolean>(true);
+    const [discountId, setDiscountId] =useState<number | null>(null);
+    const [isDiscounted, setIsDiscounted] = useState(false);
+    const [couponCode, setCouponCode] = useState('');
+    const [discountType, setDiscountType] = useState('');
+    const [discountValue, setDiscountValue] = useState(null);
 
     const clearTrip = () => {
         setID(0);
@@ -103,12 +118,17 @@ export const TripProvider = ({ children }: TripProviderProps) => {
         setNote('');
         setForReschedule(false);
         setReschedAll(true);
+        setIsDiscounted(false);
+        setCouponCode('');
+        setDiscountType('');
+        setDiscountValue(null);
+        setDiscountId(null);
     };
 
     return (
-        <TripContext.Provider value={{ id, vessel, routeID, origin, destination, vessel_id, totalFare, note, departure_time, tripAccom, bookingId,
-                                        fareChange, code, webCode, mobileCode, cashTendered, refNumber, isCargoable, approvedBy, hasScanned, forReschedule, reSchedAll,
-                                    setVessel, setID, setRouteID, setOrigin, setDestination, setVesselID, setTotalFare, setNote,setDepartureTime, setHasScanned, setBookingId,
+        <TripContext.Provider value={{ id, vessel, routeID, origin, destination, vessel_id, totalFare, note, departure_time, tripAccom, bookingId, discountId, isDiscounted, couponCode, discountType, discountValue,
+                                    fareChange, code, webCode, mobileCode, cashTendered, refNumber, isCargoable, approvedBy, hasScanned, forReschedule, reSchedAll, setDiscountId, setCouponCode, setDiscountType, setDiscountValue,
+                                    setVessel, setID, setRouteID, setOrigin, setDestination, setVesselID, setTotalFare, setNote,setDepartureTime, setHasScanned, setBookingId, setIsDiscounted,
                                     setFareChange, setCode, setWebCode, setMobileCode, setCashTendered, setRefNumber, setIsCargoable, clearTrip, setApprovedBy, setTripAccom, setForReschedule, setReschedAll }}>
             {children}
         </TripContext.Provider>
