@@ -47,7 +47,7 @@ export default function SeatPlan() {
     const iconSize = isTablet ? { width: 55, height: 54 } : { width: 41, height: 40 };
     const logoSize = isTablet ? { width: 160, height: 37 } : { width: 120, height: 28 };
 
-    const sheetIndex = passengers.length > 0 ? 0 : -1;
+    const sheetIndex = passengers.length > 0 && passengers.some(p => p.passType != 'Passes') ? 0 : -1;
     const seatSnapPoints = useMemo(() => ["30%"], []);
     const nonInfantPax = useMemo(() => passengers.filter(p => p.passType != 'Infant'), [passengers]);
     const hasEmptySeat = useMemo(() => nonInfantPax.filter(p => p.passType != 'Infant').some(p => p.seatNumber == ''), [nonInfantPax]);
@@ -56,8 +56,8 @@ export default function SeatPlan() {
 
     
     const handleSeatSelect = useCallback(() => {
-        if(passengers.length == 0) {
-            seatSheetRef.current?.snapToIndex(0);
+        if(passengers.length == 0 && passengers.some(p => p.passType != 'Passes')) {
+            // seatSheetRef.current?.snapToIndex(0);
         }
     }, [])
 
@@ -111,7 +111,7 @@ export default function SeatPlan() {
             }]);
         }, 400);
         router.push('/bookingForm');
-    }, [setPassengers, passesTypeID, passesTypeName, passesTypeCode]);
+    }, [passesTypeID, passesTypeName, passesTypeCode]);
 
     const renderBottomSheetBackdrop = useCallback(
         (props: any) => (
@@ -239,7 +239,7 @@ export default function SeatPlan() {
                         <View style={{ height: 90, borderColor: '#B3B3B3', borderWidth: 1, backgroundColor: '#fff', borderRadius: 8, paddingHorizontal: 8, width: '100%', marginTop: 5 }}>
                             <ScrollView style={{ flex: 1, paddingTop: 10, paddingBottom: 20 }}>
                                 <View style={{ flexDirection: 'row', flexWrap: 'wrap', gap: 12 }}>
-                                    {passengers.filter(p => p.passType != 'Infant').map((p) => (
+                                    {passengers.filter(p => p.passType != 'Infant' && p.passType != 'Passes').map((p) => (
                                         <View key={p.id} style={{ position: 'relative' }}>
                                             {p.seatNumber != '' && (
                                                 <TouchableOpacity onPress={() => handleRemoveSeat(p.seatNumber, p.id)} style={{ position: 'absolute', top: -10, right: -9, zIndex: 3 }}>

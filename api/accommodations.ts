@@ -1,5 +1,5 @@
+import AsyncStorage from '@react-native-async-storage/async-storage';
 import Constants from 'expo-constants';
-
 
 
 export async function FetchAccommodations() {
@@ -8,13 +8,21 @@ export async function FetchAccommodations() {
     const API_URL = extras.API_URL as string;
     const ORIGIN = extras.ORIGIN as string;
 
+    
     try {
+        const token = await AsyncStorage.getItem('token');
+        
+        if(!token) {
+            throw new Error('No token found. Please login again.');
+        }
+        
         const res = await fetch(`${API_URL}accommodations`, {
             method: 'GET',
             headers: {
                 'Accept': 'application/json',
                 'x-api-key': `${API_KEY}`,
-                'Origin': `${ORIGIN}`
+                'Origin': `${ORIGIN}`,
+                'Authorization': `${token}`
             }
         });
     

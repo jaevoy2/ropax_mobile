@@ -163,26 +163,32 @@ export default function Forms({ errorForm }: FormProps) {
     const handleOnAutoComplete = useCallback((itemId: string, targetPaxId: string | number, targetAccomId: number) => {
         const paxOnList = paxlists.find(p => p.id == itemId);
         if (!paxOnList) return;
-        const paxFareOnList = paxFares?.find(f =>
+
+        const isPasses = paxOnList.passenger_type.name === 'Passes';
+
+        const paxFareOnList = isPasses ? undefined : paxFares?.find(f =>
             f.accommodation_type_id == targetAccomId &&
             f.passenger_type_id == paxOnList.passenger_type.id &&
             f.vessel_id == vessel_id &&
             f.routes_id == routeID
         )?.fare;
+
         setPassengers(prev =>
             prev.map(p => p.id != targetPaxId ? p : {
                 ...p,
                 pax_id: paxOnList.id,
                 name: `${paxOnList.last_name}, ${paxOnList.first_name}`,
                 age: paxOnList.age,
-                passType: paxOnList.passenger_type.name,
-                passType_id: paxOnList.passenger_type.id,
-                passTypeCode: paxOnList.passenger_type.passenger_types_code,
                 gender: paxOnList.gender,
                 nationality: paxOnList.nationality ?? 'Filipino',
                 address: paxOnList.address ?? '',
                 contact_number: paxOnList.contact_number ?? '',
-                fare: paxFareOnList
+                ...(!isPasses && {
+                    passType: paxOnList.passenger_type.name,
+                    passType_id: paxOnList.passenger_type.id,
+                    passTypeCode: paxOnList.passenger_type.passenger_types_code,
+                    fare: paxFareOnList,
+                }),
             })
         );
     }, [paxFares, paxlists, routeID, vessel_id, setPassengers]);
@@ -190,7 +196,10 @@ export default function Forms({ errorForm }: FormProps) {
     const handleOnInfantAutoComplete = useCallback((itemId: string, targetPaxId: string | number, targetAccomId: number, infantIndex: number | string) => {
         const paxOnList = paxlists.find(p => p.id == itemId);
         if (!paxOnList) return;
-        const paxFareOnList = paxFares?.find(f =>
+
+        const isPasses = paxOnList.passenger_type.name === 'Passes';
+
+        const paxFareOnList = isPasses ? undefined : paxFares?.find(f =>
             f.accommodation_type_id == targetAccomId &&
             f.passenger_type_id == paxOnList.passenger_type.id &&
             f.vessel_id == vessel_id &&
@@ -209,14 +218,16 @@ export default function Forms({ errorForm }: FormProps) {
                             pax_id: paxOnList.id,
                             name: `${paxOnList.last_name}, ${paxOnList.first_name}`,
                             age: paxOnList.age,
-                            passType: paxOnList.passenger_type.name,
-                            passType_id: paxOnList.passenger_type.id,
-                            passTypeCode: paxOnList.passenger_type.passenger_types_code,
                             gender: paxOnList.gender,
                             nationality: paxOnList.nationality ?? 'Filipino',
                             address: paxOnList.address ?? '',
                             contact_number: paxOnList.contact_number ?? '',
-                            fare: paxFareOnList
+                            ...(!isLoading && {
+                                passType: paxOnList.passenger_type.name,
+                                passType_id: paxOnList.passenger_type.id,
+                                passTypeCode: paxOnList.passenger_type.passenger_types_code,
+                                fare: paxFareOnList
+                            })
                         };
                     })
                 };
@@ -226,11 +237,20 @@ export default function Forms({ errorForm }: FormProps) {
 
     const handleClearAutoComplete = useCallback((paxId: number | string) => {
         setPassengers(prev =>
-            prev.map(p => p.id != paxId ? p : {
-                ...p,
-                pax_id: '', name: '', age: null, passType: '',
-                passType_id: null, passTypeCode: '', gender: '',
-                nationality: 'Filipino', address: '', contact_number: '', fare: null
+            prev.map(p => {
+            if (p.id !== paxId) return p;
+                const isPasses = p.passType === 'Passes';
+
+                return {
+                    ...p,
+                    pax_id: '', name: '', age: null,  gender: '',
+                    nationality: 'Filipino', address: '', contact_number: '',
+                    ...(!isPasses && {
+                        passType: '',
+                        passType_id: null, passTypeCode: '',
+                        fare: null
+                    })
+                }
             })
         );
     }, [setPassengers]);
@@ -239,14 +259,21 @@ export default function Forms({ errorForm }: FormProps) {
         setPassengers(prev =>
             prev.map(p => {
                 if (p.id != paxId && p.hasInfant != true) return p;
+                const isPasses = p.passType == 'Passes';
+
                 return {
                     ...p,
                     infant: p.infant?.map((inf, index) =>
                         index != infantIndex ? inf : {
                             ...inf,
-                            pax_id: '', name: '', age: null, passType: '',
-                            passType_id: null, passTypeCode: '', gender: '',
-                            nationality: 'Filipino', address: '', contact_number: '', fare: null
+                            pax_id: '', name: '', age: null, nationality: 'Filipino', 
+                            address: '', contact_number: '', fare: null,
+                            ...(!isPasses && {
+                                passType: '',
+                                passType_id: null, 
+                                passTypeCode: '', 
+                                gender: '',
+                            })
                         }
                     )
                 };

@@ -1,5 +1,6 @@
 import { PassengerProps } from "@/context/passenger";
 import { TripContextProps } from "@/context/trip";
+import AsyncStorage from "@react-native-async-storage/async-storage";
 import Constants from "expo-constants";
 
 export async function SaveBooking(trip: TripContextProps, passengers: PassengerProps[], stationID: number, discountId?: number, discountAmount?: number) {;
@@ -9,13 +10,20 @@ export async function SaveBooking(trip: TripContextProps, passengers: PassengerP
     const ORIGIN = extras.ORIGIN as string;
 
     try {
+        const token = await AsyncStorage.getItem('token');
+        
+        if(!token) {
+            throw new Error('No token found. Please login again.');
+        }
+        
         const res = await fetch(`${API_URL}booking/save`, {
             method: 'POST',
             headers: {
                 'Accept': 'application/json',
                 'Content-Type': 'application/json',
                 'x-api-key': `${API_KEY}`,
-                'Origin': `${ORIGIN}`
+                'Origin': `${ORIGIN}`,
+                'Authorization': `${token}`
             },
             body: JSON.stringify({
                 station_id: Number(stationID),

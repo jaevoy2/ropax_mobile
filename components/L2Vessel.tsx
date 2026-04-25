@@ -149,7 +149,6 @@ const L2Vessel = ({ onSeatSelect, accommodations, seatAvailability, setParentLoa
     const [isLoading, setIsLoading] = useState(true);
 
     const stationRef = useRef<{ id: string; color: string } | null>(null);
-    const isDisabledAccom = passengers.some(p => p.hasScanned == true && p.accommodation == 'Tourist');
 
     const isTouristPaxAccom = useMemo(() =>
         passengers.some(p => p.hasScanned === true && p.accommodation === 'Tourist')
@@ -280,10 +279,13 @@ const L2Vessel = ({ onSeatSelect, accommodations, seatAvailability, setParentLoa
         };
     }, [id]);
 
+    const BClassAccomsOptions = ['b class','b-class', 'business class', 'deluxe'];
+    const touristAccoms = ['tourist', 'economy'];
+
     const passengerSeats = useMemo(() => new Set(passengers.map((p) => p.seatNumber)), [passengers]);
-    const TouristAccoms = useMemo(() => accommodations?.find((accom) => accom?.id == 1), [accommodations]);
-    const BClassAccomms = useMemo(() => accommodations?.find((accom) => accom?.id == 2), [accommodations]);
-    console.log(BClassAccomms);
+    const TouristAccoms = useMemo(() => accommodations?.find((accom) => touristAccoms.includes(accom?.name.toLowerCase())), [accommodations]);
+    const BClassAccomms = useMemo(() => accommodations?.find((accom) => BClassAccomsOptions.includes(accom?.name.toLocaleLowerCase())), [accommodations]);
+
     const seatChannel = useMemo(() => new Set(seatSelectionChannel), [seatSelectionChannel]);
     console.log('trip accom', tripAccom)
 

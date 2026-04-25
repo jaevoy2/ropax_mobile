@@ -1,4 +1,6 @@
+import AsyncStorage from "@react-native-async-storage/async-storage";
 import Constants from "expo-constants";
+
 
 export async function FetchManageBookingList(date: string, search: string | null) {
     const extras = Constants.expoConfig?.extra ?? {};
@@ -7,13 +9,20 @@ export async function FetchManageBookingList(date: string, search: string | null
     const ORIGIN = extras.ORIGIN as string;
 
     try {
+        const token = await AsyncStorage.getItem('token');
+        
+        if(!token) {
+            throw new Error('No token found. Please login again.');
+        }
+
         const res = await fetch(`${API_URL}manage-booking/list`, {
             method: 'POST',
             headers: {
                 'Accept': 'application/json',
                 'Content-Type': 'application/json',
                 'x-api-key': API_KEY,
-                'Origin': ORIGIN
+                'Origin': ORIGIN,
+                'Authorization': `${token}`
             },
             body: JSON.stringify({ date, search })
         });

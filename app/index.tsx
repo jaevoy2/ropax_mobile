@@ -1,4 +1,5 @@
 import { UserLogin } from '@/api/userLogin';
+import { usePassesType } from '@/context/passes';
 import { Ionicons } from '@expo/vector-icons';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { router } from "expo-router";
@@ -12,6 +13,7 @@ const redWave = require('@/assets/images/red_wave.png');
 const yellowWave = require('@/assets/images/yellow_wave.png');
 
 export default function Login() {
+    const { passesTypeLoading } = usePassesType();
     const [loading, setLoading] = useState(true);
     const [email, setEmail] = useState('');
     const [password, setPassword] = useState('');
@@ -121,7 +123,7 @@ export default function Login() {
                                     </View>
                                 </View>
                                 <TouchableOpacity disabled={loginSpinner} onPress={() => handleLogin()} style={[{backgroundColor: loginSpinner == true ? '#eb606eff' : '#cf2a3a'}, styles.button]} >
-                                    {loginSpinner == true ? (
+                                    {loginSpinner == true || passesTypeLoading == true ? (
                                     <ActivityIndicator size={'small'} color={'#FFC107'} style={{ alignSelf: 'center' }} />
                                     ) : (
                                     <Text style={{ color: '#fff', fontWeight: 'bold' }}>Login</Text>

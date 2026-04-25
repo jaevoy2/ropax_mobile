@@ -192,7 +192,7 @@ export default function BookingInfo() {
                     bookingType: pax.bookings[0].type_id,
                     isCargoable: pax.bookings[0].trip_schedule.trip.vessel.is_cargoable,
                     paxCargos: pax.cargos,
-                    discount:  pax.bookings[0]?.discount_redemptions[0]?.discount
+                    discount:  pax.bookings[0]?.discount_redemptions?.[0]?.discount ?? null
                 }))
 
                 const cancelPercents: PercentagesProps[] = response.cancellationPercentage.map((percent: any) => ({
@@ -206,7 +206,7 @@ export default function BookingInfo() {
                 setPaxInfo(paxData);
                 setPercentages(cancelPercents)
                 const totalBeforeDiscount = paxData.reduce((sum, pax) => sum + Number(pax?.fare ?? 0), 0);
-
+                
                 const discountedTotal = paxData.reduce((sum, pax) => {
                     const fare = Number(pax?.fare ?? 0);
                     const discount = pax.discount;
@@ -233,15 +233,16 @@ export default function BookingInfo() {
                 let finalTotal = discountedTotal;
 
                 if (bookingDiscount) {
-                    if (bookingDiscount.discount_type === 'fixed') {
+                    if (bookingDiscount?.discount_type === 'fixed') {
                         finalTotal = Math.max(0, discountedTotal - Number(bookingDiscount.fixed_amount));
                     } else {
-                        const deduction = (discountedTotal * bookingDiscount.percent) / 100;
+                        const deduction = (discountedTotal * bookingDiscount?.percent) / 100;
                         finalTotal = Math.max(0, discountedTotal - deduction);
                     }
                 }
 
-                setTotalTripFare(paxData[0].discount != null ? finalTotal : totalBeforeDiscount);
+                setTotalTripFare(paxData[0]?.discount != null ? finalTotal : totalBeforeDiscount);
+
             }
         }catch(error: any) {
             Alert.alert('Error', error.message);
@@ -403,12 +404,12 @@ export default function BookingInfo() {
                             </View>
                         </View>
 
-                        {paxInfoToDisplay.discount != null && (
+                        {paxInfoToDisplay && paxInfoToDisplay?.discount != null && (
                             <View style={styles.discountContainer}>
                                 <View style={styles.discountLeft}>
                                     <MaterialCommunityIcons name={'tag-multiple'} color={'#16a34a'}  size={25}/>
                                     <View>
-                                        <Text style={styles.discountCode}>{paxInfoToDisplay.discount.discount_code}</Text>
+                                        <Text style={styles.discountCode}>{paxInfoToDisplay?.discount?.discount_code}</Text>
                                         <View style={{ flexDirection: 'row', alignItems: 'center' }}>
                                             <Text style={styles.discountDesc}>
                                                 ₱ {paxInfoToDisplay?.discount?.discount_type == 'fixed' ?
@@ -459,7 +460,7 @@ export default function BookingInfo() {
                             <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', paddingHorizontal: 10, paddingVertical: 12, backgroundColor: '#cf2a3b27', borderBottomRightRadius: 6, borderBottomLeftRadius: 6 }}>
                                 <Text style={{ color: '#cf2a3a', fontSize: 13, fontWeight: '800' }}>Total Amount</Text>
                                 <View style={{ flexDirection: 'row', alignItems: 'center', gap: 5 }}>
-                                    {paxInfoToDisplay.discount != null && (
+                                    {paxInfoToDisplay?.discount != null && (
                                         <Text style={{ color: '#cf2a3a' }}>{`(Discounted)`}</Text>
                                     )}
                                     <Text style={{ fontSize: 16, fontWeight: '800', color: '#cf2a3a' }}>₱ {totalTripFare.toFixed(2)}</Text>

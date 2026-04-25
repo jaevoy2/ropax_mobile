@@ -309,8 +309,11 @@ const SRVessel = ({ onSeatSelect, accommodations, seatAvailability, setParentLoa
         return map;
     }, [bookedSeats]);
 
-    const BClassAccomms = useMemo(() => accommodations?.find((accom) => accom.id == 2), [accommodations]);
-    const TouristAccoms = useMemo(() => accommodations?.find((accom) => accom?.id == 1), [accommodations]);
+    const BClassAccomsOptions = ['b class','b-class', 'business class', 'deluxe'];
+    const touristAccoms = ['tourist', 'economy'];
+
+    const TouristAccoms = useMemo(() => accommodations?.find((accom) => touristAccoms.includes(accom?.name.toLowerCase())), [accommodations]);
+    const BClassAccomms = useMemo(() => accommodations?.find((accom) => BClassAccomsOptions.includes(accom?.name.toLowerCase())), [accommodations]);
     const passengerSeats = useMemo(() => new Set(passengers.map(p => p.seatNumber)), [passengers]);
     const seatChannel = useMemo(() => new Set(seatSelectionChannel.map(String)), [seatSelectionChannel]);
 

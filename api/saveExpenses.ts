@@ -1,5 +1,7 @@
 import { ExpenseProps } from '@/context/expense';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 import Constants from 'expo-constants';
+
 
 export async function SaveExpenses(expenses: ExpenseProps[]) {
     const extras = Constants.expoConfig?.extra ?? {};
@@ -8,6 +10,12 @@ export async function SaveExpenses(expenses: ExpenseProps[]) {
     const ORIGIN = extras.ORIGIN as string;
 
     try {
+        const token = await AsyncStorage.getItem('token');
+        
+        if(!token) {
+            throw new Error('No token found. Please login again.');
+        }
+
         const formData = new FormData();
         
         formData.append('trip_schedule_id', String(expenses[0].trip_schedule_id));
@@ -30,6 +38,7 @@ export async function SaveExpenses(expenses: ExpenseProps[]) {
                 'Accept': 'application/json',
                 'x-api-key': `${API_KEY}`,
                 'Origin': `${ORIGIN}`,
+                'Authorization': `${token}`
             },
             body: formData
         });
